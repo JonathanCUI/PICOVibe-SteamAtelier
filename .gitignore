@@ -1,0 +1,27 @@
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Bb]uilds/
+MemoryCaptures/
+.vs/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.apk
+*.aab
+*.log
+
+# Generated native payload; rebuilt by SpatialAdapter from the saved scene.
+/Assets/StreamingAssets/SpatialAdapterExport/
+/Assets/StreamingAssets/SpatialAdapterExport.meta
+
+# Local IDE and signing state.
+.idea/
+*.suo
+*.userprefs
+*.keystore
+*.jks

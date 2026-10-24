@@ -1,0 +1,271 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 686286754, guid: a2005d26a7dfb4db3952cf9ed3794675, type: 3}
+  m_Name: SpatialAdapterResourceData
+  m_EditorClassIdentifier: 
+  PrefabLookUps:
+  - resource: 107584
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_44.prefab.glb
+  - resource: 107632
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_02.prefab.glb
+  - resource: 107684
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_03.prefab.glb
+  - resource: 107716
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_05.prefab.glb
+  - resource: 107758
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_08.prefab.glb
+  - resource: 107808
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_10.prefab.glb
+  - resource: 107858
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_11.prefab.glb
+  - resource: 107902
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_24.prefab.glb
+  - resource: 107948
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_01.prefab.glb
+  - resource: 108088
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_27.prefab.glb
+  - resource: 108236
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_21.prefab.glb
+  - resource: 108280
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_29.prefab.glb
+  - resource: 108324
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_20.prefab.glb
+  - resource: 108364
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_00.prefab.glb
+  - resource: 108424
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_23.prefab.glb
+  - resource: 108472
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_26.prefab.glb
+  - resource: 108512
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_38.prefab.glb
+  - resource: 108552
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_40.prefab.glb
+  - resource: 108596
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_04.prefab.glb
+  - resource: 108646
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_06.prefab.glb
+  - resource: 108684
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_12.prefab.glb
+  - resource: 108728
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_41.prefab.glb
+  - resource: 108776
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_25.prefab.glb
+  - resource: 108810
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_16.prefab.glb
+  - resource: 108854
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_22.prefab.glb
+  - resource: 108912
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_30.prefab.glb
+  - resource: 108948
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_36.prefab.glb
+  - resource: 108994
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_18.prefab.glb
+  - resource: 109036
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_31.prefab.glb
+  - resource: 109080
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_42.prefab.glb
+  - resource: 109126
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_37.prefab.glb
+  - resource: 109166
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_39.prefab.glb
+  - resource: 109210
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_09.prefab.glb
+  - resource: 109250
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_33.prefab.glb
+  - resource: 109300
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_14.prefab.glb
+  - resource: 109346
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_43.prefab.glb
+  - resource: 109392
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_19.prefab.glb
+  - resource: 109426
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_07.prefab.glb
+  - resource: 109478
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_15.prefab.glb
+  - resource: 109512
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_13.prefab.glb
+  - resource: 109572
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_28.prefab.glb
+  - resource: 109606
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_35.prefab.glb
+  - resource: 109652
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_34.prefab.glb
+  - resource: 109704
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_32.prefab.glb
+  - resource: 109742
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_17.prefab.glb
+  TextureLookUps: []
+  MaterialLookUps:
+  - resource: {fileID: 2100000, guid: 7fe7a28c85bff1245a697082989a530b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_012.mat.glb
+  - resource: {fileID: 2100000, guid: 0e899afbc34e9814482a413bf3d6c9c9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_009.mat.glb
+  - resource: {fileID: 2100000, guid: 20edd1cba85c1db49983c42f1873bf2e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_058.mat.glb
+  - resource: {fileID: 2100000, guid: 2c2ab7425a1531f4faa3314bd5ac16c3, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_041.mat.glb
+  - resource: {fileID: 2100000, guid: a19f4157ed56bcb48992d119bfb1bf30, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_014.mat.glb
+  - resource: {fileID: 2100000, guid: 5d14bcf561455f741a774ccb5f254c1b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_023.mat.glb
+  - resource: {fileID: 2100000, guid: 7aaf9d09fd6cc514bb434979ef8eed49, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_008.mat.glb
+  - resource: {fileID: 2100000, guid: 424a99693011ee642a7703a9c1bb6ea4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_055.mat.glb
+  - resource: {fileID: 2100000, guid: ce98bf20d857242408d10ff464a7aa8e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_056.mat.glb
+  - resource: {fileID: 2100000, guid: b70a4b7d3e943874189a02b48ae504da, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_013.mat.glb
+  - resource: {fileID: 2100000, guid: b75d2f154ec2ba04fb587733a8ced7a9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_011.mat.glb
+  - resource: {fileID: 2100000, guid: 9e633d76272b41142ba05cbd12663397, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_066.mat.glb
+  - resource: {fileID: 2100000, guid: 8c47a2408a82ad24986a9a768c7945b7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_010.mat.glb
+  - resource: {fileID: 2100000, guid: d1e57d967633cd54f9d135d550ed274d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_031.mat.glb
+  - resource: {fileID: 2100000, guid: ec894e7ae09c7f749aa7ac3109426867, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_040.mat.glb
+  - resource: {fileID: 2100000, guid: 4a3a2705a221bf243bb43338e37549a5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_062.mat.glb
+  - resource: {fileID: 2100000, guid: 0b440bd7cc1497f4ca400604e67fbd39, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_026.mat.glb
+  - resource: {fileID: 2100000, guid: f7ea61175d120884cb2c6af418a61813, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_032.mat.glb
+  - resource: {fileID: 2100000, guid: cf95a876b7db76b4080ee2b084e7d56e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_038.mat.glb
+  - resource: {fileID: 2100000, guid: eaa99a7ff272ddc43914623593dbe746, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_015.mat.glb
+  - resource: {fileID: 4060910613580231630, guid: 1c94ffad5123c5c43889e75e98c80cb3,
+      type: 2}
+    path: SpatialAdapterExport\Assets\SteamLab\UI\Chinese.asset.glb
+  - resource: {fileID: 2100000, guid: 2b49b921b0c05d440bb299e802f8c4b7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_033.mat.glb
+  - resource: {fileID: 2100000, guid: 34884a6e8f90e2847898bc068e793a68, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_046.mat.glb
+  - resource: {fileID: 2100000, guid: 5c4c64722f530f44ab8077e44a6ef1e4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_034.mat.glb
+  - resource: {fileID: 2100000, guid: 4ba301f303b1bf642a64d9bc2e12ca80, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_000.mat.glb
+  - resource: {fileID: 2100000, guid: 9dd27103e72ae6948843d36ad5190d80, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_047.mat.glb
+  - resource: {fileID: 2100000, guid: 7b8f5cb6a8fd0624c825bf78a28beec8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_036.mat.glb
+  - resource: {fileID: 2100000, guid: 638eae260b0bbf14e9e7ccd79355593b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_069.mat.glb
+  - resource: {fileID: 2100000, guid: 4c35d83c9cb5fb342821ab9df359b89e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_035.mat.glb
+  - resource: {fileID: 2100000, guid: bf0d4f609b791e847bc0412842d89d33, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_016.mat.glb
+  - resource: {fileID: 2100000, guid: 32ab93cb4e8907b4fae3d59a3f65b54c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_025.mat.glb
+  - resource: {fileID: 2100000, guid: 38f8bb6baadae224dabf3ae536c05827, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_051.mat.glb
+  - resource: {fileID: 2100000, guid: 606406bf5d63fa7449a299925ea2b288, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_024.mat.glb
+  - resource: {fileID: 2100000, guid: 5efe524a011544e49b5a6ecf2516b7e7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_030.mat.glb
+  - resource: {fileID: 2100000, guid: 5c804ce6cfb111d4c8aff5081b645a3d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_068.mat.glb
+  - resource: {fileID: 2100000, guid: b4851de179c24894ea801efd9c9205c8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_048.mat.glb
+  - resource: {fileID: 2100000, guid: be8bbfae9386a52438c15d42569be8dd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_004.mat.glb
+  - resource: {fileID: 2100000, guid: eeb29b3699a6ff944a63e0881fc66196, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_037.mat.glb
+  - resource: {fileID: 2100000, guid: 0d0c5e239957fba409ac931c2e5addb3, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_042.mat.glb
+  - resource: {fileID: 2100000, guid: 5d2c24f9009f06f4a83b6e5913daff03, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_021.mat.glb
+  - resource: {fileID: 2100000, guid: dc3ae1474bbc9cf46885fc8be6343cf1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_028.mat.glb
+  - resource: {fileID: 2100000, guid: 1000eb00d761ae346b49497305969f03, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_029.mat.glb
+  - resource: {fileID: 2100000, guid: a5bb0a8e30427244a950e1a74396d13c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_027.mat.glb
+  - resource: {fileID: 2100000, guid: 59b81b5346920734fa43dfd1eceaa6a2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_064.mat.glb
+  - resource: {fileID: 2100000, guid: fbe082c1ebbff4d46b1ad8fc79a2ae5c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_007.mat.glb
+  - resource: {fileID: 2100000, guid: e12cdd6995c7647488e8a16298b18618, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_054.mat.glb
+  - resource: {fileID: 2100000, guid: 454383e51798e6343abbeeebd0f6f5df, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_050.mat.glb
+  - resource: {fileID: 2100000, guid: e59f68f768e03614b8736f1eaba24bf9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_071.mat.glb
+  - resource: {fileID: 2100000, guid: e1be83879a79fc04c860b7345ac0ef8a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_039.mat.glb
+  - resource: {fileID: 2100000, guid: d079fb9cf1891554e80c548f3a562b1e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_063.mat.glb
+  - resource: {fileID: 2100000, guid: db3447e126099ea4cb273b88acbeef2a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_049.mat.glb
+  - resource: {fileID: 2100000, guid: 4a4757f562cba4e42b4bd9a5c093c627, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_060.mat.glb
+  - resource: {fileID: 2100000, guid: a163391f2fe16cd4e8883deb4c6c44df, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_001.mat.glb
+  - resource: {fileID: 2100000, guid: 162f9c5fa3a18234185d62e3aac83a11, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_065.mat.glb
+  - resource: {fileID: 2100000, guid: 344bb9f1da2685042bce7059188cebb5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_003.mat.glb
+  - resource: {fileID: 2100000, guid: cc4202be8e5583549b7f15b7cf7e8edd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_059.mat.glb
+  - resource: {fileID: 2100000, guid: 2cce04da60ad7cf49a13a17b22978060, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_005.mat.glb
+  - resource: {fileID: 2100000, guid: ec9e7b1f80623994398e1c18ebaaee70, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_002.mat.glb
+  - resource: {fileID: 2100000, guid: c03be2d564c69554da8471a594b699c2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_061.mat.glb
+  - resource: {fileID: 2100000, guid: 413e577c2d648c849bee87e9c05d0ea2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_022.mat.glb
+  - resource: {fileID: 2100000, guid: e2f8952ca3f5f2f49955c8d18924ebb5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_020.mat.glb
+  - resource: {fileID: 2100000, guid: 4b2ee917750b8704a98e84330666286a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_006.mat.glb
+  - resource: {fileID: 2100000, guid: 52626dd93f12e044782079a625173d98, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_072.mat.glb
+  - resource: {fileID: 2100000, guid: 45180b2b0850f6d49a32e7e1ec50a08a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_057.mat.glb
+  - resource: {fileID: 2100000, guid: 468c340515605934382414371f05861d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_070.mat.glb
+  - resource: {fileID: 2100000, guid: ee173fff185184f4e80192fc0a729367, type: 2}
+    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_067.mat.glb
+  - resource: {fileID: 2103686, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Sprite Assets\EmojiOne.asset.glb
+  - resource: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF - Fallback.asset.glb
+  - resource: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF.asset.glb
+  - resource: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF - Drop Shadow.mat.glb
+  - resource: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF - Fallback.asset.glb
+  - resource: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF - Outline.mat.glb
+  - resource: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Fonts & Materials\LiberationSans
+      SDF.asset.glb
+  - resource: {fileID: 2103686, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
+    path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Sprite Assets\EmojiOne.asset.glb
+  - resource: {fileID: 2100000, guid: 950042044eb8b45cfb957653439b0be7, type: 2}
+    path: SpatialAdapterExport\Packages\com.unity.xr.arfoundation\Assets\Materials\SimulationLitGray.mat.glb
+  - resource: {fileID: 2100000, guid: 7f1d579c79ac0442e8d4a7f213a675d0, type: 2}
+    path: SpatialAdapterExport\Packages\com.unity.xr.arfoundation\Assets\Materials\SimulationDefaultTrackedImage.mat.glb
+  - resource: {fileID: 2100000, guid: 1d1fab4015cac46c08cbc1fe0a1eb0c2, type: 2}
+    path: SpatialAdapterExport\Packages\com.unity.xr.arfoundation\Assets\Materials\UnlitBlack.mat.glb
+  ShaderGraphLookUps: []
+  DefaultSpatialCameraConfiguration: {fileID: 11400000, guid: 3f0f12161122646a8bbc81d469b0eaeb,
+    type: 2}
