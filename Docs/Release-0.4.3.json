@@ -1,0 +1,38 @@
+{
+  "versionName": "0.4.3",
+  "versionCode": 17,
+  "apkSha256": "95944E14571310DDD2960CB867D29C09E8F605DFA1B91A517DC8B46A8E7B7EE4",
+  "apkBytes": 353921885,
+  "buildPassed": true,
+  "playModePassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "pid": 6932,
+  "activityCount": 1,
+  "readyLogObserved": true,
+  "sampledCrashBufferEmpty": true,
+  "consoleControls": 24,
+  "consoleMeshTargets": 37,
+  "minimumHitDimensionMetres": 0.014,
+  "throttleHandTravelMetres": [0.04, 0.15],
+  "deviceThrottleObserved": {
+    "inputSource": "hand",
+    "travelMetresAtTestScale": 0.046,
+    "values": [0.53, 0.65, 0.78, 0.93, 0.0, 1.0],
+    "engineRunningAndStoppedObserved": true,
+    "brakeActionObserved": true
+  },
+  "cutaway": {
+    "steamVolumeConversions": 11,
+    "waterBodyConversions": 1,
+    "waterSurfaceConversions": 1,
+    "packagedTransparentNodesVerified": 13,
+    "deviceScreenshotShowsBoilerTubesWithoutSolidBox": true,
+    "deviceScreenshot": "Builds/Evidence/v043-cutaway-after.png",
+    "renderingApproach": "Transparent geometry; original ray-march shader appearance is not reproduced."
+  },
+  "placementGhostExportsVerified": 45,
+  "partnerSourceSceneSha256": "78A1742499AD24908927ABA09F0C72B7D8F6A23796AFBEEDAAEC5B9F3F833070",
+  "userAcceptance": "推把正常，剖面方块消失",
+  "notes": "User accepted the throttle and cutaway fixes on the physical Swan. Logs verify throttle control, brake and cutaway clicks; the captured cutaway exposes boiler tubes and flow arrows with the opaque box removed. Startup log includes a PxrPlatform library warning, followed by READY and live interactions; no new crash was present in the sampled PID crash buffer."
+}

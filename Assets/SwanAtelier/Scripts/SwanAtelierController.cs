@@ -39,6 +39,9 @@ namespace SwanAtelier
             public int piece = -1;
             public Vector3 start, objectStart;
             public float initialThrottle;
+            public bool useHandForThrottle;
+            public Vector3 startHand, throttleLiftAxis, throttlePushAxis;
+            public float throttleTravel, lastLoggedThrottle;
         }
         Pointer mouse;
         float mouseDepth;
@@ -116,19 +119,23 @@ namespace SwanAtelier
             thermal.fireEnabled = false; doors.CloseAll(); ClearLoose();
             for (int i = 0; i < assembly.pieces.Length; i++) { assembly.pieces[i].installed = false; assembly.slotOccupants[i] = assembly.pieceSlots[i] = -1; }
             atelier.direction = 1; atelier.trayCategory = atelier.trayPage = 0;
-            engine.ApplyPose(); RefreshTray(); SetMessage("开始重新装配：从零件盘捏取零件，移到金色接口后松手。"); return true;
+            engine.ApplyPose(); RefreshTray(); SetMessage("捏取零件，对齐白色轮廓后松手；看向悬空零件连续短捏两次可快速装回。"); return true;
         }
         public void CancelReset() { resetHeld = false; atelier.resetProgress = 0; }
         void ClearLoose()
         {
+            CancelPartMotions();
+            ClearQuickInstallTap();
+            HidePlacementHint();
             foreach (var go in assembly.looseObjects) if (go) Destroy(go);
             Array.Clear(assembly.looseObjects, 0, assembly.looseObjects.Length); socket.gameObject.SetActive(false);
             foreach (var p in pointers.Values) if (p != null) p.active = false;
         }
-        public void CompleteAssembly()
+        public void CompleteAssembly(bool resetPose = true)
         {
             StopImmediately(); ClearLoose(); CancelReset(); doors.CloseAll();
-            engine.phase = 25; engine.travelled = 0; engine.principle = engine.exploded = engine.assemblyLesson = false;
+            if (resetPose) { engine.phase = 25; engine.travelled = 0; }
+            engine.principle = engine.exploded = engine.assemblyLesson = false;
             for (int i = 0; i < assembly.pieces.Length; i++) { assembly.pieces[i].installed = true; assembly.slotOccupants[i] = assembly.pieceSlots[i] = i; }
             atelier.direction = 1; atelier.travelling = false; atelier.guardOpen = false; thermal.fireEnabled = false;
             engine.ApplyPose(); RefreshTray(); SetMessage("45 个部件已装好，可拉动汽门开始演示。");
@@ -144,22 +151,28 @@ namespace SwanAtelier
                 doors.CloseGroup(piece.key); assembly.slotOccupants[slot] = -1; assembly.pieceSlots[index] = -1; piece.installed = false;
             }
             engine.ApplyPose();
+            EnsureLoosePiece(index, slot >= 0 ? slot : index);
+            UpdatePlacementHint(index);
+            RefreshTray(); return assembly.looseObjects[index];
+        }
+        GameObject EnsureLoosePiece(int index, int slot)
+        {
+            var piece = assembly.pieces[index];
             if (!assembly.looseObjects[index])
             {
                 var go = Instantiate(piece.prefab, engine.display);
                 go.name = "Swan loose " + piece.key;
-                go.transform.SetPositionAndRotation(assembly.SlotPosition(slot >= 0 ? slot : index), engine.locomotive.rotation);
+                go.transform.SetPositionAndRotation(assembly.SlotPosition(slot), engine.locomotive.rotation);
                 go.transform.localScale = Vector3.one;
                 var tag = go.AddComponent<SwanAtelierLoosePiece>(); tag.index = index;
                 assembly.looseObjects[index] = go;
             }
-            socket.gameObject.SetActive(true); socket.position = assembly.SlotPosition(slot >= 0 ? slot : index);
-            RefreshTray(); return assembly.looseObjects[index];
+            return assembly.looseObjects[index];
         }
         int NearestSlot(int piece, Vector3 position)
         {
             int best = -1; float distance = float.MaxValue;
-            for (int i = 0; i < assembly.pieces.Length; i++) if (assembly.slotOccupants[i] < 0 && assembly.pieces[piece].fitKey == assembly.pieces[i].fitKey)
+            for (int i = 0; i < assembly.pieces.Length; i++) if (assembly.slotOccupants[i] < 0 && !SlotReserved(i, piece) && assembly.pieces[piece].fitKey == assembly.pieces[i].fitKey)
             { float d = Vector3.SqrMagnitude(position - assembly.SlotPosition(i)); if (d < distance) { distance = d; best = i; } }
             return best;
         }
@@ -174,8 +187,8 @@ namespace SwanAtelier
                 assembly.slotOccupants[slot] = index; assembly.pieceSlots[index] = slot; assembly.pieces[index].installed = true;
                 Destroy(go); assembly.looseObjects[index] = null; engine.ApplyPose(); presentation.PlaySnap(); SetMessage("接口对齐，安装完成。");
             }
-            else SetMessage("零件保留在当前位置，可再次捏住移动到对应接口。");
-            socket.gameObject.SetActive(false); RefreshTray(); return fits;
+            else SetMessage("零件已悬停；可拖回白色轮廓，或看向它连续短捏两次快速装回。");
+            HidePlacementHint(); RefreshTray(); return fits;
         }
         void RefreshTray() { atelier.RefreshTray(); }
         void SetMessage(string value) { Message = value; }
@@ -191,12 +204,14 @@ namespace SwanAtelier
         {
             if (!Ready) return;
             TickSimulation(Time.deltaTime);
+            TickPartMotionFrame(Time.unscaledDeltaTime);
             PollSpatialInput();
 #if UNITY_EDITOR || UNITY_STANDALONE
             DesktopInput();
 #endif
             foreach (var p in pointers.Values.ToArray()) Hold(p);
             Hold(mouse);
+            if (placementHintPiece >= 0) UpdatePlacementHint(placementHintPiece);
             AnimateControls(Time.deltaTime);
             if (Time.unscaledTime >= nextLabels) { nextLabels = Time.unscaledTime + .15f; UpdateLabels(); }
         }
@@ -244,7 +259,8 @@ namespace SwanAtelier
         {
             if (!hit) return null;
             var utility = hit.GetComponentInParent<SwanAtelierTarget>();
-            if (utility) { if (!utility.moveStage) { CompleteAssembly(); return null; } return new Pointer { moveStage = true, start = position, objectStart = transform.position }; }
+            if (utility) { if (utility.explodeAll) { ExplodeAllPieces(); return null; } if (!utility.moveStage) { CompleteAssemblyAnimated(); return null; } return new Pointer { moveStage = true, start = position, objectStart = transform.position }; }
+            if (batchMotion) return null;
             var control = hit.GetComponentInParent<AtelierControl>();
             if (control)
             {
@@ -255,11 +271,12 @@ namespace SwanAtelier
                     p.piece = i; var go = TakePiece(i); go.transform.position = position; p.objectStart = position; p.dragging = true;
                 }
                 else if (control.action != AtelierAction.Throttle) Activate(control.action, control.index);
+                else SetMessage("捏住汽门，前推或上抬增加动力，回拉或下放减小；换向杆选择前进 / 停 / 后退。");
                 if (control.action == AtelierAction.Whistle) whistleHeld = true;
                 return p;
             }
             var loose = hit.GetComponentInParent<SwanAtelierLoosePiece>();
-            if (loose) { if (IsDragged(loose.index)) return null; return new Pointer { piece = loose.index, dragging = true, start = position, objectStart = loose.transform.position }; }
+            if (loose) { if (IsDragged(loose.index)) return null; UpdatePlacementHint(loose.index); return new Pointer { piece = loose.index, dragging = true, start = position, objectStart = loose.transform.position }; }
             var part = hit.GetComponentInParent<LocomotivePart>();
             if (part && slots.TryGetValue(part, out int slot) && assembly.slotOccupants[slot] >= 0)
             {
@@ -269,7 +286,7 @@ namespace SwanAtelier
             }
             return null;
         }
-        bool IsDragged(int piece) => pointers.Values.Any(p => p != null && p.active && p.piece == piece);
+        bool IsDragged(int piece) => PieceAnimating(piece) || pointers.Values.Any(p => p != null && p.active && p.piece == piece);
         void Move(Pointer p, Vector3 position)
         {
             if (p == null || !p.active) return;
@@ -280,8 +297,7 @@ namespace SwanAtelier
             if (!p.dragging && delta.magnitude > .025f) { TakePiece(p.piece); p.dragging = true; }
             if (!p.dragging || !assembly.looseObjects[p.piece]) return;
             var go = assembly.looseObjects[p.piece]; go.transform.position = p.objectStart + delta;
-            int slot = NearestSlot(p.piece, go.transform.position);
-            socket.gameObject.SetActive(slot >= 0); if (slot >= 0) socket.position = assembly.SlotPosition(slot);
+            UpdatePlacementHint(p.piece);
         }
         void End(Pointer p, bool cancel)
         {

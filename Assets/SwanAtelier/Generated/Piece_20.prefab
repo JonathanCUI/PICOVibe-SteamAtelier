@@ -63,13 +63,13 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7aaf9d09fd6cc514bb434979ef8eed49, type: 2}
+  - {fileID: 2100000, guid: 32ab93cb4e8907b4fae3d59a3f65b54c, type: 2}
+  - {fileID: 2100000, guid: 9dd27103e72ae6948843d36ad5190d80, type: 2}
   - {fileID: 2100000, guid: 5efe524a011544e49b5a6ecf2516b7e7, type: 2}
+  - {fileID: 2100000, guid: dc3ae1474bbc9cf46885fc8be6343cf1, type: 2}
   - {fileID: 2100000, guid: b70a4b7d3e943874189a02b48ae504da, type: 2}
-  - {fileID: 2100000, guid: b75d2f154ec2ba04fb587733a8ced7a9, type: 2}
-  - {fileID: 2100000, guid: 4ba301f303b1bf642a64d9bc2e12ca80, type: 2}
-  - {fileID: 2100000, guid: f7ea61175d120884cb2c6af418a61813, type: 2}
-  - {fileID: 2100000, guid: bf0d4f609b791e847bc0412842d89d33, type: 2}
+  - {fileID: 2100000, guid: db3447e126099ea4cb273b88acbeef2a, type: 2}
+  - {fileID: 2100000, guid: 2b49b921b0c05d440bb299e802f8c4b7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -134,8 +134,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6437852841504248328}
   - component: {fileID: 2212430818618149537}
-  - component: {fileID: 2774729688468758898}
-  - component: {fileID: 55732473614933774}
+  - component: {fileID: 3934237031521834150}
+  - component: {fileID: 2160060786925345076}
   m_Layer: 0
   m_Name: Piece_20
   m_TagString: Untagged
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Script: {fileID: -1231647472, guid: a2005d26a7dfb4db3952cf9ed3794675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2774729688468758898
+--- !u!114 &3934237031521834150
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -183,8 +183,8 @@ MonoBehaviour:
   m_Script: {fileID: -292094107, guid: a2005d26a7dfb4db3952cf9ed3794675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_prefabId: 108324
---- !u!114 &55732473614933774
+  m_prefabId: 110994
+--- !u!114 &2160060786925345076
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

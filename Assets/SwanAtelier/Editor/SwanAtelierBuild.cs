@@ -16,7 +16,7 @@ using UnityEngine.XR.Management;
 
 namespace SwanAtelier.Editor
 {
-    public static class SwanAtelierBuild
+    public static partial class SwanAtelierBuild
     {
         const string Root = "Assets/SwanAtelier";
         const string Generated = Root + "/Generated";
@@ -77,6 +77,7 @@ namespace SwanAtelier.Editor
                 foreach (var item in new[] { atmosphere.fireVolume, atmosphere.blastSteam, atmosphere.smokeboxGas, atmosphere.headlightBeam }) if (item) item.SetActive(false);
             }
             int mobileBindings = SelectPartnerMeshes(content);
+            ConfigureCutawaySteam(engine,thermal,content);
             var texts = content.GetComponentsInChildren<TMPro.TMP_Text>(true);
             foreach (var r in content.GetComponentsInChildren<Renderer>(true))
                 if (!r.GetComponent<TMPro.TMP_Text>()) r.sharedMaterials = r.sharedMaterials.Select(ConvertMaterial).ToArray();
@@ -113,6 +114,7 @@ namespace SwanAtelier.Editor
                 free.pieces[i].prefab=PrefabUtility.SaveAsPrefabAsset(clone,Generated+"/Piece_"+i.ToString("00")+".prefab");
                 UnityEngine.Object.DestroyImmediate(clone);
             }
+            BuildPlacementGhosts(free);
             foreach(var c in display.GetComponentsInChildren<Collider>(true)) UnityEngine.Object.DestroyImmediate(c);
             // The native hit target must carry its visible mesh and hover effect.
             // A large collider on an empty part parent can intercept a gaze without
@@ -122,14 +124,16 @@ namespace SwanAtelier.Editor
             var brass=Material("Swan brass",new Color(.7f,.42f,.16f),.75f,.6f);
             game.socket=Shape("装配接口",stage.transform,PrimitiveType.Sphere,brass,Vector3.zero,Vector3.one*.018f).transform; game.socket.gameObject.SetActive(false);
             game.help=Text(stage.transform,new Vector3(0,.56f,0),"蒸汽工坊·新版 · 45 个部件",14,new Vector2(1.3f,.13f),new Color(1,.88f,.68f));
-            foreach(bool move in new[]{false,true}) {
-                Vector3 position=new Vector3(move?.27f:-.27f,-.15f,-.64f); string label=move?"捏住移动展台":"全部装好";
+            for(int button=0;button<3;button++) {
+                bool explode=button==0,move=button==2;
+                Vector3 position=new Vector3(-.81f+button*.54f,-.15f,-.64f); string label=explode?"一键拆开":move?"捏住移动展台":"全部装好";
                 var go=Shape(label,stage.transform,PrimitiveType.Cube,brass,position,new Vector3(.48f,.055f,.025f));
-                go.AddComponent<BoxCollider>(); go.AddComponent<SwanAtelierTarget>().moveStage=move;
+                go.AddComponent<BoxCollider>(); var target=go.AddComponent<SwanAtelierTarget>(); target.moveStage=move; target.explodeAll=explode;
                 Text(stage.transform,position+Vector3.back*.016f,label,13,new Vector2(.47f,.05f),Color.white);
             }
             ConvertText(texts);
             ConfigureHover(stage.transform);
+            ConfigureConsoleInteractions(stage.transform);
             var cameraGO=new GameObject("Swan Editor Preview Camera",typeof(Camera),typeof(AudioListener));
             var camera=cameraGO.GetComponent<Camera>(); camera.tag="MainCamera";
             camera.transform.position=new Vector3(-1.3f,2.0f,-1.35f); camera.transform.LookAt(stage.transform.position+new Vector3(0,.07f,-.12f));
@@ -285,6 +289,39 @@ namespace SwanAtelier.Editor
                 if (t && t != root && !protectedTransforms.Contains(t) && t.childCount == 0 && t.GetComponents<Component>().Length == 1)
                     UnityEngine.Object.DestroyImmediate(t.gameObject);
         }
+        static void BuildPlacementGhosts(LocomotiveFreeAssembly assembly)
+        {
+            // Bake transparent variants before SpatialAdapter exports the prefabs.
+            // Reuse the mobile meshes; a runtime material swap would leave the
+            // native prefab dependent on an unexported material.
+            var material = new Material(Shader.Find("Standard")) {
+                name = "Swan placement silhouette", color = new Color(1f, 1f, 1f, .34f)
+            };
+            material.SetFloat("_Metallic", 0); material.SetFloat("_Glossiness", 0);
+            material.SetOverrideTag("RenderType", "Transparent"); material.SetFloat("_Mode", 3);
+            material.SetInt("_SrcBlend", (int)BlendMode.One);
+            material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+            material.SetInt("_ZWrite", 0); material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.SetColor("_EmissionColor", new Color(.12f, .12f, .12f));
+            material.EnableKeyword("_EMISSION"); material.renderQueue = 3000;
+            AssetDatabase.CreateAsset(material, Generated + "/PlacementGhost.mat");
+            assembly.ghostMaterial = material;
+            game.placementGhostPrefabs = new GameObject[assembly.pieces.Length];
+            for (int i = 0; i < assembly.pieces.Length; i++) {
+                var ghost = UnityEngine.Object.Instantiate(assembly.pieces[i].prefab);
+                ghost.name = "Swan placement ghost " + assembly.pieces[i].key;
+                foreach (var collider in ghost.GetComponentsInChildren<Collider>(true)) UnityEngine.Object.DestroyImmediate(collider);
+                foreach (var behaviour in ghost.GetComponentsInChildren<MonoBehaviour>(true)) UnityEngine.Object.DestroyImmediate(behaviour);
+                foreach (var t in ghost.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = 2;
+                foreach (var renderer in ghost.GetComponentsInChildren<Renderer>(true)) {
+                    renderer.sharedMaterials = renderer.sharedMaterials.Select(_ => material).ToArray();
+                    renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
+                }
+                game.placementGhostPrefabs[i] = PrefabUtility.SaveAsPrefabAsset(ghost, Generated + "/Ghost_" + i.ToString("00") + ".prefab");
+                UnityEngine.Object.DestroyImmediate(ghost);
+            }
+            Debug.Log("ATELIER_SWAN_PLACEMENT_GHOSTS prefabs=" + game.placementGhostPrefabs.Length + " alpha=" + material.color.a);
+        }
         static Material ConvertMaterial(Material source)
         {
             if (!source) return null; if (materials.TryGetValue(source, out var existing)) return existing;
@@ -360,7 +397,13 @@ namespace SwanAtelier.Editor
         static void Configure()
         {
             PlayerSettings.companyName = "PICO Vibe"; PlayerSettings.productName = "蒸汽工坊·新版";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.picovibe.steamatelier"); PlayerSettings.bundleVersion = "0.3.5"; PlayerSettings.Android.bundleVersionCode = 9;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.picovibe.steamatelier"); PlayerSettings.bundleVersion = "0.4.3"; PlayerSettings.Android.bundleVersionCode = 17;
+            // Match the SDK's default launch container to the explicit scene camera.
+            // The SDK manifest processor derives the launch metadata from this setting.
+            var runtimeSettings = new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
+            runtimeSettings.FindProperty("m_defaultSpatialCameraConfiguration").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<SpatialCameraConfiguration>("Packages/com.bytedance.pico.spatialadapter/Resources/Default Unconstrained Spatial Camera Configuration.asset");
+            runtimeSettings.ApplyModifiedPropertiesWithoutUndo();
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29; PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP); PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false); PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan });

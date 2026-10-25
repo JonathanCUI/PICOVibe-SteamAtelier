@@ -15,6 +15,7 @@ namespace SwanAtelier.Editor
         static readonly List<string> failures=new List<string>();
         static double started;
         static bool performed;
+        static double captureAfter;
         static SwanAtelierChecks() { if(SessionState.GetBool("AtelierChecksRunning",false)) Attach(); }
         public static void Run() { EditorSceneManager.OpenScene(SwanAtelierBuild.ScenePath); SessionState.SetBool("AtelierChecksRunning",true); Attach(); EditorApplication.isPlaying=true; }
         static void Attach() { started=EditorApplication.timeSinceStartup; performed=false; EditorApplication.update-=Tick; EditorApplication.update+=Tick; Application.logMessageReceived-=Log; Application.logMessageReceived+=Log; }
@@ -24,6 +25,13 @@ namespace SwanAtelier.Editor
         {
             double elapsed=EditorApplication.timeSinceStartup-started;
             if(elapsed>120){failures.Add("Play mode check timed out");Finish();return;}
+            if(performed&&captureAfter>0&&EditorApplication.timeSinceStartup>=captureAfter) {
+                try {
+                    var preview=UnityEngine.Object.FindObjectOfType<SwanAtelierController>();
+                    SwanPlacementHintChecks.Capture(preview.previewCamera,"Builds/Evidence/cutaway-editor.png");
+                } catch(Exception e) { failures.Add(e.ToString()); }
+                Finish();return;
+            }
             if(!EditorApplication.isPlaying||performed||elapsed<6)return;
             var game=UnityEngine.Object.FindObjectOfType<SwanAtelierController>(); if(!game||!game.Ready)return;
             performed=true;
@@ -33,6 +41,13 @@ namespace SwanAtelier.Editor
                 Check(!game.engine.enabled&&!game.drive.enabled&&!game.atelier.enabled&&!game.assembly.enabled,"Desktop update still active");
                 CheckHoverAndHud(game);
                 SwanAtelierGestureChecks.Run(game);
+                SwanPlacementHintChecks.Run(game);
+                SwanQuickInstallChecks.Run(game);
+                SwanExplodedViewChecks.Run(game);
+                SwanConsoleChecks.Run(game);
+                var runtimeSettings = new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
+                var defaultCamera = runtimeSettings.FindProperty("m_defaultSpatialCameraConfiguration").objectReferenceValue;
+                Check(defaultCamera == UnityEngine.Object.FindObjectOfType<ByteDance.PICO.SpatialAdapter.SpatialCamera>().OutputConfiguration,"Launch container differs from scene camera");
                 var actions=game.content.GetComponentsInChildren<AtelierControl>(true).Select(c=>c.action).ToHashSet();
                 foreach(var action in new[]{AtelierAction.Throttle,AtelierAction.Reverse,AtelierAction.Brake,AtelierAction.Whistle,AtelierAction.Lights,AtelierAction.Cutaway,AtelierAction.Observation,AtelierAction.ResetGuard,AtelierAction.Assembly,AtelierAction.Category,AtelierAction.TrayPrevious,AtelierAction.TrayNext,AtelierAction.TrayPart})Check(actions.Contains(action),"Missing physical control "+action);
                 int idle=game.PoseUpdates; for(int n=0;n<90;n++)game.TickSimulation(1f/90); Check(game.PoseUpdates==idle,"Idle mechanism repeatedly updates");
@@ -55,10 +70,12 @@ namespace SwanAtelier.Editor
                 game.CompleteAssembly();
                 for(int i=0;i<45;i++) {
                     var loose=game.TakePiece(i);Check(loose&&game.assembly.InstalledCount==44,"Cannot remove piece "+i);
+                    SwanPlacementHintChecks.CheckVisible(game, i);
                     Check(loose.GetComponent<SpatialAdapterHoverEffect>(),"Loose piece lost hover: "+i);
                     CheckMeshTargets(loose.transform,"Loose piece "+i);
                     foreach(var part in game.assembly.pieces[i].members)Check(!game.assembly.IsPartVisible(part),"Installed member still visible: "+i);
                     loose.transform.position=game.assembly.SlotPosition(i)+Vector3.one;Check(!game.ReleasePiece(i),"Far piece snapped: "+i);
+                    Check(!game.PlacementGhost && game.PlacementSlot == -1,"Released piece left a ghost: "+i);
                     loose.transform.position=game.assembly.SlotPosition(i);Check(game.ReleasePiece(i)&&game.assembly.Complete,"Correct piece failed to snap: "+i);
                 }
                 game.Activate(AtelierAction.Interior);var fire=game.engine.parts.First(p=>p.partId=="M02-D");Check(game.doors.Toggle(fire),"Fire door click failed");
@@ -69,12 +86,16 @@ namespace SwanAtelier.Editor
                 Check(PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android)=="com.picovibe.steamatelier","Package would overwrite old app");
                 Debug.Log("ATELIER_SWAN_CHECKS_PASSED pieces=45 checks=hover-coverage,loose-hover,fps-sampling,fps-pause-reset,hud-pose-mapping,hud-nonblocking,physical-controls,throttle,brake,neutral,reverse,travel-boundary,cutaway,protected-reset,cancel,category,paging,remove,reject,snap,doors,native-text,new-package");
             } catch(Exception e) { failures.Add(e.ToString()); }
-            Finish();
+            if(failures.Count>0) { Finish();return; }
+            // Let deferred Destroy calls from the synchronous checks complete
+            // before capturing the actual assembled cutaway view.
+            game.CompleteAssembly();game.Activate(AtelierAction.Cutaway);game.SetThrottle(.5f);
+            captureAfter=EditorApplication.timeSinceStartup+.5;
         }
         static void CheckHoverAndHud(SwanAtelierController game)
         {
             foreach(var control in game.content.GetComponentsInChildren<AtelierControl>(true)) {
-                Check(control.GetComponent<Collider>()&&control.GetComponent<SpatialAdapterHoverEffect>(),"Control cannot hover: "+control.name);
+                Check(control.GetComponentInChildren<Collider>(true)&&control.GetComponent<SpatialAdapterHoverEffect>(),"Control cannot hover: "+control.name);
                 Check(control.GetComponentsInChildren<MeshRenderer>(true).Any(r=>r.enabled&&!r.GetComponent<TMPro.TMP_Text>()),"Control has no highlight surface: "+control.name);
             }
             foreach(var part in game.content.GetComponentsInChildren<LocomotivePart>(true))

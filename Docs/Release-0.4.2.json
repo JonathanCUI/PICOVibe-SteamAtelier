@@ -1,0 +1,26 @@
+{
+  "versionName": "0.4.2",
+  "versionCode": 16,
+  "apkSha256": "7646BD66BD800C3E9DD8055E88AE6424D240BEAF20B55BD5830C34B784430E1F",
+  "apkBytes": 353706465,
+  "buildPassed": true,
+  "playModePassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "pid": 30874,
+  "activityCount": 1,
+  "launchCommandSucceeded": true,
+  "latestActivityState": "STOPPED",
+  "readyLogObserved": false,
+  "animationParametersAcceptedIn": "0.4.1",
+  "twoHandStartAcceptedIn": "0.4.0",
+  "explosionDistanceMultiplier": 1.4,
+  "animationSeconds": {
+    "quickInstall": 0.22,
+    "assembleAll": 0.28,
+    "explode": 0.28
+  },
+  "maximumAnimationFrameStepSeconds": 0.03333333333333333,
+  "longFrameProtectionTestPassed": true,
+  "notes": "Final patch installed and launch sent. App subsequently paused/backgrounded before READY was captured; no new visual acceptance claimed for this patch. User previously accepted spacing and animation pace in 0.4.1; those parameters are unchanged. First-use resource load latency itself is not eliminated by the progress cap."
+}

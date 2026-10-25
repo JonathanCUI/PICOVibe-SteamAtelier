@@ -17,14 +17,16 @@ namespace SwanAtelier
 
     public sealed partial class SwanAtelierController
     {
-        const double TwoHandJoinDelay = .18;
+        const double TwoHandJoinDelay = .28;
         sealed class Contact
         {
             public long id;
-            public bool down, pending, blocked, ended, canceled, pinch;
+            public bool down, pending, blocked, ended, canceled, pinch, ownsWorkbench;
             public double beganAt;
+            public int loosePiece = -1;
+            public float maxHitTravel;
             public GameObject target;
-            public Vector3 startHit, hit, hand;
+            public Vector3 startHit, startHand, hit, hand;
             public Pointer pointer;
         }
         readonly Dictionary<long, Contact> contacts = new Dictionary<long, Contact>();
@@ -98,14 +100,26 @@ namespace SwanAtelier
                 var sample = gestureSamples.Dequeue();
                 contacts.TryGetValue(sample.id, out var contact);
                 if (sample.phase == TouchPhase.Began && (contact == null || !contact.down)) {
-                    if (!sample.target || !sample.target.transform.IsChildOf(transform)) continue;
+                    var loose = sample.target ? sample.target.GetComponentInParent<SwanAtelierLoosePiece>() : null;
+                    if (!loose || loose.index != quickTapPiece) ClearQuickInstallTap();
+                    bool ownsWorkbench = sample.target && sample.target.transform.IsChildOf(transform);
+                    // A second pinching hand can miss the small model. Retain a
+                    // no-hit hand for pairing, but never turn it into a UI click.
+                    bool emptyPinch = !sample.target && sample.pinch && SwanTwoHandManipulation.Finite(sample.handPosition) && sample.handPosition.sqrMagnitude > .000001f;
+                    if (!ownsWorkbench && !emptyPinch) continue;
                     contact = new Contact { id = sample.id, down = true, pending = true, pinch = sample.pinch,
-                        target = sample.target, startHit = sample.hitPosition, beganAt = now };
+                        target = sample.target, startHit = sample.hitPosition, startHand = sample.handPosition, beganAt = now,
+                        loosePiece = loose ? loose.index : -1, ownsWorkbench = ownsWorkbench };
                     contacts[sample.id] = contact;
-                    Debug.Log("SWAN_ATELIER_INPUT_BEGIN id=" + sample.id + " pinch=" + sample.pinch + " target=" + sample.target.name);
+                    Debug.Log("SWAN_ATELIER_INPUT_BEGIN id=" + sample.id + " pinch=" + sample.pinch + " target=" + (sample.target ? sample.target.name : "no-hit"));
                 }
                 if (contact == null || !contact.down) continue;
+                // A near contact can transition into a pinch without a new Began.
+                // Keep the live interaction kind instead of freezing its first type.
+                if (Down(sample.phase)) contact.pinch = sample.pinch;
+                if (sample.target && sample.target.transform.IsChildOf(transform)) contact.ownsWorkbench = true;
                 contact.hand = sample.handPosition; contact.hit = sample.hitPosition;
+                contact.maxHitTravel = Mathf.Max(contact.maxHitTravel, Vector3.Distance(contact.startHit, contact.hit));
                 if (sample.phase == TouchPhase.Ended || sample.phase == TouchPhase.Canceled) {
                     contact.down = false; contact.ended = true; contact.canceled = sample.phase == TouchPhase.Canceled;
                 }
@@ -117,14 +131,14 @@ namespace SwanAtelier
             Contact a = null, b = null;
             if (TwoHandActive) {
                 contacts.TryGetValue(firstHand, out a); contacts.TryGetValue(secondHand, out b);
-                if (a == null || b == null || !a.down || !b.down) StopTwoHands();
+                if (a == null || b == null || !a.down || !b.down || !a.pinch || !b.pinch) StopTwoHands();
             }
             if (!TwoHandActive) {
                 a = b = null;
                 foreach (var contact in contacts.Values) if (contact.down && contact.pinch) {
                     if (a == null) a = contact; else { b = contact; break; }
                 }
-                if (a != null && b != null) {
+                if (a != null && b != null && (a.ownsWorkbench || b.ownsWorkbench)) {
                     CancelContact(a); CancelContact(b); End(mouse, true); mouse = null;
                     CancelReset(); whistleHeld = false;
                     if (manipulation.Begin(a.hand, b.hand)) {
@@ -150,8 +164,14 @@ namespace SwanAtelier
                 if (!contact.blocked) {
                     if (contact.pending && ((!contact.pinch || now - contact.beganAt >= TwoHandJoinDelay) && contact.down || contact.ended && !contact.canceled))
                         CommitSingle(contact);
-                    if (contact.pointer != null && !contact.canceled) Move(contact.pointer, contact.hit);
-                    if (contact.ended) End(contact.pointer, contact.canceled);
+                    if (contact.pointer != null && !contact.canceled) {
+                        if (contact.pointer.useHandForThrottle) MoveThrottleHand(contact.pointer,contact.hand);
+                        else Move(contact.pointer, contact.hit);
+                    }
+                    if (contact.ended) {
+                        End(contact.pointer, contact.canceled);
+                        RegisterQuickInstallTap(contact, now);
+                    }
                 }
                 if (!contact.down) retiredContacts.Add(contact.id);
             }
@@ -161,10 +181,12 @@ namespace SwanAtelier
         {
             contact.pending = false;
             contact.pointer = Begin(contact.target, contact.startHit);
+            ConfigureThrottleHand(contact.pointer,contact.startHand,contact.pinch);
             pointers[contact.id] = contact.pointer;
         }
         void CancelContact(Contact contact)
         {
+            ClearQuickInstallTap();
             contact.pending = false; contact.blocked = true;
             End(contact.pointer, true); contact.pointer = null; pointers.Remove(contact.id);
         }
@@ -177,10 +199,13 @@ namespace SwanAtelier
         }
         public void ResetSpatialGestures()
         {
+            CancelPartMotions();
+            ClearQuickInstallTap();
             StopTwoHands();
             foreach (var contact in contacts.Values) End(contact.pointer, true);
             contacts.Clear(); pointers.Clear(); gestureSamples.Clear();
             End(mouse, true); mouse = null; if (atelier) CancelReset(); whistleHeld = false;
+            HidePlacementHint();
         }
     }
 }

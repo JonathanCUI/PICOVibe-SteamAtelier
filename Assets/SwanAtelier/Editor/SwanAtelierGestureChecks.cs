@@ -10,7 +10,7 @@ namespace SwanAtelier.Editor
         static void Check(bool value, string message) { if (!value) throw new Exception("Two-hand: " + message); }
         public static void Run(SwanAtelierController game)
         {
-            CheckTransformMath(); CheckInputPriority(game);
+            CheckTransformMath(); CheckInputPriority(game); CheckRelaxedPairing(game);
             Debug.Log("ATELIER_SWAN_GESTURE_CHECKS_PASSED translation,yaw-only,scale-limits,limit-reversal,regrab,degenerate-hands,tracking-jump,pair-priority,slot-order,release-latch,fast-tap,dedup,cancel,reset");
         }
         static void Settle(SwanTwoHandManipulation manipulation, Vector3 a, Vector3 b)
@@ -48,6 +48,7 @@ namespace SwanAtelier.Editor
                 Check(!manipulation.Step(new Vector3(float.NaN,0,0),b,.016f)&&!manipulation.Active,"invalid pose not cancelled");
                 Check(Vector3.Distance(go.transform.position,position)<.0001f,"invalid pose moved scene");
                 Check(!manipulation.Begin(a,a),"coincident hands accepted");
+                Check(manipulation.Begin(midpoint-Vector3.right*.04f,midpoint+Vector3.right*.04f),"8 cm pair rejected");
                 Check(manipulation.Begin(midpoint-Vector3.up*.2f,midpoint+Vector3.up*.2f),"vertical pair rejected");
                 Settle(manipulation,midpoint-Vector3.up*.2f,midpoint+Vector3.up*.2f);
                 Check(Quaternion.Angle(go.transform.rotation,rotation)<.1f,"vertical pair spun scene");
@@ -56,6 +57,43 @@ namespace SwanAtelier.Editor
         }
         static void Send(SwanAtelierController game,long id,TouchPhase phase,GameObject target,Vector3 hand,Vector3 hit)
         { game.QueueGestureSample(new SwanGestureSample{id=id,phase=phase,pinch=true,target=target,handPosition=hand,hitPosition=hit}); }
+        static void CheckRelaxedPairing(SwanAtelierController game)
+        {
+            var control=game.content.GetComponentsInChildren<AtelierControl>(true).First(c=>c.action==AtelierAction.Lights).gameObject;
+            var foreign=new GameObject("Unrelated app target");
+            bool light=game.presentation.lightOn;
+            Vector3 a=new Vector3(-.15f,1,.5f),b=new Vector3(.15f,1,.5f),hit=control.transform.position;
+            try {
+                game.ResetSpatialGestures();
+                Send(game,301,TouchPhase.Began,control,a,hit);game.ProcessGestureFrame(10,.016f);
+                game.ProcessGestureFrame(10.22,.016f);
+                Check(game.presentation.lightOn==light,"button committed before the second hand joining window");
+                Send(game,302,TouchPhase.Began,null,b,Vector3.zero);game.ProcessGestureFrame(10.24,.016f);
+                Check(game.TwoHandActive&&game.presentation.lightOn==light,"no-hit second hand was rejected or clicked button");
+                game.ResetSpatialGestures();
+                Send(game,301,TouchPhase.Began,null,a,Vector3.zero);game.ProcessGestureFrame(11,.016f);
+                Send(game,302,TouchPhase.Began,control,b,hit);game.ProcessGestureFrame(11.2,.016f);
+                Check(game.TwoHandActive,"no-hit first hand was rejected");
+                game.ResetSpatialGestures();
+                Send(game,301,TouchPhase.Began,null,a,Vector3.zero);Send(game,302,TouchPhase.Began,null,b,Vector3.zero);game.ProcessGestureFrame(12,.016f);
+                Check(!game.TwoHandActive,"two unrelated empty pinches grabbed the stage");
+                game.ResetSpatialGestures();
+                Send(game,301,TouchPhase.Began,control,a,hit);Send(game,302,TouchPhase.Began,foreign,b,hit);game.ProcessGestureFrame(13,.016f);
+                Check(!game.TwoHandActive,"foreign target joined the stage gesture");
+                game.ResetSpatialGestures();
+                game.QueueGestureSample(new SwanGestureSample{id=301,phase=TouchPhase.Began,pinch=false,target=control,handPosition=a,hitPosition=hit});
+                Send(game,302,TouchPhase.Began,control,b,hit);game.ProcessGestureFrame(14,.016f);
+                Send(game,301,TouchPhase.Moved,control,a,hit);game.ProcessGestureFrame(14.04,.016f);
+                Check(game.TwoHandActive,"touch-to-pinch transition did not join the gesture");
+                game.QueueGestureSample(new SwanGestureSample{id=301,phase=TouchPhase.Moved,pinch=false,target=control,handPosition=a,hitPosition=hit});
+                game.ProcessGestureFrame(14.08,.016f);
+                Check(!game.TwoHandActive,"changing from pinch to touch left two-hand manipulation running");
+                Debug.Log("ATELIER_SWAN_RELAXED_PAIR_CHECKS_PASSED late-second,no-hit-first,no-hit-second,unowned-rejected,foreign-rejected,live-pinch-type");
+            } finally {
+                game.ResetSpatialGestures();UnityEngine.Object.DestroyImmediate(foreign);
+                if(game.presentation.lightOn!=light)game.presentation.ToggleHeadlight();
+            }
+        }
         static void CheckInputPriority(SwanAtelierController game)
         {
             Vector3 origin=game.transform.position,scale=game.transform.localScale;Quaternion rotation=game.transform.rotation;

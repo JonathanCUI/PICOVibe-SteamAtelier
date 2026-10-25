@@ -1,0 +1,39 @@
+{
+  "versionName": "0.4.1",
+  "versionCode": 15,
+  "apkSha256": "CAF66B2749009A0C1FFC7986A75153FD2AA0CB4C940B4693D0513A00C8DCF894",
+  "apkBytes": 353711033,
+  "buildPassed": true,
+  "playModePassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "pid": 28695,
+  "activityCount": 1,
+  "stageStyle": "Mixed",
+  "explosionDistanceMultiplier": 1.4,
+  "animationSeconds": {
+    "assembleAll": 0.28,
+    "explode": 0.28,
+    "quickInstall": 0.22
+  },
+  "nativeObserved": {
+    "explode": true,
+    "assemble": true,
+    "quickInstall": true,
+    "ready": true
+  },
+  "crashBufferMessages": 0,
+  "screenshot": "Builds/Releases/0.4.1/v041-spatial-startup.png",
+  "userAcceptance": {
+    "explosionSpacing": true,
+    "feedback": "距离和动画节奏都合适",
+    "animationPacing": true
+  },
+  "notes": "User accepted explosion spacing and animation pacing. 0.4.2 preserves these parameters and adds a frame-progress cap after a one-time 1.217-second first-expansion outlier.",
+  "firstExplodeSeconds": 1.217,
+  "subsequentExplodeSeconds": [
+    0.284,
+    0.289,
+    0.282
+  ]
+}

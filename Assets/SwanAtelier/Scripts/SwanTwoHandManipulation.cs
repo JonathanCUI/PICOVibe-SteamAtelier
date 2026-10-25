@@ -26,7 +26,7 @@ namespace SwanAtelier
         public bool Begin(Vector3 a, Vector3 b)
         {
             End();
-            if (!Finite(a) || !Finite(b) || Vector3.Distance(a, b) < .10f) return false;
+            if (!Finite(a) || !Finite(b) || Vector3.Distance(a, b) < .07f) return false;
             previousA = a; previousB = b; previousDistance = Vector3.Distance(a, b);
             previousPlanar = Vector3.ProjectOnPlane(b - a, Vector3.up);
             hasPlanar = previousPlanar.sqrMagnitude >= .0025f;
@@ -40,7 +40,7 @@ namespace SwanAtelier
         {
             if (!Active) return false;
             if (!Finite(a) || !Finite(b) || !Finite(dt) || dt < 0 ||
-                Vector3.Distance(a, b) < .06f ||
+                Vector3.Distance(a, b) < .045f ||
                 Vector3.Distance(a, previousA) > .4f || Vector3.Distance(b, previousB) > .4f) {
                 End(); return false;
             }
