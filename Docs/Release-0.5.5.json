@@ -1,0 +1,31 @@
+{
+  "versionName": "0.5.5",
+  "versionCode": 23,
+  "package": "com.picovibe.steamatelier",
+  "apkSha256": "E0E1C774299A6D0E832CAB3C41A7417D1A1C81F44125C0E184B80ED2DABF4536",
+  "buildPassed": true,
+  "playModePassed": true,
+  "packagedGhostsPassed": true,
+  "packagedCutawayPassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "physicalExperienceAccepted": false,
+  "physicalTableDataObserved": false,
+  "snapEventObserved": false,
+  "stickyLiftEventObserved": false,
+  "userAcceptance": "User confirms controls work but still cannot snap. Deferred PXR initialization and stage-ready logs observed, but mesh callbacks remain zero after first wake. Startup timing change alone did not resolve sensing.",
+  "sourceSceneSha256": "78A1742499AD24908927ABA09F0C72B7D8F6A23796AFBEEDAAEC5B9F3F833070",
+  "changes": [
+    "Public XR Management manual initialization after Start, focus and SpatialCamera, same PXR Spatial loader, owned cleanup",
+    "Mesh sensing waits for public input-stage readiness",
+    "Three 15-point footprint groups: centre plus minimum 80% support per group",
+    "Keeps 5cm edge tolerance, 3cm height tolerance, 6.5cm snap and 5.5cm sticky lift",
+    "Immediate single-hand move handle, preserves second-hand takeover"
+  ],
+  "evidence": [
+    "Builds/Evidence/device-v055-tabletop.log",
+    "Builds/Evidence/v055-packaged-ghosts.json",
+    "Builds/Evidence/v055-packaged-cutaway.json",
+    "Builds/SwanAtelier/playmode-checks.json"
+  ]
+}

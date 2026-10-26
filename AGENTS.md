@@ -13,3 +13,4 @@
 - Android 构建成功和编辑器逻辑检查不代表眼动、捏合、头部跟随已通过真机验证。设备未连接时，交付 APK 并准确标记未验证事项。
 
 - FPS 当前为 SwanFpsMeshText 的普通网格字形（SwanFpsMeshBuilder 生成），不能回退到先前视觉跟随失败的 NativeText HUD。头部位置在 Update 中直接作用于可见网格根节点；Unity XR 姿态直接使用，不重复套用原生导出坐标逆变换。仅启用 PXR_Loader，且 `isSpatialAdapter=true`；不要切成普通 XR 渲染。`SwanSpatialInputMode` 只在 Android Player 调用公开模式同步方法，防止编辑器访问 JNI。保持真机验收与代码检查分开记录。
+- 0.5.5 将 PXR_Loader 初始化延后至 Spatial 场景启动后：`XRGeneralSettings.InitManagerOnStart=false`，由 `SwanSpatialInputMode` 在 Start 后一帧且应用获焦点后通过公开 XR Management API 初始化、启动，并负责销毁时清理。桌面感知等待其 Ready。不要恢复 BeforeSplash 自动初始化而丢失已记录的休眠启动问题背景；实际验收状态见 `Docs/Release-0.5.5.json`。

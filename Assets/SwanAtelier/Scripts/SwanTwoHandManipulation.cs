@@ -11,6 +11,7 @@ namespace SwanAtelier
         public bool Active { get; private set; }
         public float Scale => target.localScale.x / originalScale.x;
         readonly Transform target;
+        readonly SwanTabletopPlacement tabletop;
         readonly Vector3 originalScale;
         Vector3 previousA, previousB, desiredPosition, previousPlanar;
         Quaternion desiredRotation;
@@ -20,6 +21,7 @@ namespace SwanAtelier
         public SwanTwoHandManipulation(Transform target)
         {
             this.target = target;
+            tabletop = target.GetComponent<SwanTabletopPlacement>();
             originalScale = target.localScale;
         }
 
@@ -33,6 +35,7 @@ namespace SwanAtelier
             desiredPosition = target.position; desiredRotation = target.rotation;
             desiredScale = Mathf.Clamp(Scale, MinimumScale, MaximumScale);
             Active = true;
+            if(tabletop) tabletop.BeginManipulation();
             return true;
         }
 
@@ -46,7 +49,8 @@ namespace SwanAtelier
             }
             // Translation uses the two-hand midpoint. Rotation and scale keep the
             // workbench's own centre fixed, so a turn cannot make it orbit the user.
-            desiredPosition += (a + b - previousA - previousB) * .5f;
+            Vector3 handDelta=(a + b - previousA - previousB) * .5f;
+            desiredPosition += handDelta;
             Vector3 planar = Vector3.ProjectOnPlane(b - a, Vector3.up);
             bool usablePlanar = planar.sqrMagnitude >= .0025f;
             if (hasPlanar && usablePlanar)
@@ -58,12 +62,21 @@ namespace SwanAtelier
             desiredScale = Mathf.Clamp(desiredScale * distance / previousDistance, MinimumScale, MaximumScale);
             previousA = a; previousB = b; previousDistance = distance;
             float blend = 1 - Mathf.Exp(-28 * Mathf.Min(dt, .1f));
-            target.SetPositionAndRotation(Vector3.Lerp(target.position, desiredPosition, blend), Quaternion.Slerp(target.rotation, desiredRotation, blend));
-            target.localScale = originalScale * Mathf.Clamp(Mathf.Lerp(Scale, desiredScale, blend), MinimumScale, MaximumScale);
+            var position=Vector3.Lerp(target.position, desiredPosition, blend);
+            var rotation=Quaternion.Slerp(target.rotation, desiredRotation, blend);
+            var scale=originalScale*Mathf.Clamp(Mathf.Lerp(Scale,desiredScale,blend),MinimumScale,MaximumScale);
+            if(tabletop) {
+                bool wasAttached=tabletop.Attached;
+                tabletop.ApplyPose(position,rotation,scale,handDelta,Time.unscaledTime);
+                // Rebase blocked motion immediately so resistance never builds a
+                // hidden position/scale offset that snaps back on release.
+                if(wasAttached||tabletop.Attached) desiredPosition=target.position;
+                if(tabletop.TooLarge) {desiredRotation=target.rotation;desiredScale=Scale;}
+            } else {target.SetPositionAndRotation(position,rotation);target.localScale=scale;}
             return true;
         }
 
-        public void End() { Active = false; }
+        public void End() { if(Active&&tabletop) tabletop.EndManipulation();Active = false; }
         static bool Finite(float v) => !float.IsNaN(v) && !float.IsInfinity(v);
         public static bool Finite(Vector3 v) => Finite(v.x) && Finite(v.y) && Finite(v.z);
     }

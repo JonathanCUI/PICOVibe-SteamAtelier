@@ -1,0 +1,35 @@
+{
+  "versionName": "0.5.4",
+  "versionCode": 22,
+  "package": "com.picovibe.steamatelier",
+  "apkSha256": "06011F606FF10840358F4B70F3D19EA857CA565FC38B1E8F56C1D82022922526",
+  "apkBytes": 353956709,
+  "buildPassed": true,
+  "playModePassed": true,
+  "packagedGhostsPassed": true,
+  "packagedCutawayPassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "sourceSceneSha256": "78A1742499AD24908927ABA09F0C72B7D8F6A23796AFBEEDAAEC5B9F3F833070",
+  "physicalExperienceAccepted": false,
+  "physicalTableDataObserved": true,
+  "snapEventObserved": true,
+  "stickyLiftEventObserved": false,
+  "userAcceptance": "Initial launch and asleep restart gave zero mesh callbacks; awake restart PID 18812 restored scanning. Attach event occurred 23:49:17 at height 0.551m, but coverage remained unreliable (39-43/45 with tolerance). Sticky lift not accepted by user.",
+  "changes": [
+    "Bounded 5cm scan support tolerance and 3cm coplanar tolerance, all 45 supports still checked",
+    "3.5cm seam tolerance at contact centre, unchanged 6.5cm snap distance and 5.5cm lift threshold",
+    "Move handle starts immediately, second hand can still take over",
+    "Table grab/resistance/release telemetry and lift progress hint"
+  ],
+  "knownLimitations": [
+    "0.5.3 and 0.5.4 initial launches have shown no mesh callbacks; normal restart recovered 0.5.3, stable recovery not yet established",
+    "App update Hz is not native compositor FPS"
+  ],
+  "evidence": [
+    "Builds/Evidence/device-v054-tabletop.log",
+    "Builds/Evidence/v054-packaged-ghosts.json",
+    "Builds/Evidence/v054-packaged-cutaway.json",
+    "Builds/SwanAtelier/playmode-checks.json"
+  ]
+}

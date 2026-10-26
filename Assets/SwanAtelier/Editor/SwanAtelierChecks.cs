@@ -45,6 +45,7 @@ namespace SwanAtelier.Editor
                 SwanQuickInstallChecks.Run(game);
                 SwanExplodedViewChecks.Run(game);
                 SwanConsoleChecks.Run(game);
+                SwanTabletopChecks.Run(game);
                 var runtimeSettings = new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
                 var defaultCamera = runtimeSettings.FindProperty("m_defaultSpatialCameraConfiguration").objectReferenceValue;
                 Check(defaultCamera == UnityEngine.Object.FindObjectOfType<ByteDance.PICO.SpatialAdapter.SpatialCamera>().OutputConfiguration,"Launch container differs from scene camera");
@@ -107,7 +108,7 @@ namespace SwanAtelier.Editor
             Check(!game.GetComponent<SpatialAdapterHoverEffect>()&&!game.content.GetComponent<SpatialAdapterHoverEffect>(),"Whole stage should not glow for a single target");
             var hud=UnityEngine.Object.FindObjectOfType<SwanFrameRateHud>();Check(hud&&hud.meshText,"FPS HUD missing");
             var xr=UnityEditor.XR.Management.XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
-            Check(xr&&xr.InitManagerOnStart&&xr.Manager.activeLoaders.Count==1&&xr.Manager.activeLoaders[0] is ByteDance.PICO.XR.PXR_Loader,"Spatial input provider is not enabled exclusively");
+            Check(xr&&!xr.InitManagerOnStart&&xr.Manager.activeLoaders.Count==1&&xr.Manager.activeLoaders[0] is ByteDance.PICO.XR.PXR_Loader,"Spatial input provider must initialize after Stage with only PICO loader");
             Check(ByteDance.PICO.XR.PXR_ProjectSetting.GetProjectConfig().isSpatialAdapter,"PICO loader must stay in Spatial mode");
             Check(UnityEngine.Object.FindObjectOfType<SwanSpatialInputMode>(),"Stage/input mode synchronizer missing");
             Check(hud.GetComponentsInChildren<Collider>(true).Length==0,"FPS HUD blocks interactions");

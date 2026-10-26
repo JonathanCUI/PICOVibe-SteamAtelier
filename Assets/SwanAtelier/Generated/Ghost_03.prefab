@@ -94,8 +94,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8706537396577333039}
-  - component: {fileID: 5973785294670023430}
-  - component: {fileID: 7290475920856520004}
+  - component: {fileID: 6991426204570596213}
+  - component: {fileID: 4378307511947026559}
   m_Layer: 2
   m_Name: Ghost_03
   m_TagString: Untagged
@@ -119,7 +119,7 @@ Transform:
   - {fileID: 8286395933743309909}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5973785294670023430
+--- !u!114 &6991426204570596213
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,8 +131,8 @@ MonoBehaviour:
   m_Script: {fileID: -292094107, guid: a2005d26a7dfb4db3952cf9ed3794675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_prefabId: 110020
---- !u!114 &7290475920856520004
+  m_prefabId: 110034
+--- !u!114 &4378307511947026559
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

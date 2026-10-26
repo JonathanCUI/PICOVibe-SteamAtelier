@@ -21,7 +21,7 @@ namespace SwanAtelier
         sealed class Contact
         {
             public long id;
-            public bool down, pending, blocked, ended, canceled, pinch, ownsWorkbench;
+            public bool down, pending, blocked, ended, canceled, pinch, ownsWorkbench, stageHandle;
             public double beganAt;
             public int loosePiece = -1;
             public float maxHitTravel;
@@ -110,6 +110,8 @@ namespace SwanAtelier
                     contact = new Contact { id = sample.id, down = true, pending = true, pinch = sample.pinch,
                         target = sample.target, startHit = sample.hitPosition, startHand = sample.handPosition, beganAt = now,
                         loosePiece = loose ? loose.index : -1, ownsWorkbench = ownsWorkbench };
+                    var utility=sample.target ? sample.target.GetComponentInParent<SwanAtelierTarget>() : null;
+                    contact.stageHandle=utility&&utility.moveStage;
                     contacts[sample.id] = contact;
                     Debug.Log("SWAN_ATELIER_INPUT_BEGIN id=" + sample.id + " pinch=" + sample.pinch + " target=" + (sample.target ? sample.target.name : "no-hit"));
                 }
@@ -162,11 +164,14 @@ namespace SwanAtelier
             retiredContacts.Clear();
             foreach (var contact in contacts.Values) {
                 if (!contact.blocked) {
-                    if (contact.pending && ((!contact.pinch || now - contact.beganAt >= TwoHandJoinDelay) && contact.down || contact.ended && !contact.canceled))
+                    // The move handle has no click action to protect. Start it
+                    // immediately; a second hand can still take over below. The
+                    // pairing delay otherwise feels sticky even away from tables.
+                    if (contact.pending && ((!contact.pinch || contact.stageHandle || now - contact.beganAt >= TwoHandJoinDelay) && contact.down || contact.ended && !contact.canceled))
                         CommitSingle(contact);
                     if (contact.pointer != null && !contact.canceled) {
                         if (contact.pointer.useHandForThrottle) MoveThrottleHand(contact.pointer,contact.hand);
-                        else Move(contact.pointer, contact.hit);
+                        else Move(contact.pointer, contact.pointer.moveStage&&contact.pinch ? contact.hand : contact.hit);
                     }
                     if (contact.ended) {
                         End(contact.pointer, contact.canceled);
@@ -182,6 +187,8 @@ namespace SwanAtelier
             contact.pending = false;
             contact.pointer = Begin(contact.target, contact.startHit);
             ConfigureThrottleHand(contact.pointer,contact.startHand,contact.pinch);
+            if(contact.pointer!=null&&contact.pointer.moveStage&&contact.pinch)
+                contact.pointer.lastStageInput=contact.startHand;
             pointers[contact.id] = contact.pointer;
         }
         void CancelContact(Contact contact)

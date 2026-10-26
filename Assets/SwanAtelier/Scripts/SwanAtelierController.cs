@@ -21,6 +21,7 @@ namespace SwanAtelier
         public Camera previewCamera;
         public Transform content, socket;
         public SpatialAdapterNativeText help;
+        public SwanTabletopPlacement tabletop;
         public bool Ready { get; private set; }
         public string Message { get; private set; }
         public int selected = -1;
@@ -37,7 +38,7 @@ namespace SwanAtelier
             public AtelierControl control;
             public LocomotivePart part;
             public int piece = -1;
-            public Vector3 start, objectStart;
+            public Vector3 start, objectStart, lastStageInput;
             public float initialThrottle;
             public bool useHandForThrottle;
             public Vector3 startHand, throttleLiftAxis, throttlePushAxis;
@@ -56,6 +57,7 @@ namespace SwanAtelier
             CompleteAssembly(); Application.targetFrameRate = 90;
             foreach (var audio in engine.locomotive.GetComponentsInChildren<AudioSource>(true)) { audio.minDistance = .25f; audio.maxDistance = 6; }
             manipulation = new SwanTwoHandManipulation(transform);
+            if(tabletop) tabletop.Feedback=SetMessage;
             Ready = true; SetMessage("双手捏合：移动 · 旋转 · 缩放。单手捏住零件向外拉可拆下。");
             Debug.Log("SWAN_ATELIER_READY pieces=" + assembly.pieces.Length);
         }
@@ -252,14 +254,15 @@ namespace SwanAtelier
             if (atelier.speedText) atelier.speedText.text = drive.SpeedKmh.ToString("00.0") + " km/h";
             if (atelier.pressureText) atelier.pressureText.text = atelier.pressure.ToString("0.0") + " bar";
             string value = "蒸汽工坊·新版  |  " + assembly.InstalledCount + " / " + assembly.pieces.Length + "\n" +
-                (resetHeld ? "保持捏合：" + Mathf.Clamp01(atelier.resetProgress / 1.2f).ToString("P0") : Message);
+                (resetHeld ? "保持捏合：" + Mathf.Clamp01(atelier.resetProgress / 1.2f).ToString("P0") : Message) +
+                (tabletop ? "\n"+tabletop.Hint : "");
             if (help && value != oldHelp) { help.Text = value; oldHelp = value; }
         }
         Pointer Begin(GameObject hit, Vector3 position)
         {
             if (!hit) return null;
             var utility = hit.GetComponentInParent<SwanAtelierTarget>();
-            if (utility) { if (utility.explodeAll) { ExplodeAllPieces(); return null; } if (!utility.moveStage) { CompleteAssemblyAnimated(); return null; } return new Pointer { moveStage = true, start = position, objectStart = transform.position }; }
+            if (utility) { if (utility.explodeAll) { ExplodeAllPieces(); return null; } if (!utility.moveStage) { CompleteAssemblyAnimated(); return null; } if(tabletop)tabletop.BeginManipulation(); return new Pointer { moveStage = true, start = position, objectStart = transform.position, lastStageInput=position }; }
             if (batchMotion) return null;
             var control = hit.GetComponentInParent<AtelierControl>();
             if (control)
@@ -291,7 +294,13 @@ namespace SwanAtelier
         {
             if (p == null || !p.active) return;
             Vector3 delta = Vector3.ClampMagnitude(position - p.start, 2);
-            if (p.moveStage) { transform.position = p.objectStart + delta; return; }
+            if (p.moveStage) {
+                Vector3 movement=position-p.lastStageInput;p.lastStageInput=position;
+                if(!SwanTwoHandManipulation.Finite(movement)||movement.magnitude>.4f) return;
+                if(tabletop) tabletop.ApplyPose(transform.position+movement,transform.rotation,transform.localScale,movement,Time.unscaledTime);
+                else transform.position=p.objectStart+delta;
+                return;
+            }
             if (p.control && p.control.action == AtelierAction.Throttle) { SetThrottle(p.initialThrottle + Vector3.Dot(delta, transform.up) / .16f); return; }
             if (p.piece < 0) return;
             if (!p.dragging && delta.magnitude > .025f) { TakePiece(p.piece); p.dragging = true; }
@@ -302,6 +311,7 @@ namespace SwanAtelier
         void End(Pointer p, bool cancel)
         {
             if (p == null || !p.active) return; p.active = false;
+            if(p.moveStage&&tabletop) tabletop.EndManipulation();
             if (p.piece >= 0) { if (p.dragging) ReleasePiece(p.piece, cancel); else if (!cancel && p.part) doors.Toggle(p.part); }
             if (p.control && p.control.action == AtelierAction.Assembly) CancelReset();
             if (p.control && p.control.action == AtelierAction.Whistle) whistleHeld = false;
@@ -318,7 +328,11 @@ namespace SwanAtelier
             if (input.leftButton.wasReleasedThisFrame) { End(mouse, false); mouse = null; }
         }
 #endif
-        void OnApplicationPause(bool paused) { inputPaused = paused; if (paused && Ready) { StopImmediately(); ResetSpatialGestures(); } }
+        void OnApplicationPause(bool paused) {
+            inputPaused = paused;
+            Debug.Log("SWAN_ATELIER_INPUT_LIFECYCLE paused="+paused);
+            if (paused && Ready) { StopImmediately(); ResetSpatialGestures(); }
+        }
         void OnDestroy() { if (secondLens) Destroy(secondLens); }
     }
 }

@@ -84,6 +84,7 @@ namespace SwanAtelier.Editor
             ConfigureSteam(thermal, display);
             // Hidden source meshes must not be re-exported alongside their optimized replacements.
             RemoveHiddenMeshes(content);
+            ConfigureTabletop(game,atelierRoot);
             var protectedTransforms = new HashSet<Transform> { display, engine.locomotive, content, atelierRoot };
             var protectedRenderers = new HashSet<Renderer>();
             foreach (var component in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>(true)) {
@@ -123,10 +124,10 @@ namespace SwanAtelier.Editor
                 .Where(r=>r.GetComponentInParent<LocomotivePart>()));
             var brass=Material("Swan brass",new Color(.7f,.42f,.16f),.75f,.6f);
             game.socket=Shape("装配接口",stage.transform,PrimitiveType.Sphere,brass,Vector3.zero,Vector3.one*.018f).transform; game.socket.gameObject.SetActive(false);
-            game.help=Text(stage.transform,new Vector3(0,.56f,0),"蒸汽工坊·新版 · 45 个部件",14,new Vector2(1.3f,.13f),new Color(1,.88f,.68f));
+            game.help=Text(stage.transform,new Vector3(0,.56f,0),"蒸汽工坊·新版 · 45 个部件",14,new Vector2(1.3f,.20f),new Color(1,.88f,.68f));
             for(int button=0;button<3;button++) {
                 bool explode=button==0,move=button==2;
-                Vector3 position=new Vector3(-.81f+button*.54f,-.15f,-.64f); string label=explode?"一键拆开":move?"捏住移动展台":"全部装好";
+                Vector3 position=new Vector3(-.81f+button*.54f,Mathf.Max(-.15f,game.tabletop.baseHeight+.045f),-.64f); string label=explode?"一键拆开":move?"捏住移动展台":"全部装好";
                 var go=Shape(label,stage.transform,PrimitiveType.Cube,brass,position,new Vector3(.48f,.055f,.025f));
                 go.AddComponent<BoxCollider>(); var target=go.AddComponent<SwanAtelierTarget>(); target.moveStage=move; target.explodeAll=explode;
                 Text(stage.transform,position+Vector3.back*.016f,label,13,new Vector2(.47f,.05f),Color.white);
@@ -397,7 +398,7 @@ namespace SwanAtelier.Editor
         static void Configure()
         {
             PlayerSettings.companyName = "PICO Vibe"; PlayerSettings.productName = "蒸汽工坊·新版";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.picovibe.steamatelier"); PlayerSettings.bundleVersion = "0.4.3"; PlayerSettings.Android.bundleVersionCode = 17;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.picovibe.steamatelier"); PlayerSettings.bundleVersion = "0.5.6"; PlayerSettings.Android.bundleVersionCode = 24;
             // Match the SDK's default launch container to the explicit scene camera.
             // The SDK manifest processor derives the launch metadata from this setting.
             var runtimeSettings = new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
@@ -416,13 +417,14 @@ namespace SwanAtelier.Editor
             // PICO_MS_SDK makes this loader initialize Spatial's input subsystem only;
             // SpatialAdapter still owns native rendering. ARCore remains disabled.
             var picoConfig=PXR_ProjectSetting.GetProjectConfig();picoConfig.isSpatialAdapter=true;
+            picoConfig.spatialMesh=true;
             picoConfig.arFoundation=false;picoConfig.openMRC=false;EditorUtility.SetDirty(picoConfig);
             var xr = UnityEditor.XR.Management.XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
             if (!xr || !xr.Manager) throw new Exception("Android XR manager settings missing");
             foreach(var loader in xr.Manager.activeLoaders.ToArray()) if(!(loader is PXR_Loader))xr.Manager.TryRemoveLoader(loader);
             if(!UnityEditor.XR.Management.Metadata.XRPackageMetadataStore.AssignLoader(xr.Manager,"ByteDance.PICO.XR.PXR_Loader",BuildTargetGroup.Android))
                 throw new Exception("Could not configure PICO Spatial input loader");
-            xr.InitManagerOnStart=true;xr.Manager.automaticLoading=true;xr.Manager.automaticRunning=true;
+            xr.InitManagerOnStart=false;xr.Manager.automaticLoading=false;xr.Manager.automaticRunning=false;
             EditorUtility.SetDirty(xr);EditorUtility.SetDirty(xr.Manager);
         }
         static void Preview(Camera camera)

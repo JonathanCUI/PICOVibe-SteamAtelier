@@ -134,6 +134,16 @@ namespace SwanAtelier.Editor
                 Send(game,11,TouchPhase.Moved,part,a+Vector3.up*.1f,hit);Send(game,22,TouchPhase.Moved,part,b+Vector3.up*.1f,hit);
                 game.ProcessGestureFrame(5,.016f);
                 Check(!game.TwoHandActive&&Vector3.Distance(stopped,game.transform.position)<.0001f,"pause/reset resumed stale grip");
+                // An airborne move handle must react before the 0.28 s pairing
+                // window, while still handing ownership to a second pinching hand.
+                game.ResetSpatialGestures();
+                var handle=game.GetComponentsInChildren<SwanAtelierTarget>(true).First(t=>t.moveStage).gameObject;
+                stopped=game.transform.position;hit=handle.transform.position;
+                Send(game,31,TouchPhase.Began,handle,a,hit);game.ProcessGestureFrame(6,.016f);
+                Send(game,31,TouchPhase.Moved,handle,a+Vector3.up*.03f,hit);game.ProcessGestureFrame(6.05,.016f);
+                Check(game.transform.position.y>stopped.y+.029f,"Move handle still waits or resists away from a table");
+                Send(game,32,TouchPhase.Began,handle,b,hit);game.ProcessGestureFrame(6.1,.016f);
+                Check(game.TwoHandActive,"Immediate move handle prevented two-hand takeover");
             } finally {
                 game.ResetSpatialGestures();game.transform.SetPositionAndRotation(origin,rotation);game.transform.localScale=scale;
                 if(game.presentation.lightOn!=light)game.presentation.ToggleHeadlight();

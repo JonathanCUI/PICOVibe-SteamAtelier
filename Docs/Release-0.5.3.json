@@ -1,0 +1,24 @@
+{
+  "versionName": "0.5.3",
+  "versionCode": 21,
+  "package": "com.picovibe.steamatelier",
+  "apkSha256": "FD3D56171E175E4BF5132262CC4B70F4074D368BB2501E21DAE1742EF76FAC6C",
+  "buildPassed": true,
+  "playModePassed": true,
+  "packagedGhostsPassed": true,
+  "packagedCutawayPassed": true,
+  "installed": true,
+  "device": "PB3A10MGL9240036B",
+  "permissionGrantedByUser": true,
+  "physicalTableDataObserved": true,
+  "snapEventObserved": true,
+  "physicalStickyLiftAccepted": false,
+  "physicalExperienceAccepted": false,
+  "diagnosis": "At visible tabletop pose, base=0.561m, detected height=0.552m; direct support coverage fluctuated 37-44/45. First attachment arrived about 23 seconds later at height 0.548m. User reports no clear two-hand resistance, and a single-hand start delay even away from table.",
+  "startupLimitation": "First install launch had no mesh callbacks; normal app restart restored them. No claim of resolving this intermittent startup issue.",
+  "evidence": [
+    "Builds/Evidence/device-v053-tabletop.log",
+    "Builds/Evidence/device-v053-lift.log",
+    "Builds/Evidence/v053-tabletop-not-snapping.png"
+  ]
+}
