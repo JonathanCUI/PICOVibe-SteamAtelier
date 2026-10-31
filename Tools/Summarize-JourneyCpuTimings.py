@@ -30,12 +30,19 @@ def summarize(text):
                         'twoHandFrames': int(fields['twoHandFrames']),
                         'lateRecordedMs': None if fields.get('lateRecordedMs') == 'unavailable' else float(fields['lateRecordedMs']),
                         'measuredCallbackMs': float(fields['measuredCallbackMs']), 'stages': stages})
+        for state in ('installed', 'verify', 'inspection', 'rolling'):
+            if state in fields:
+                windows[-1][state] = fields[state]
         if 'elapsedSeconds' in fields:
             windows[-1].update(elapsedSeconds=float(fields['elapsedSeconds']), unityFps=float(fields['unityFps']),
                                longestFrameMs=float(fields['longestFrameMs']), framesAtLeast50ms=int(fields['framesAtLeast50ms']))
     groups = []
-    for mode, phase in sorted({(w['mode'], w['phase']) for w in windows}):
-        selected = [w for w in windows if w['mode'] == mode and w['phase'] == phase]
+    states = ('mode', 'phase', 'installed', 'verify', 'inspection', 'rolling')
+    def group_key(window):
+        return tuple(window.get(key, '') for key in states)
+    for state in sorted({group_key(w) for w in windows}):
+        selected = [w for w in windows if group_key(w) == state]
+        mode, phase = state[:2]
         frames = sum(w['frames'] for w in selected)
         stages = []
         for name in {name for w in selected for name in w['stages']}:
@@ -46,6 +53,7 @@ def summarize(text):
                            'calls': sum(w['stages'][name]['calls'] for w in present)})
         groups.append({'mode': mode, 'phase': phase, 'windows': len(selected), 'frames': frames,
                        'stages': sorted(stages, key=lambda s: s['meanMsPerFrame'], reverse=True)})
+        groups[-1].update({key: value for key, value in zip(states[2:], state[2:]) if value})
         timed = [w for w in selected if 'elapsedSeconds' in w]
         if timed:
             groups[-1].update(timedWindows=len(timed),

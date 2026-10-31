@@ -88,7 +88,7 @@ namespace SwanJourney.Editor
                 Check(flow.ActiveFieldCount == 1 && flow.RepresentedFieldCount == 1,
                     "Exactly the advanced source path is represented", report);
                 Check(flow.ActiveMarkerCount <= SwanJourneyFlowParticles.SamplesPerField,
-                    "One source uses at most 12 sparse samples", report);
+                    "One source uses at most four sparse samples", report);
                 Check(flow.markers.Count(r => r.enabled && r.gameObject.activeInHierarchy) == flow.ActiveMarkerCount,
                     "Active count matches actual enabled output renderers", report);
                 ValidateSourceMapping(flow, system, particles, count, field.tint, report);
@@ -159,7 +159,7 @@ namespace SwanJourney.Editor
 
         static void Refresh(SwanJourneyFlowParticles flow, ParticleSystem source)
         {
-            source.GetComponent<ParticleSystemRenderer>().enabled = true;
+            if (source.GetComponent<ParticleSystemRenderer>().enabled) throw new InvalidOperationException("Native flow must have only one drawing owner");
             var refresh = typeof(SwanJourneyFlowParticles).GetField("nextRefresh", BindingFlags.Instance | BindingFlags.NonPublic);
             if (refresh == null) throw new MissingFieldException(typeof(SwanJourneyFlowParticles).FullName, "nextRefresh");
             refresh.SetValue(flow, float.NegativeInfinity);

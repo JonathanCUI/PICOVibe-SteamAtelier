@@ -56,7 +56,10 @@ public sealed partial class SteamJourney {
  void ValveMist(Renderer r,float a,float b,float density,bool exhaust){
   int index=Array.IndexOf(valveMist,r);float dt=paused?0:Mathf.Min(Time.deltaTime,.05f)*(slow?.25f:1);
   valveDensity[index]=Mathf.Lerp(valveDensity[index],density,1-Mathf.Exp(-dt*2));valveVent[index]=Mathf.Lerp(valveVent[index],exhaust?1:0,1-Mathf.Exp(-dt*2));
-  r.enabled=!inSandbox&&cutaway&&modules[4].installed&&b>a;r.transform.localPosition=new Vector3((a+b)*.5f,1.08f,1.085f);r.transform.localScale=new Vector3(Mathf.Max(.001f,b-a),.225f,.225f);
+  bool visible=!inSandbox&&cutaway&&modules[4].installed&&b>a;
+  if(r.enabled!=visible)r.enabled=visible;
+  if(SwanInputActive&&!visible)return;
+  r.transform.localPosition=new Vector3((a+b)*.5f,1.08f,1.085f);r.transform.localScale=new Vector3(Mathf.Max(.001f,b-a),.225f,.225f);
   var block=valveFxBlock??(valveFxBlock=new MaterialPropertyBlock());block.Clear();block.SetFloat("_Density",valveDensity[index]);block.SetFloat("_Front",Mathf.Clamp01(valveDensity[index]/.3f));block.SetFloat("_FlowTime",FlowTime);block.SetFloat("_Direction",index==2?-1:1);block.SetFloat("_Exhaust",valveVent[index]);r.SetPropertyBlock(block);
  }
  void Pneumatics(float dt){
@@ -76,8 +79,8 @@ public sealed partial class SteamJourney {
  }
  void UpdateInspection(){
   bool ghost=!inSandbox&&cutaway&&inspectionMode==1;
-  if(inspectionGhosts!=null)foreach(var pair in inspectionGhosts){bool show=ghost&&pair.source&&pair.source.gameObject.activeInHierarchy;if(pair.hull)pair.hull.enabled=show;if(pair.edges)pair.edges.enabled=show;}
-  if(inspectionBores!=null)foreach(var r in inspectionBores)if(r)r.enabled=!ghost;
+  if(inspectionGhosts!=null)foreach(var pair in inspectionGhosts){bool show=ghost&&pair.source&&pair.source.gameObject.activeInHierarchy;if(pair.hull && pair.hull.enabled!=show)pair.hull.enabled=show;if(pair.edges && pair.edges.enabled!=show)pair.edges.enabled=show;}
+  if(inspectionBores!=null)foreach(var r in inspectionBores)if(r && r.enabled==ghost)r.enabled=!ghost;
  }
  public bool DetachModule(JourneyModule m){
   if(inSandbox||AutoAssembling||m==null||!m.installed||!m.preview)return false;

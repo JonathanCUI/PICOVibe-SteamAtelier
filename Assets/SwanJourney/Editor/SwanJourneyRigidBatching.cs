@@ -44,8 +44,11 @@ namespace SwanJourney.Editor
                             protectedObjects.Add(p.objectReferenceValue);
                 }
             }
+            var grateShafts = new HashSet<Transform>(journey.rockingBars ?? Array.Empty<Transform>());
             var surfaces = new HashSet<Material>(visuals.materials.Where(m => m.kind == JourneyNativeMaterialKind.Surface).Select(m => m.material));
-            var candidates = journey.spatialRoot.GetComponentsInChildren<MeshRenderer>(true).Where(r => Eligible(r)).ToArray();
+            var candidates = journey.spatialRoot.GetComponentsInChildren<MeshRenderer>(true).Where(r => Eligible(r))
+                // Keep the previously generated serial asset names stable when appending moving grate batches.
+                .OrderBy(r => grateShafts.Contains(r.transform.parent) ? 1 : 0).ToArray();
             var report = new Report { candidates = candidates.Length };
             var anchors=candidates.ToDictionary(r=>r,r=>BatchAnchor(r.transform.parent));
             string folder = SwanJourneyBuild.Generated + "/RigidBatches";
@@ -70,8 +73,9 @@ namespace SwanJourney.Editor
             {
                 if (!r.enabled || !r.gameObject.activeSelf || !r.transform.parent || r.transform.childCount != 0 || r.HasPropertyBlock()) return false;
                 // The canyon has a separate spatial-cell batching and streaming policy.
+                bool underGrateShaft = grateShafts.Contains(r.transform.parent);
                 for (var p = r.transform; p; p = p.parent)
-                    if (p.name.StartsWith("Mesa original canyon", StringComparison.Ordinal) || p.GetComponent<Animator>() || p.GetComponent<Animation>() || p.GetComponent<JourneyControl>()) return false;
+                    if (p.name.StartsWith("Mesa original canyon", StringComparison.Ordinal) || p.GetComponent<Animator>() || p.GetComponent<Animation>() || (p.GetComponent<JourneyControl>() && (!underGrateShaft || p == r.transform))) return false;
                 var f = r.GetComponent<MeshFilter>();
                 if (!f || !f.sharedMesh || !f.sharedMesh.isReadable || f.sharedMesh.subMeshCount != 1 || f.sharedMesh.vertexCount > 20000 || f.sharedMesh.GetTopology(0) != MeshTopology.Triangles) return false;
                 if (r.sharedMaterials.Length != 1 || !surfaces.Contains(r.sharedMaterial) || r.sharedMaterial.renderQueue >= 2500 || r.additionalVertexStreams) return false;

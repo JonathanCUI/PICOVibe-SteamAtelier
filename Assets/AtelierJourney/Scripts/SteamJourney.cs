@@ -73,10 +73,15 @@ public sealed partial class SteamJourney : MonoBehaviour {
         if(inSandbox)Drive(dt);else if((running||ResidualEnergy)&&!paused){
             float step=dt*(slow?.25f:1);demoTime+=step;FlowTime+=step;
             StepProcess(step);
-            foreach(var m in modules.Where(m=>m.installed)){int index=Array.IndexOf(modules,m);if(ProcessReached(index))m.observed+=step;if(m.observed>=RequiredObservation(index))m.verified=true;}
+            for(int i=0;i<modules.Length;i++){
+                var m=modules[i];
+                if(!m.installed)continue;
+                if(ProcessReached(i))m.observed+=step;
+                if(m.observed>=RequiredObservation(i))m.verified=true;
+            }
         }
         if(!inSandbox)UpdateBrakeEffects(dt,0);
-        engine.direction=direction;JourneyMotion.Apply(engine);ApplyCylinderBench();AnimatePistonValves();Pneumatics(dt);UpdateRailAudio(dt);ApplyVisibility();Animate(dt);UpdateText();UpdateSocketGhost();ApplyCamera(dt);
+        UpdateMechanicalPose();Pneumatics(dt);UpdateRailAudio(dt);RefreshFrameVisibility();Animate(dt);UpdateText();UpdateSocketGhost();ApplyCamera(dt);
         if(Time.unscaledTime>autoSaveAt){autoSaveAt=Time.unscaledTime+10;SaveProgress();}
         if(inSandbox&&instrumentCamera&&Time.unscaledTime>=instrumentAt){instrumentAt=Time.unscaledTime+.1f;instrumentCamera.Render();}
     }
@@ -136,6 +141,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         bool changed=inSandbox!=sandbox;CancelAssembly();bool returning=inSandbox&&!sandbox;held=null;heldControl=null;inSandbox=sandbox;speed=0;throttle=0;brake=0;running=false;paused=false;ResetProcess();
         workshopRoot.SetActive(!sandbox);sandboxRoot.SetActive(sandbox);consoleRoot.SetActive(sandbox);
         trainAnchor.SetParent(sandbox?sandboxRoot.transform:workshopRoot.transform,false);
+        lastPosePhase = float.NaN;
         trainAnchor.localScale=Vector3.one*(sandbox?.255f:1);trainAnchor.localPosition=Vector3.zero;trainAnchor.localRotation=Quaternion.identity;
         if(detailMeshes!=null)foreach(var detail in detailMeshes)if(detail.filter)detail.filter.sharedMesh=sandbox?detail.miniature:detail.inspection;
         cameraMode=0;if(!sandbox){trainAnchor.localPosition=Vector3.up*.09f;focus=new Vector3(1.6f,.15f,1.4f);yaw=25;pitch=32;distance=16.2f;}else{pressure=7.8f;reservoirPressure=8;brakePipePressure=auxiliaryPressure=5;BrakeCylinderPressure=0;fire.Clear();smoke.Clear();focus=new Vector3(0,6f,-3f);yaw=12;pitch=30;distance=54;routeDistance=0;PlaceTrain();}
@@ -152,23 +158,64 @@ public sealed partial class SteamJourney : MonoBehaviour {
         if(direction<0&&routeDistance>old&&speed>.03f){laps++;Notify("完成第 "+laps+" 圈。");}
         engine.phase=Mathf.Repeat(engine.phase-delta/.255f/.65f*Mathf.Rad2Deg,360);
         FlowTime+=dt;MotionTime+=dt;pressure=Mathf.MoveTowards(pressure,7.8f-throttle*1.3f,dt*.3f);
-        PlaceTrain();
+        if(delta!=0)PlaceTrain();
         UpdateBrakeEffects(dt,Mathf.Max(0,(prior-speed)/Mathf.Max(.001f,dt)));
     }
     void PlaceTrain(){
-        trainAnchor.localPosition=path.At(routeDistance);trainAnchor.localRotation=path.Rotation(routeDistance);
-        for(int i=0;i<coaches.Length;i++){float s=routeDistance-(2.06f+i*2.10f);coaches[i].localPosition=path.At(s);coaches[i].localRotation=path.Rotation(s);}
-        foreach(var wheel in coachWheels)wheel.localRotation=Quaternion.Euler(0,0,-routeDistance/.11f*Mathf.Rad2Deg);
+        trainAnchor.SetLocalPositionAndRotation(path.At(routeDistance),path.Rotation(routeDistance));
+        for(int i=0;i<coaches.Length;i++){float s=routeDistance-(2.06f+i*2.10f);coaches[i].SetLocalPositionAndRotation(path.At(s),path.Rotation(s));}
+        var wheelRotation=Quaternion.Euler(0,0,-routeDistance/.11f*Mathf.Rad2Deg);
+        foreach(var wheel in coachWheels)wheel.localRotation=wheelRotation;
+    }
+    float lastPosePhase = float.NaN;
+    int lastPoseDirection;
+    bool lastPoseWasBench;
+
+    void UpdateMechanicalPose(){
+        engine.direction = direction;
+        bool benchOnly = modules[4].installed && !modules[5].installed;
+        // A bench piston can move without wheel rotation. Re-solve when entering or
+        // leaving that mode, and whenever the crank or reverser actually moves.
+        if(!SwanInputActive || engine.phase != lastPosePhase || direction != lastPoseDirection || benchOnly != lastPoseWasBench){
+            JourneyMotion.Apply(engine);
+            lastPosePhase = engine.phase;
+            lastPoseDirection = direction;
+            lastPoseWasBench = benchOnly;
+        }
+        if(benchOnly) ApplyCylinderBench();
+        AnimatePistonValves();
+    }
+
+    ulong visibleInstallation;
+    int visibleInspection = -1;
+    bool visibleCutaway, visibleSandbox;
+    JourneyModule visibleSelection;
+
+    ulong InstallationBits(){
+        ulong bits=0;
+        for(int i=0;i<modules.Length;i++)if(modules[i].installed)bits|=1UL<<i;
+        for(int i=0;i<finishing.Length;i++)if(finishing[i].installed)bits|=1UL<<(modules.Length+i);
+        return bits;
+    }
+    void RefreshFrameVisibility(){
+        // These 18 flags live in managed memory. Only cross to Unity renderers when the layout changes.
+        if(!SwanInputActive || modules.Length+finishing.Length>64 || visibleInspection!=inspectionMode ||
+            visibleCutaway!=cutaway || visibleSandbox!=inSandbox || visibleSelection!=Current ||
+            visibleInstallation!=InstallationBits())ApplyVisibility();
     }
     public void ApplyVisibility(){
+        if(SwanInputActive){
+            visibleInstallation=InstallationBits();visibleInspection=inspectionMode;
+            visibleCutaway=cutaway;visibleSandbox=inSandbox;visibleSelection=Current;
+        }
         foreach(var m in modules.Concat(finishing))foreach(var o in m.objects)if(o&&o.activeSelf!=m.installed)o.SetActive(m.installed);
         bool section=!inSandbox&&cutaway;
-        if(sectionOnly!=null)foreach(var r in sectionOnly)if(r)r.enabled=section;
-        cutRoot.SetActive(section);
-        for(int i=0;i<lessonModels.Length;i++)lessonModels[i].SetActive(modules[i].installed);
-        foreach(var r in shellRenderers)if(r)r.enabled=!section;
-        if(supportStands!=null)foreach(var stand in supportStands)stand.SetActive(!inSandbox&&!modules[5].installed);
-        if(aimRing)aimRing.gameObject.SetActive(!inSandbox&&!Current.installed);UpdateInspection();
+        if(sectionOnly!=null)foreach(var r in sectionOnly)if(r && r.enabled!=section)r.enabled=section;
+        if(cutRoot.activeSelf!=section)cutRoot.SetActive(section);
+        for(int i=0;i<lessonModels.Length;i++)if(lessonModels[i].activeSelf!=modules[i].installed)lessonModels[i].SetActive(modules[i].installed);
+        foreach(var r in shellRenderers)if(r && r.enabled==section)r.enabled=!section;
+        if(supportStands!=null)foreach(var stand in supportStands){bool show=!inSandbox&&!modules[5].installed;if(stand.activeSelf!=show)stand.SetActive(show);}
+        if(aimRing && socketGhosts==null)aimRing.gameObject.SetActive(!inSandbox&&!Current.installed);UpdateInspection();
     }
     void Animate(float dt){
         bool active=inSandbox||running||ResidualEnergy;bool burn=active&&modules[0].installed;
@@ -179,7 +226,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         if(waterSurface)waterSurface.localPosition=new Vector3(.7f,2.72f,0);
         foreach(var f in flows){bool show=active&&!inSandbox&&cutaway&&modules[f.stage].installed;
             if(show&&f.port>0){var p=engine.sides[0].pose;show=f.port==1?p.LeftAdmission>.001:f.port==2?p.RightAdmission>.001:f.port==3?p.LeftExhaust>.001:p.RightExhaust>.001;}
-            f.marker.gameObject.SetActive(show);if(!show)continue;
+            if(f.marker.gameObject.activeSelf!=show)f.marker.gameObject.SetActive(show);if(!show)continue;
             float u=Mathf.Repeat(FlowTime*f.speed+f.offset,1)*(f.points.Length-1);int k=Mathf.Min((int)u,f.points.Length-2);
             f.marker.localPosition=Vector3.Lerp(f.points[k],f.points[k+1],u-k);f.marker.localRotation=Quaternion.FromToRotation(Vector3.up,(f.points[k+1]-f.points[k]).normalized);
         }

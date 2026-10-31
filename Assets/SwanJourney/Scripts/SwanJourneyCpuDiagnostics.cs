@@ -17,6 +17,8 @@ namespace SwanJourney
         ProfilerRecorder lateUpdate;
         readonly StringBuilder line = new StringBuilder(1800);
         bool ownsSession, paused, previousDrive;
+        int previousInstalled = -1, previousInspection = -1;
+        bool previousVerify, previousRolling;
         int frames, movingFrames, lateSamples, longFrames;
         double windowStart, lastFrameTime, longestFrameMs, lateTotal;
 
@@ -39,8 +41,17 @@ namespace SwanJourney
             if (!ownsSession) return;
             if (paused || !Application.isFocused || !journey || journey.SwanSceneLoading)
             { ResetWindow(); return; }
-            if (previousDrive != journey.inSandbox)
-            { previousDrive = journey.inSandbox; ResetWindow(); return; }
+            int installed = 0;
+            foreach (var part in journey.modules) if (part.installed) installed++;
+            foreach (var part in journey.finishing) if (part.installed) installed++;
+            bool rolling = journey.inSandbox && journey.speed > .035f;
+            if (previousDrive != journey.inSandbox || previousInstalled != installed ||
+                previousInspection != journey.inspectionMode || previousVerify != journey.running || previousRolling != rolling)
+            {
+                previousDrive = journey.inSandbox; previousInstalled = installed; previousInspection = journey.inspectionMode;
+                previousVerify = journey.running; previousRolling = rolling;
+                ResetWindow(); return;
+            }
             frames++;
             double now = Time.realtimeSinceStartupAsDouble;
             double frameMs = (now - lastFrameTime) * 1000;
@@ -54,6 +65,8 @@ namespace SwanJourney
             if (elapsed < 5) return;
             line.Clear();
             line.Append("SWAN_JOURNEY_CPU_WINDOW mode=").Append(previousDrive ? "drive" : "workshop")
+                .Append(" installed=").Append(previousInstalled).Append(" verify=").Append(previousVerify)
+                .Append(" inspection=").Append(previousInspection).Append(" rolling=").Append(previousRolling)
                 .Append(" frames=").Append(frames).Append(" twoHandFrames=").Append(movingFrames)
                 .Append(" elapsedSeconds=").Append(F(elapsed)).Append(" unityFps=").Append(F(frames / elapsed))
                 .Append(" longestFrameMs=").Append(F(longestFrameMs)).Append(" framesAtLeast50ms=").Append(longFrames)
