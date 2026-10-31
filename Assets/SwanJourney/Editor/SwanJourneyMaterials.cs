@@ -46,6 +46,8 @@ namespace SwanJourney.Editor
                 if(IsFontMaterial(source))return source;
                 if(map.TryGetValue(source,out var existing))return existing;
                 var kind=Classify(source);var color=ColorOf(source);
+                bool socketSurface = source.name.StartsWith("Socket scan surface", StringComparison.OrdinalIgnoreCase);
+                bool socketEdge = source.name.StartsWith("Socket scan contours", StringComparison.OrdinalIgnoreCase);
                 switch(kind)
                 {
                     case JourneyNativeMaterialKind.Cloud:color=new Color(.94f,.96f,1,1);break;
@@ -54,7 +56,9 @@ namespace SwanJourney.Editor
                     case JourneyNativeMaterialKind.Furnace:color=new Color(1,.40f,.05f,.85f);break;
                     case JourneyNativeMaterialKind.WaterSurface:color=new Color(.07f,.31f,.36f,.72f);break;
                     case JourneyNativeMaterialKind.WaterBody:case JourneyNativeMaterialKind.WaterJacket:color=new Color(.03f,.24f,.30f,.40f);break;
-                    case JourneyNativeMaterialKind.Ghost:color=new Color(.93f,.96f,1,.16f);break;
+                    case JourneyNativeMaterialKind.Ghost:
+                        color = socketEdge ? new Color(.10f,.68f,1,1) : socketSurface ? new Color(.07f,.45f,.95f,.30f) : new Color(.93f,.96f,1,.16f);
+                        break;
                     case JourneyNativeMaterialKind.Beam:color=new Color(1,.84f,.62f,.18f);break;
                     case JourneyNativeMaterialKind.Halo:color=new Color(color.r,color.g,color.b,.55f);break;
                 }
@@ -108,12 +112,13 @@ namespace SwanJourney.Editor
                 // Treating that declaration as real emissive light washes out the canyon at night.
                 if(source.shader && (source.shader.name.Contains("LayeredRock")||source.shader.name.StartsWith("BK/")))emission=Color.black;
                 if(kind==JourneyNativeMaterialKind.Halo)emission=new Color(color.r,color.g,color.b)*1.3f;
-                if(kind==JourneyNativeMaterialKind.Ghost)emission=new Color(.18f,.20f,.22f);
+                if(kind==JourneyNativeMaterialKind.Ghost)
+                    emission = socketEdge ? new Color(.035f,.38f,.85f) : socketSurface ? new Color(.018f,.12f,.32f) : new Color(.18f,.20f,.22f);
                 // Native shader features are selected from exported values. Keep the
                 // masked emissive channel present before live intensity updates begin.
                 if(soft && emission.maxColorComponent<.001f)emission=new Color(.001f,.001f,.001f);
                 result.SetColor("_EmissionColor",emission);result.EnableKeyword("_EMISSION");result.globalIlluminationFlags=MaterialGlobalIlluminationFlags.RealtimeEmissive;
-                bool transparent=kind!=JourneyNativeMaterialKind.Cloud&&(kind!=JourneyNativeMaterialKind.Surface||color.a<.98f||source.GetTag("RenderType",false)=="Transparent"||(source.HasProperty("_Surface")&&source.GetFloat("_Surface")>.5f));
+                bool transparent=!socketEdge && kind!=JourneyNativeMaterialKind.Cloud&&(kind!=JourneyNativeMaterialKind.Surface||color.a<.98f||source.GetTag("RenderType",false)=="Transparent"||(source.HasProperty("_Surface")&&source.GetFloat("_Surface")>.5f));
                 if(transparent)Transparent(result);
                 bool foliage=source.shader&&(source.shader.name.Contains("VegetationLeaves")||source.shader.name.Contains("Grass")||source.shader.name.Contains("Impostor"));
                 if(!transparent && ((source.HasProperty("_AlphaClip")&&source.GetFloat("_AlphaClip")>.5f)||source.IsKeywordEnabled("_ALPHATEST_ON")||source.GetTag("RenderType",false)=="TransparentCutout"||foliage))
@@ -174,7 +179,7 @@ namespace SwanJourney.Editor
                 var renderer=journey.fire.GetComponent<ParticleSystemRenderer>();if(renderer)renderer.enabled=false;
             }
             bridge.materials=definitions.ToArray();
-            bridge.scanMaterial=Save(Effect("Native blue reveal",new Color(.10f,.68f,1,.13f),new Color(.05f,.55f,1)*1.4f),folder+"/BlueReveal.mat");
+            bridge.scanMaterial=Save(Effect("Native blue reveal",new Color(.10f,.68f,1,.42f),new Color(.05f,.55f,1)*1.4f),folder+"/BlueReveal.mat");
             bridge.goldMaterial=Save(Effect("Native completion gold",new Color(.91f,.64f,.23f,1),new Color(1,.54f,.10f)*.9f,false),folder+"/CompletionGold.mat");
             bridge.goldMaterial.SetFloat("_Metallic",.78f);bridge.goldMaterial.SetFloat("_Glossiness",.72f);
             bridge.rippleMaterial=Save(Effect("Native contact ripple",new Color(.38f,.75f,.83f,.42f),new Color(.10f,.31f,.38f)),folder+"/WaterRipple.mat");

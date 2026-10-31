@@ -89,6 +89,7 @@ public sealed partial class SteamJourney {
         if(field.stage==4)return CylinderPower;
         return WheelPower;
     }
+    float nextFieldPublication;
     void AnimateRefinedEffects(float dt){
         if(cutLever)cutLever.localRotation=Quaternion.Euler(0,0,inspectionMode==0?25:inspectionMode==1?0:-25);
         bool active=inSandbox||running||ResidualEnergy;
@@ -107,9 +108,14 @@ public sealed partial class SteamJourney {
             furnaceLight.intensity=FireLevel*4.6f*flutter;
             furnaceLight.color=Color.Lerp(new Color(1,.25f,.045f),new Color(1,.44f,.115f),FireLevel);
         }
-        if(fluidFields!=null)foreach(var field in fluidFields){if(!field)continue;field.system.GetComponent<Renderer>().enabled=!inSandbox&&cutaway;float strength=active&&modules[field.stage].installed?FluidStrength(field):0;
+        bool publishFields=!SwanInputActive || (!inSandbox && cutaway && Time.unscaledTime>=nextFieldPublication);
+        if(SwanInputActive&&publishFields)nextFieldPublication=Time.unscaledTime+1f/24f;
+        if(fluidFields!=null)foreach(var field in fluidFields){if(!field)continue;
+            if(!SwanInputActive)field.system.GetComponent<Renderer>().enabled=!inSandbox&&cutaway;
+            if(SwanInputActive && (effectDt<=0 || (!modules[field.stage].installed && !field.HasWisps)))continue;
+            float strength=active&&modules[field.stage].installed?FluidStrength(field):0;
             if(field.port>0){bool open=field.port==5?(ValvePortOpen(0,3)||ValvePortOpen(0,4)):ValvePortOpen(0,field.port);strength*=open?1:0;}
-            field.Advance(effectDt,strength);}
+            field.Advance(effectDt,strength,publishFields);}
         SetEmission(fire,0); // Replaced by a depth-tested volumetric furnace, not billboard blobs.
         bool exhaustArrived=true;int lastGas=ChimneyConnected?2:BoilerGasConnected?1:0;if(fluidFields!=null)foreach(var f in fluidFields)if(f.stage==lastGas&&f.kind==JourneyFluidKind.Smoke&&!f.Arrived)exhaustArrived=false;
         float smokePower=active?(inSandbox?.8f:modules[0].installed&&exhaustArrived?GasLevel:0):0;

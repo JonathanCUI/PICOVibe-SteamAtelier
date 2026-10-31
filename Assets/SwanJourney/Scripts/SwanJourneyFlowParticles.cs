@@ -9,7 +9,7 @@ namespace SwanJourney
     public sealed class SwanJourneyFlowParticles : MonoBehaviour
     {
         public const int MaximumMarkers = 288;
-        public const int SamplesPerField = 12;
+        public const int SamplesPerField = 4;
         public static readonly float[] AlphaLevels = { .04f, .09f, .16f, .26f, .40f, .57f, .76f, 1f };
 
         [Serializable] public sealed class Source
@@ -36,7 +36,6 @@ namespace SwanJourney
             public readonly ParticleSystem.Particle[] selected = new ParticleSystem.Particle[SamplesPerField];
             public readonly ParticleSystem.Particle[] next = new ParticleSystem.Particle[SamplesPerField];
             public int count, quota;
-            public bool visible;
         }
         // JourneyFluidField itself has a fixed 384-wisp capacity.
         readonly ParticleSystem.Particle[] readBuffer = new ParticleSystem.Particle[384];
@@ -54,6 +53,7 @@ namespace SwanJourney
                 var system = source.field ? source.field.system : null;
                 states[i] = new State { source = source, system = system,
                     renderer = system ? system.GetComponent<ParticleSystemRenderer>() : null };
+                if (journey && journey.SwanInputActive && states[i].renderer) states[i].renderer.enabled = false;
             }
             markerTransforms = new Transform[markers.Length];
             for (int i = 0; i < markers.Length; i++) if (markers[i])
@@ -69,17 +69,9 @@ namespace SwanJourney
         {
             if (!journey || !journey.SwanInputActive || !poolRoot || states == null) { HideAll(); return; }
             bool show = !journey.inSandbox && journey.cutaway;
-            foreach (var state in states)
-            {
-                state.visible = show && state.system && state.system.gameObject.activeInHierarchy
-                    && state.renderer && state.renderer.enabled;
-                // The source owner writes enabled each Update. Hide only its drawing after sampling
-                // that visibility; keep the ParticleSystem and all thermal/lifetime state intact.
-                if (state.renderer) state.renderer.enabled = false;
-            }
             if (!show) { HideAll(); return; }
             if (Time.unscaledTime < nextRefresh) return;
-            nextRefresh = Time.unscaledTime + 1f / 30f;
+            nextRefresh = Time.unscaledTime + 1f / 24f;
             RefreshSamples();
         }
 
@@ -89,7 +81,7 @@ namespace SwanJourney
             foreach (var state in states)
             {
                 state.quota = 0;
-                if (!state.visible) { state.count = 0; continue; }
+                if (!state.source.field || !state.source.field.HasWisps || !state.system || !state.system.gameObject.activeInHierarchy) { state.count = 0; continue; }
                 int count = state.system.GetParticles(readBuffer);
                 LastSourceParticleCount += count;
                 int available = 0;
@@ -102,12 +94,13 @@ namespace SwanJourney
 
             // Give every currently populated path a share before filling additional samples.
             // Parallel boiler tubes cannot consume the entire pool and hide the steam/air route.
-            int capacity = Mathf.Min(MaximumMarkers, markers.Length), allocated = 0;
+            int capacity = Mathf.Min(markers.Length, Mathf.Max(64, ActiveFieldCount)), allocated = 0;
             for (int level = 0; level < SamplesPerField && allocated < capacity; level++)
                 foreach (var state in states)
                     if (state.count > level && allocated < capacity) { state.quota++; allocated++; }
 
             int used = 0;
+            var toPool = poolRoot.worldToLocalMatrix; var inverseRotation = Quaternion.Inverse(poolRoot.rotation); var rootScale = Abs(poolRoot.lossyScale);
             RepresentedFieldCount = 0;
             foreach (var state in states)
             {
@@ -120,7 +113,6 @@ namespace SwanJourney
                 Vector3 sizeScale = main.scalingMode == ParticleSystemScalingMode.Hierarchy
                     ? Abs(state.system.transform.lossyScale)
                     : main.scalingMode == ParticleSystemScalingMode.Local ? Abs(state.system.transform.localScale) : Vector3.one;
-                Vector3 rootScale = Abs(poolRoot.lossyScale);
                 for (int i = 0; i < state.quota; i++)
                 {
                     var sample = state.selected[i];
@@ -133,9 +125,8 @@ namespace SwanJourney
                     int alpha = NearestAlpha(color.a / 255f);
                     var material = palette != null && alpha < palette.Length ? palette[alpha] : null;
                     if (!material || !Finite(worldPosition) || !Finite(worldSize)) { renderer.enabled = false; continue; }
-                    target.localPosition = poolRoot.InverseTransformPoint(worldPosition);
                     var rotation = Quaternion.Euler(sample.rotation3D);
-                    target.localRotation = Quaternion.Inverse(poolRoot.rotation) * (world || !simulation ? rotation : simulation.rotation * rotation);
+                    target.SetLocalPositionAndRotation(toPool.MultiplyPoint3x4(worldPosition),inverseRotation * (world || !simulation ? rotation : simulation.rotation * rotation));
                     target.localScale = new Vector3(worldSize.x / Mathf.Max(.00001f, rootScale.x),
                         worldSize.y / Mathf.Max(.00001f, rootScale.y), worldSize.z / Mathf.Max(.00001f, rootScale.z));
                     if (renderer.sharedMaterial != material) renderer.sharedMaterial = material;
@@ -188,6 +179,7 @@ namespace SwanJourney
         void HideAll()
         {
             for (int i = 0; i < ActiveMarkerCount; i++) if (markers[i]) markers[i].enabled = false;
+            nextRefresh = 0;
             ActiveMarkerCount = ActiveFieldCount = RepresentedFieldCount = LastSourceParticleCount = 0;
         }
         void OnDisable() { HideAll(); }

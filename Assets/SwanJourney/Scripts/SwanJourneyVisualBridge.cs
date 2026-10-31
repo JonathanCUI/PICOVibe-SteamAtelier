@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -182,6 +182,9 @@ namespace SwanJourney
                 animated.Add(new Animated { renderer = r, definition = definition, instance = instance, originalEmission = source.GetColor("_EmissionColor") });
                 var filter = r.GetComponent<MeshFilter>();
                 if (!filter) continue;
+                // Export already chose a native mesh for authored renderers before reducing it.
+                // Dynamic puffs still need the native fallback when they are first discovered.
+                if (filter.sharedMesh && filter.sharedMesh.name.EndsWith(" • tabletop", StringComparison.Ordinal)) continue;
                 switch (definition.kind)
                 {
                     case JourneyNativeMaterialKind.Cloud: if(cloudVolume)filter.sharedMesh=cloudVolume;break;
@@ -272,7 +275,10 @@ namespace SwanJourney
                         color = Color.Lerp(color,new Color(.12f,.48f,.53f,color.a),boil*.25f);
                         break;
                     case JourneyNativeMaterialKind.Ghost:
-                        color.a *= journey.SnapReady ? 1.25f : .92f + .08f*Mathf.Sin(Time.unscaledTime*2);
+                        // Exported edge strips write depth. Keep the fill legible even without bloom.
+                        color = a.definition.color;
+                        emission = a.originalEmission;
+                        if (color.a < .99f && journey.SnapReady) color.a = Mathf.Min(1, color.a * 1.25f);
                         break;
                 }
                 if (!a.hasApplied || !a.wasVisible || !a.appliedColor.Equals(color) || !a.appliedEmission.Equals(emission))

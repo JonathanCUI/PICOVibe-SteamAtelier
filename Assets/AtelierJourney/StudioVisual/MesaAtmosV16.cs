@@ -42,7 +42,8 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
   }
   if(tunnel&&tunnel.Air(p.position)<.90f){p.alive=false;p.r.enabled=false;BlockedPuffs++;}
  }
- public void ClearSteam(){foreach(var p in puffs){p.alive=false;p.r.enabled=false;}emit=0;}
+ float visualElapsed;
+ public void ClearSteam(){visualElapsed=0;foreach(var p in puffs){p.alive=false;p.r.enabled=false;}emit=0;}
 
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Atmosphere)) CpuMeasuredLateUpdate(); }
     void CpuMeasuredLateUpdate(){
@@ -53,6 +54,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    SwanHiddenSkipCount++;return;
   }
   swanHiddenCleaned=false;
+  if(journey.SwanInputActive){visualElapsed+=dt;if(visualElapsed<1f/30f)return;dt=visualElapsed;visualElapsed=0;}
   for(int i=0;i<clouds.Length;i++){
    var t=sky.clouds[i];float seed=i*2.37f;
    t.localPosition=starts[i]+(FreezeCloudTransforms?Vector3.zero:new Vector3(Mathf.Sin(clock*.025f+seed)*.55f,Mathf.Sin(clock*.14f+seed)*.07f,Mathf.Cos(clock*.023f+seed)*.25f));
@@ -62,7 +64,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    }else t.localScale=scales[i];
    block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);CloudWriteCount++;
   }
-  if(active){emit+=dt*(5.0f+Mathf.Clamp01(journey.speed/4)*.8f);while(emit>=1){Emit();emit--;}}
+  if(active){emit+=dt*((journey.SwanInputActive?3.65f:5f)+Mathf.Clamp01(journey.speed/4)*.8f);while(emit>=1){Emit();emit--;}}
   else {emit=0;if(wasActive)foreach(var p in puffs){p.alive=false;p.r.enabled=false;}}
   wasActive=active;ActivePuffs=0;ConfinedPuffs=0;InvalidCenters=0;
   foreach(var p in puffs){if(!p.alive)continue;p.age+=dt;if(p.age>=p.life){p.alive=false;p.r.enabled=false;continue;}

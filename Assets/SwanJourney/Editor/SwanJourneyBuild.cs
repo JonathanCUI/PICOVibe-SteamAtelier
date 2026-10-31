@@ -120,6 +120,16 @@ namespace SwanJourney.Editor
                 renderer.lightmapIndex=-1;renderer.realtimeLightmapIndex=-1;
             }
             SwanJourneySceneSplit.Split(journey,presentation,nativeVisuals,ui.panelMaterial);
+            var meshBudget = SwanJourneyWorkshopMeshBudget.Apply(scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<MeshFilter>(true)));
+            // SetMode restores these bindings at startup and when returning from the canyon.
+            foreach (var detail in journey.detailMeshes)
+            {
+                if (!detail.filter || !detail.filter.sharedMesh) continue;
+                detail.inspection = detail.filter.sharedMesh;
+                if (detail.miniature && SwanJourneyWorkshopMeshBudget.Triangles(detail.miniature) > SwanJourneyWorkshopMeshBudget.Triangles(detail.inspection))
+                    detail.miniature = detail.inspection;
+            }
+            File.WriteAllText(Output+"/workshop-mesh-budget.json",JsonUtility.ToJson(meshBudget,true));
             SwanJourneyBootScene.Generate(journey.font);
             SwanJourneyNodeAlignment.ValidateAndBind(scene,EnvironmentScenePath);
             // The Windows Resources scan passes backslash paths to the SDK's
@@ -204,7 +214,7 @@ namespace SwanJourney.Editor
         static void Configure()
         {
             PlayerSettings.companyName="PICO Vibe";PlayerSettings.productName="蒸汽工坊·V23";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.24";PlayerSettings.Android.bundleVersionCode=24;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.25";PlayerSettings.Android.bundleVersionCode=25;
             SwanJourneyIcon.Configure();
             var runtime=new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
             runtime.FindProperty("m_enableSpatialAdapter").boolValue=true;

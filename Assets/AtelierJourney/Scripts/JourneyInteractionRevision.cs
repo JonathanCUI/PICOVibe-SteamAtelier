@@ -22,10 +22,11 @@ public sealed partial class SteamJourney {
   int index=Array.IndexOf(modules,heldModule??Current);if(index<0)index=modules.Length+Array.IndexOf(finishing,heldModule??Current);
   if(socketGhosts==null)return;
   if(activeScanIndex!=index){activeScanIndex=index;scanStartTime=Time.time;}
-  Shader.SetGlobalFloat("_SocketAge",Time.time-scanStartTime);
-  for(int i=0;i<socketGhosts.Length;i++)if(socketGhosts[i])socketGhosts[i].SetActive(!inSandbox&&!AutoAssembling&&!(GetComponent<JourneySceneArrival>()?.Active??false)&&i==index&&!(heldModule??Current).installed);
-  if(aimRing)aimRing.gameObject.SetActive(false);
-  Shader.SetGlobalFloat("_SocketLock",snapReady?1:0);
+  if(!SwanInputActive)Shader.SetGlobalFloat("_SocketAge",Time.time-scanStartTime);
+  bool show=!inSandbox&&!AutoAssembling&&!(heldModule??Current).installed&&!(GetComponent<JourneySceneArrival>()?.Active??false);
+  for(int i=0;i<socketGhosts.Length;i++){bool visible=show&&i==index;if(socketGhosts[i]&&socketGhosts[i].activeSelf!=visible)socketGhosts[i].SetActive(visible);}
+  if(aimRing&&aimRing.gameObject.activeSelf)aimRing.gameObject.SetActive(false);
+  if(!SwanInputActive)Shader.SetGlobalFloat("_SocketLock",snapReady?1:0);
  }
  void Feedback(JourneyAction action){
   if(buttonFeedback!=null)foreach(var f in buttonFeedback)if(f&&f.action==action&&f.gameObject.activeInHierarchy)f.Press();
@@ -34,7 +35,10 @@ public sealed partial class SteamJourney {
  void PlayAssemblyLatch(){if(!audioSource)return;var clip=clickSound;if(assemblyClips!=null&&assemblyClips.Length>0){int index=UnityEngine.Random.Range(0,assemblyClips.Length);if(assemblyClips.Length>1&&index==LastAssemblyClip)index=(index+UnityEngine.Random.Range(1,assemblyClips.Length))%assemblyClips.Length;LastAssemblyClip=index;clip=assemblyClips[index];}if(clip){GetComponent<JourneyBackgroundMusic>()?.Duck(clip.length);audioSource.pitch=1;audioSource.PlayOneShot(clip,.66f);}}
  void CancelAssembly(){
   CancelCompletion();
-  if(assemblyRoutine!=null)StopCoroutine(assemblyRoutine);assemblyRoutine=null;AutoAssembling=false;var finish=GetComponent<StudioAssemblyFinishV9>();if(finish)finish.Cancel();
+  if(assemblyRoutine!=null){
+   StopCoroutine(assemblyRoutine);
+   if(SwanInputActive)foreach(var m in modules.Concat(finishing))if(m.preview)m.preview.SetActive(false);
+  }assemblyRoutine=null;AutoAssembling=false;var finish=GetComponent<StudioAssemblyFinishV9>();if(finish)finish.Cancel();
   foreach(var o in assemblyFlights)if(o)Destroy(o);assemblyFlights.Clear();
  }
  public bool StartAssemblySequence(){
@@ -42,17 +46,35 @@ public sealed partial class SteamJourney {
   held=null;heldModule=null;snapReady=false;pendingDetach=null;cutaway=false;inspectionMode=0;ApplyVisibility();AutoAssembling=true;UpdateSocketGhost();
   assemblyRoutine=StartCoroutine(AssembleSequence());return true;
  }
- sealed class DockFlight {public Transform root;public Vector3 offset;public int module;}
+ sealed class DockFlight {public Transform root;public Vector3 offset;public int module;public bool preview;}
+ static Vector3 DockOffset(int type,int mechanism,int side){
+    Vector3 offset=type==0?new Vector3(0,.72f,0):type==1?new Vector3(0,.18f,side*1.35f):type==2?new Vector3(-1.05f,1.15f,0):type==3?new Vector3(0,2.05f,0):type==4?new Vector3(0,.28f,side*1.7f):type==5?new Vector3(0,-.05f,side*1.45f):type==6?new Vector3(-1.75f,.35f,0):type==7?new Vector3(1.8f,0,0):type==8?new Vector3(-1.8f,0,0):new Vector3(.9f,.65f,type==9?.25f:-.25f);
+    if(type<0)offset=mechanism==4?new Vector3(.35f,.12f,side*1.55f):mechanism==5?new Vector3(0,-.18f,1.65f):mechanism==2?new Vector3(1.7f,.2f,0):new Vector3(0,1.25f+mechanism*.10f,0);
+    return offset;
+ }
  IEnumerator AssembleSequence(){
   int[] order={0,1,2,4,6,7,8,5,3,9,10};var remaining=modules.Where(m=>!m.installed).Concat(order.Where(k=>k<finishing.Length&&!finishing[k].installed).Select(k=>finishing[k])).ToArray();
-  var fx=GetComponent<StudioAssemblyFinishV9>();var flights=new List<DockFlight>();
+  var flights=new List<DockFlight>();
+  RefreshPreview();
   Notify("自动装配 · 对准安装轴，分组锁定。");
   for(int i=0;i<remaining.Length;i++){
    var m=remaining[i];int type=Array.IndexOf(finishing,m);m.parked=false;if(m.preview)m.preview.SetActive(false);
+   int mechanism=Array.IndexOf(modules,m);
+   if(SwanInputActive && m.preview){
+    // Fly the existing, exportable tray part. Cloning every renderer doubles placement
+    // geometry and creates native objects for an effect that lasts less than a second.
+    var tr=m.preview.transform;
+    Vector3 offset=DockOffset(type,mechanism,m.previewCentre.z>=0?1:-1);
+    tr.SetPositionAndRotation(trainAnchor.TransformPoint(m.previewCentre+offset),trainAnchor.rotation);
+    tr.localScale=Vector3.one;
+    m.preview.SetActive(true);
+    flights.Add(new DockFlight{root=tr,offset=offset,module=i,preview=true});
+    continue;
+   }
    // Read the installed geometry at its real pose. Disabled superseded geometry stays excluded.
    foreach(var o in m.objects)if(o)o.SetActive(true);
    var sources=m.objects.Where(o=>o).SelectMany(o=>o.GetComponentsInChildren<MeshRenderer>()).Distinct().Where(r=>r.enabled&&r.gameObject.activeInHierarchy&&r.GetComponent<MeshFilter>()&&r.GetComponent<MeshFilter>().sharedMesh).ToArray();
-   int mechanism=Array.IndexOf(modules,m);bool paired=type==1||type==4||type==5||mechanism==4;
+   bool paired=type==1||type==4||type==5||mechanism==4;
    foreach(var group in sources.GroupBy(r=>paired?(trainAnchor.InverseTransformPoint(r.bounds.center).z>=0?1:-1):0)){
     var go=new GameObject("Assembly flight · "+m.title+" · "+group.Key);go.transform.SetParent(trainAnchor,false);
     foreach(var source in group){var o=new GameObject(source.name,typeof(MeshFilter),typeof(MeshRenderer));o.transform.SetParent(go.transform,false);
@@ -60,20 +82,23 @@ public sealed partial class SteamJourney {
      Vector3 a=source.transform.lossyScale,b=trainAnchor.lossyScale;o.transform.localScale=new Vector3(a.x/b.x,a.y/b.y,a.z/b.z);
      o.GetComponent<MeshFilter>().sharedMesh=source.GetComponent<MeshFilter>().sharedMesh;o.GetComponent<MeshRenderer>().sharedMaterials=source.sharedMaterials;
     }
-    Vector3 offset=type==0?new Vector3(0,.72f,0):type==1?new Vector3(0,.18f,group.Key*1.35f):type==2?new Vector3(-1.05f,1.15f,0):type==3?new Vector3(0,2.05f,0):type==4?new Vector3(0,.28f,group.Key*1.7f):type==5?new Vector3(0,-.05f,group.Key*1.45f):type==6?new Vector3(-1.75f,.35f,0):type==7?new Vector3(1.8f,0,0):type==8?new Vector3(-1.8f,0,0):new Vector3(.9f,.65f,type==9?.25f:-.25f);
-    if(type<0)offset=mechanism==4?new Vector3(.35f,.12f,group.Key*1.55f):mechanism==5?new Vector3(0,-.18f,1.65f):mechanism==2?new Vector3(1.7f,.2f,0):new Vector3(0,1.25f+mechanism*.10f,0);
+    Vector3 offset=DockOffset(type,mechanism,group.Key);
     go.transform.localPosition=offset;assemblyFlights.Add(go);flights.Add(new DockFlight{root=go.transform,offset=offset,module=i});
    }
    foreach(var o in m.objects)if(o)o.SetActive(false);
   }
-  RefreshPreview();const float interval=.34f,duration=.78f;float elapsed=0;bool[] landed=new bool[remaining.Length],started=new bool[remaining.Length];int count=0;
+  const float interval=.34f,duration=.78f;float elapsed=0;bool[] landed=new bool[remaining.Length],started=new bool[remaining.Length];int count=0;
   while(count<remaining.Length){elapsed+=Time.deltaTime;
    for(int i=0;i<remaining.Length;i++){
     if(landed[i])continue;float local=elapsed-.40f-i*interval;float t=Mathf.Clamp01(local/duration);
     if(local>=0&&!started[i])started[i]=true;
     // Continuous acceleration into the socket; the sound marks contact without a hovering pause.
     float travel=t*t*t;
-    foreach(var f in flights)if(f.module==i)f.root.localPosition=f.offset*(1-travel);
+    foreach(var f in flights)if(f.module==i){
+     Vector3 offset=f.offset*(1-travel);
+     if(f.preview)f.root.position=trainAnchor.TransformPoint(remaining[i].previewCentre+offset);
+     else f.root.localPosition=offset;
+    }
     if(t>=1){landed[i]=true;count++;remaining[i].installed=true;stage=modules.TakeWhile(m=>m.installed).Count();ImpactWater(remaining[i]);foreach(var f in flights)if(f.module==i)f.root.gameObject.SetActive(false);PlayAssemblyLatch();ApplyVisibility();Notify("机械锁定 "+count+" / "+remaining.Length+" · "+remaining[i].title);}
    }yield return null;
   }
