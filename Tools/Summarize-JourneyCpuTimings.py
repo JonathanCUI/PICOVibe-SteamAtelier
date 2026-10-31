@@ -7,7 +7,13 @@ from pathlib import Path
 
 def summarize(text):
     windows = []
+    transitions = []
     for line in text.splitlines():
+        if 'SWAN_JOURNEY_DEFERRED_PHASE ' in line:
+            fields = dict(re.findall(r'(\w+)=([^\s]+)', line))
+            transitions.append({key: fields[key] for key in
+                                ('attempt', 'phase', 'elapsedSeconds', 'sincePreviousSeconds', 'frame') if key in fields})
+            continue
         if 'SWAN_JOURNEY_CPU_WINDOW ' not in line:
             continue
         fields = dict(re.findall(r'(\w+)=([^\s]+)', line))
@@ -24,6 +30,9 @@ def summarize(text):
                         'twoHandFrames': int(fields['twoHandFrames']),
                         'lateRecordedMs': None if fields.get('lateRecordedMs') == 'unavailable' else float(fields['lateRecordedMs']),
                         'measuredCallbackMs': float(fields['measuredCallbackMs']), 'stages': stages})
+        if 'elapsedSeconds' in fields:
+            windows[-1].update(elapsedSeconds=float(fields['elapsedSeconds']), unityFps=float(fields['unityFps']),
+                               longestFrameMs=float(fields['longestFrameMs']), framesAtLeast50ms=int(fields['framesAtLeast50ms']))
     groups = []
     for mode, phase in sorted({(w['mode'], w['phase']) for w in windows}):
         selected = [w for w in windows if w['mode'] == mode and w['phase'] == phase]
@@ -37,8 +46,15 @@ def summarize(text):
                            'calls': sum(w['stages'][name]['calls'] for w in present)})
         groups.append({'mode': mode, 'phase': phase, 'windows': len(selected), 'frames': frames,
                        'stages': sorted(stages, key=lambda s: s['meanMsPerFrame'], reverse=True)})
-    return {'windows': windows, 'groups': groups,
+        timed = [w for w in selected if 'elapsedSeconds' in w]
+        if timed:
+            groups[-1].update(timedWindows=len(timed),
+                              unityFps=round(sum(w['frames'] for w in timed) / sum(w['elapsedSeconds'] for w in timed), 2),
+                              longestFrameMs=max(w['longestFrameMs'] for w in timed),
+                              framesAtLeast50ms=sum(w['framesAtLeast50ms'] for w in timed))
+    return {'windows': windows, 'groups': groups, 'transitions': transitions,
             'limitations': ['These are callback wall times, including nested native calls or waits.',
+                            'Unity frame cadence excludes load windows and is distinct from native display frame rate.',
                             'Only selected callbacks are measured; missing time is not proven SDK cost.',
                             'Mixed windows are kept separate from idle and all-two-hand windows.',
                             'ProfilerRecorder values refer to the previous frame; use window aggregates only.']}

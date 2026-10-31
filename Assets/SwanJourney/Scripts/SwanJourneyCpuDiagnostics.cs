@@ -17,8 +17,8 @@ namespace SwanJourney
         ProfilerRecorder lateUpdate;
         readonly StringBuilder line = new StringBuilder(1800);
         bool ownsSession, paused, previousDrive;
-        int frames, movingFrames, lateSamples;
-        double windowStart, lateTotal;
+        int frames, movingFrames, lateSamples, longFrames;
+        double windowStart, lastFrameTime, longestFrameMs, lateTotal;
 
         void OnEnable()
         {
@@ -42,13 +42,21 @@ namespace SwanJourney
             if (previousDrive != journey.inSandbox)
             { previousDrive = journey.inSandbox; ResetWindow(); return; }
             frames++;
+            double now = Time.realtimeSinceStartupAsDouble;
+            double frameMs = (now - lastFrameTime) * 1000;
+            lastFrameTime = now;
+            longestFrameMs = Math.Max(longestFrameMs, frameMs);
+            if (frameMs >= 50) longFrames++;
             if (interaction && interaction.TwoHandActive) movingFrames++;
             if (lateUpdate.Valid && lateUpdate.LastValue > 0)
             { lateSamples++; lateTotal += lateUpdate.LastValue / 1000000.0; }
-            if (Time.realtimeSinceStartupAsDouble - windowStart < 5) return;
+            double elapsed = now - windowStart;
+            if (elapsed < 5) return;
             line.Clear();
             line.Append("SWAN_JOURNEY_CPU_WINDOW mode=").Append(previousDrive ? "drive" : "workshop")
                 .Append(" frames=").Append(frames).Append(" twoHandFrames=").Append(movingFrames)
+                .Append(" elapsedSeconds=").Append(F(elapsed)).Append(" unityFps=").Append(F(frames / elapsed))
+                .Append(" longestFrameMs=").Append(F(longestFrameMs)).Append(" framesAtLeast50ms=").Append(longFrames)
                 .Append(" phase=").Append(movingFrames == 0 ? "idle" : movingFrames == frames ? "twoHand" : "mixed")
                 .Append(" lateRecordedMs=").Append(lateSamples > 0 ? F(lateTotal / lateSamples) : "unavailable")
                 .Append(" samplesPreviousFrame=true");
@@ -71,8 +79,9 @@ namespace SwanJourney
         static string F(double value) => value.ToString("F3", CultureInfo.InvariantCulture);
         void ResetWindow()
         {
-            frames = movingFrames = lateSamples = 0; lateTotal = 0;
-            windowStart = Time.realtimeSinceStartupAsDouble;
+            frames = movingFrames = lateSamples = longFrames = 0;
+            lateTotal = longestFrameMs = 0;
+            windowStart = lastFrameTime = Time.realtimeSinceStartupAsDouble;
             if (ownsSession) SwanJourneyCpuTimings.Reset();
         }
         void OnApplicationPause(bool value) { paused = value; ResetWindow(); }

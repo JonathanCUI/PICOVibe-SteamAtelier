@@ -81,7 +81,7 @@ namespace SwanJourney.Editor
             var row=new Vector3(deskBounds.center.x,deskBounds.center.y,deskBounds.max.z+.7f);
             explode.localPosition=row+Vector3.left*3.15f;pause.localPosition=row;slow.localPosition=row+Vector3.right*3.15f;
             presentation.workshopMoveHandleAnchor=pause;
-            presentation.moveHandle=AddMoveHandle(journey,stage.transform);
+            presentation.moveHandle=AddMoveHandle(journey,stage.transform,interaction);
             presentation.RefreshFootprint();
             presentation.sandboxMoveHandleAnchor=AddUtility(journey,"车灯 开 / 关",new Vector3(-5.5f,.6f,15.4f),SwanJourneyTargetKind.Control,JourneyAction.Lights,journey.sandboxRoot.transform);
             int targets=ConfigureTargets(journey);
@@ -147,20 +147,24 @@ namespace SwanJourney.Editor
             text.font=journey.font;text.fontSize=1.4f;text.text=title;text.alignment=TMPro.TextAlignmentOptions.Center;text.color=new Color(1,.9f,.69f);text.rectTransform.sizeDelta=new Vector2(2.6f,.4f);
             return root.transform;
         }
-        static Transform AddMoveHandle(SteamJourney journey,Transform stage)
+        static Transform AddMoveHandle(SteamJourney journey,Transform stage,SwanJourneyInteraction interaction)
         {
             // A shared, metre-sized handle stays available in workshop and sandbox.
             // Presentation places it in front of the current support footprint.
             var root=new GameObject("单手搬台 · 捏住拖动").transform;root.SetParent(stage,false);
             var plate=GameObject.CreatePrimitive(PrimitiveType.Cube);plate.name="Move whole scene touch surface";plate.transform.SetParent(root,false);
             plate.transform.localScale=new Vector3(.48f,.09f,.028f);
-            plate.GetComponent<MeshRenderer>().sharedMaterial=SaveMaterial("MoveHandleBrass",new Color(.70f,.42f,.16f),.55f,.4f);
+            plate.GetComponent<MeshRenderer>().sharedMaterial=SaveMaterial("MoveHandleBrass",new Color(.38f,.25f,.14f),.45f,.3f);
             plate.AddComponent<SpatialAdapterHoverEffect>();plate.AddComponent<SwanJourneyTarget>().kind=SwanJourneyTargetKind.MoveWorkbench;
             var text=new GameObject("Move handle caption").AddComponent<TMPro.TextMeshPro>();text.transform.SetParent(root,false);
             text.transform.localPosition=new Vector3(0,0,-.016f);text.font=journey.font;text.fontSize=.5f;text.enableAutoSizing=true;
             text.fontSizeMin=.22f;text.fontSizeMax=.5f;text.text="捏住移动整个场景";text.alignment=TMPro.TextAlignmentOptions.Center;
             text.color=new Color(1,.94f,.79f);text.rectTransform.sizeDelta=new Vector2(.44f,.075f);
             text.ForceMeshUpdate(true,true);
+            var compact=UnityEngine.Object.Instantiate(text,root,false);
+            compact.name="Move handle short caption";compact.text="移动";compact.ForceMeshUpdate(true,true);
+            interaction.moveLesson=text.gameObject;interaction.moveCaption=compact.gameObject;
+            compact.gameObject.SetActive(false);
             return root;
         }
         static Transform[] FindSupports(Transform root,bool sandbox)
@@ -200,7 +204,7 @@ namespace SwanJourney.Editor
         static void Configure()
         {
             PlayerSettings.companyName="PICO Vibe";PlayerSettings.productName="蒸汽工坊·V23";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.23";PlayerSettings.Android.bundleVersionCode=23;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.24";PlayerSettings.Android.bundleVersionCode=24;
             SwanJourneyIcon.Configure();
             var runtime=new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
             runtime.FindProperty("m_enableSpatialAdapter").boolValue=true;

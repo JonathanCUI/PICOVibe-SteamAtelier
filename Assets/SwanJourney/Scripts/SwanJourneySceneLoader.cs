@@ -86,6 +86,13 @@ namespace SwanJourney
             SwanJourneyLoadingView.Current?.PreparingSpace();
             yield return null;
             yield return null;
+            if (!requestedSandbox || !journey || !journey.Complete)
+            {
+                SetState(LoadingState.Unloading);
+                SwanJourneyLoadingView.Current?.Hide();
+                yield return UnloadEnvironment();
+                yield break;
+            }
             LogLoadPhase("native-phase-presented-prefab-instantiate");
             SwanJourneyEnvironment payload = null;
             try { payload = InstantiateEnvironment(operation.asset as GameObject); }
@@ -114,7 +121,6 @@ namespace SwanJourney
             // Flush the public Transform.SetParent change after native loading.
             yield return null;
             SetState(LoadingState.Loaded);
-            SwanJourneyLoadingView.Current?.Hide();
             if (requestedSandbox && journey && journey.Complete)
             {
                 Environment.gameObject.SetActive(true);
@@ -127,9 +133,12 @@ namespace SwanJourney
                     + " payloadPosition=" + Environment.transform.position.ToString("F3")
                     + " rootActive=" + Environment.gameObject.activeInHierarchy
                     + " nativeScale=unverified nativeReady=unverified");
+                yield return null;
+                if (State != LoadingState.Loading) SwanJourneyLoadingView.Current?.Hide();
             }
             else
             {
+                SwanJourneyLoadingView.Current?.Hide();
                 DetachEnvironment();
                 SetState(LoadingState.Unloading);
                 yield return UnloadEnvironment();
@@ -163,7 +172,7 @@ namespace SwanJourney
             ownedPayload = payload;
             if (payload.gameObject.scene != presentation.gameObject.scene)
                 loadedScene = payload.gameObject.scene;
-            payload.Follow(environmentAnchor);
+            FollowEnvironment();
             payload.gameObject.SetActive(true);
             presentation.sandboxSupports = coreSupports.Concat(payload.supports).Where(t => t).Distinct().ToArray();
             visuals.SetDeferredEnvironment(payload.transform);
@@ -175,7 +184,7 @@ namespace SwanJourney
             Environment.gameObject.SetActive(true);
             if(Environment.transform.parent!=presentation.transform)
                 Environment.transform.SetParent(presentation.transform,true);
-            Environment.Follow(environmentAnchor);
+            FollowEnvironment();
             Environment.GetComponent<SwanJourneyNodeAlignmentDiagnostics>()?.ExpectRuntimeParent(presentation.transform);
             Debug.Log("SWAN_JOURNEY_CANYON_ADOPTED owner="+Environment.gameObject.scene.name
                 +" parent="+Environment.transform.parent.name+" localPosition="+Environment.transform.localPosition.ToString("F4")
@@ -229,7 +238,14 @@ namespace SwanJourney
 
         public void FollowEnvironment()
         {
-            if (Environment && environmentAnchor) Environment.Follow(environmentAnchor);
+            if (!Environment || !environmentAnchor) return;
+            // The common content is still at workshop scale while the adapter imports.
+            // Apply the destination pose to the payload only, including the anchor offset.
+            var pivot = presentation ? presentation.content : null;
+            if (State == LoadingState.Loading && pivot && pivot.localScale.x > 0 && environmentAnchor.IsChildOf(pivot))
+                Environment.Follow(environmentAnchor, pivot, presentation.sandboxScale / pivot.localScale.x);
+            else
+                Environment.Follow(environmentAnchor);
         }
 
         void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.SceneLoader)) CpuMeasuredLateUpdate(); }
@@ -237,6 +253,9 @@ namespace SwanJourney
         {
             if (!Environment) return;
             FollowEnvironment();
+            // The adapter imports an active payload over multiple frame boundaries.
+            // Keep the attached instance active until the mode commits or cancels.
+            if (State == LoadingState.Loading) return;
             bool visible = journey && journey.inSandbox && State == LoadingState.Loaded;
             if (Environment.gameObject.activeSelf != visible) Environment.gameObject.SetActive(visible);
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,6 +26,7 @@ namespace SwanJourney.Editor
             bridge.jacketVolume=Save(WaterJacket(),folder+"/WaterJacket.asset");
             bridge.ringMesh=Save(Ring(),folder+"/FeedbackRing.asset");
             var alpha=MakeSoftTexture(folder);
+            var cloudTint=MakeCloudTint(folder);
             var flameAlpha=MakeFlameTexture(folder);
             var softMaps=new Dictionary<Texture2D,SoftParticleMaps>();
             SoftParticleMaps ParticleMaps(Texture2D texture)
@@ -74,6 +75,19 @@ namespace SwanJourney.Editor
                 if(soft||(kind==JourneyNativeMaterialKind.Particle&&!result.mainTexture))result.mainTexture=alpha;
                 if(kind==JourneyNativeMaterialKind.WaterBody||kind==JourneyNativeMaterialKind.WaterJacket||kind==JourneyNativeMaterialKind.WaterSurface)result.SetFloat("_Glossiness",.88f);
                 CopyTexture(source,result,"_BumpMap","_NORMALMAP");CopyTexture(source,result,"_OcclusionMap",null);CopyTexture(source,result,"_MetallicGlossMap","_METALLICGLOSSMAP");CopyTexture(source,result,"_EmissionMap",null);
+                if(kind==JourneyNativeMaterialKind.Cloud)
+                {
+                    result.mainTexture=cloudTint;
+                    result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;
+                    result.SetFloat("_Glossiness",0);result.SetFloat("_Metallic",0);
+                }
+                if(source.shader && source.shader.name.Contains("LayeredRock"))
+                {
+                    // The rock shader stores AO in the green channel of its metal mask.
+                    result.SetTexture("_OcclusionMap",result.GetTexture("_MetallicGlossMap"));
+                    result.SetFloat("_OcclusionStrength",1f); // AO contrast is bounded in the exported map.
+                    result.SetFloat("_BumpScale",source.GetFloat("_NormalPower"));
+                }
                 if((soft||kind==JourneyNativeMaterialKind.Particle)&&kind!=JourneyNativeMaterialKind.Furnace && result.mainTexture is Texture2D sprite)
                 {
                     var maps=ParticleMaps(sprite);result.mainTexture=maps.surface;result.SetTexture("_EmissionMap",maps.emission);
@@ -404,23 +418,85 @@ namespace SwanJourney.Editor
         }
         static Mesh CloudVolume()
         {
-            // Three world-visible clouds need a stable silhouette from both eyes.
-            // Opaque overlapping lobes avoid the striping of edge-on alpha card stacks.
+            // A continuous shell has no internal sphere intersections from either eye.
+            const int rings=22,segments=48;
             var vertices=new List<Vector3>();var uv=new List<Vector2>();var indices=new List<int>();
-            var centres=new[]{new Vector3(-.27f,-.10f,0),new Vector3(-.12f,.02f,-.02f),new Vector3(.10f,.04f,.04f),new Vector3(.28f,-.08f,0),new Vector3(-.07f,-.18f,.09f),new Vector3(.15f,-.15f,-.09f),new Vector3(-.28f,.055f,.10f),new Vector3(-.15f,.20f,.04f),new Vector3(.04f,.245f,.05f),new Vector3(.25f,.105f,.08f),new Vector3(-.07f,-.01f,.23f),new Vector3(.16f,-.045f,.23f)};
-            var radii=new[]{new Vector3(.16f,.16f,.20f),new Vector3(.18f,.23f,.22f),new Vector3(.20f,.25f,.22f),new Vector3(.15f,.17f,.19f),new Vector3(.26f,.11f,.20f),new Vector3(.23f,.13f,.20f),new Vector3(.10f,.12f,.13f),new Vector3(.12f,.13f,.14f),new Vector3(.13f,.12f,.13f),new Vector3(.12f,.13f,.14f),new Vector3(.12f,.14f,.11f),new Vector3(.12f,.12f,.12f)};
-            const int rings=10,segments=16;
-            for(int k=0;k<centres.Length;k++)
+            // March out from the common core to one smoothly merged bank of vapour.
+            // This is an editor bake; the native renderer gets a single ordinary mesh.
+            var lobes=new[]{
+                new Vector4(-.015f,-.043f,0,.24f),new Vector4(-.18f,.024f,-.025f,.19f),
+                new Vector4(-.105f,.16f,.025f,.16f),new Vector4(.045f,.18f,-.04f,.14f),
+                new Vector4(.17f,.065f,.055f,.175f),new Vector4(.29f,-.005f,-.018f,.117f),
+                new Vector4(.395f,-.05f,-.025f,.077f),new Vector4(-.316f,-.015f,.018f,.132f),
+                new Vector4(-.395f,-.06f,.01f,.084f),new Vector4(-.085f,-.015f,-.14f,.14f),
+                new Vector4(.13f,-.027f,-.145f,.122f),new Vector4(-.07f,.033f,.148f,.127f)};
+            float Field(Vector3 p)
             {
-                int offset=vertices.Count;
-                for(int y=0;y<=rings;y++)for(int x=0;x<=segments;x++)
+                float distance=1;
+                foreach(var l in lobes)
                 {
-                    float a=y*Mathf.PI/rings,b=x*Mathf.PI*2/segments;var p=new Vector3(Mathf.Sin(a)*Mathf.Cos(b),Mathf.Cos(a),Mathf.Sin(a)*Mathf.Sin(b));
-                    vertices.Add(centres[k]+Vector3.Scale(p,radii[k]));uv.Add(new Vector2(x/(float)segments,y/(float)rings));
+                    float a=(p-new Vector3(l.x,l.y,l.z)).magnitude-l.w;
+                    float blend=Mathf.Max(.052f-Mathf.Abs(distance-a),0);
+                    distance=Mathf.Min(a,distance)-blend*blend/.208f;
                 }
-                for(int y=0;y<rings;y++)for(int x=0;x<segments;x++){int a=offset+y*(segments+1)+x,b=a+segments+1;indices.AddRange(new[]{a,a+1,b,a+1,b+1,b});}
+                float curl=Mathf.PerlinNoise(13*p.x+5*p.z+7,11*p.y-4*p.z+5)-.5f;
+                return distance+.013f*curl;
             }
-            return Build("Rounded three-dimensional cloud lobes",vertices,uv,indices);
+            void AddPoint(Vector3 d)
+            {
+                float lo=0,hi=.7f;
+                for(int i=0;i<13;i++)
+                {
+                    float mid=(lo+hi)*.5f;
+                    if(Field(d*mid)<0)lo=mid;else hi=mid;
+                }
+                var p=d*((lo+hi)*.5f);
+                float exposure=Mathf.Clamp01(Field(p+new Vector3(-.033f,.064f,-.016f))/.07f);
+                float curl=Mathf.PerlinNoise(14*p.z-9*p.y+18,12*p.x+14);
+                var point=p;
+                // Compress the underside toward a shallow, naturally irregular cloud base.
+                if(p.y<0)point.y=p.y*(1-.38f*Mathf.SmoothStep(0,1,-p.y/.24f));
+                vertices.Add(point);
+                uv.Add(new Vector2(.76f*exposure+.24f*curl,Mathf.InverseLerp(-.185f,.32f,point.y)));
+            }
+            AddPoint(Vector3.up);
+            for(int row=1;row<rings;row++)
+            {
+                float theta=row*Mathf.PI/rings;
+                for(int s=0;s<segments;s++)
+                {
+                    float phi=s*2*Mathf.PI/segments;
+                    AddPoint(new Vector3(Mathf.Sin(theta)*Mathf.Cos(phi),Mathf.Cos(theta),Mathf.Sin(theta)*Mathf.Sin(phi)));
+                }
+            }
+            int south=vertices.Count;AddPoint(Vector3.down);
+            for(int s=0;s<segments;s++)
+            {
+                int a=1+s,b=1+(s+1)%segments;
+                indices.AddRange(new[]{0,b,a});
+                for(int row=1;row<rings-1;row++,a+=segments,b+=segments)
+                    indices.AddRange(new[]{a,b,a+segments,b,b+segments,a+segments});
+                indices.AddRange(new[]{a,b,south});
+            }
+            return Build("Continuous wind-shaped cumulus",vertices,uv,indices);
+        }
+        static Texture2D MakeCloudTint(string folder)
+        {
+            const int size=64;
+            var texture=new Texture2D(size,size,TextureFormat.RGB24,false);
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+            {
+                float height=y/(float)(size-1),density=x/(float)(size-1);
+                float light=Mathf.SmoothStep(0,1,Mathf.Clamp01(.84f*height+.36f*density-.08f));
+                texture.SetPixel(x,y,Color.Lerp(new Color(.68f,.72f,.80f),new Color(1,.99f,.96f),light));
+            }
+            texture.Apply();
+            string path=folder+"/CloudTint.png";
+            File.WriteAllBytes(path,texture.EncodeToPNG());UnityEngine.Object.DestroyImmediate(texture);
+            AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);
+            var importer=(TextureImporter)AssetImporter.GetAtPath(path);
+            importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
         static Mesh BeamVolume()
         {

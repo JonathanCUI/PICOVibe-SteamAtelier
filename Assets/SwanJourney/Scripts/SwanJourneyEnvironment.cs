@@ -10,12 +10,13 @@ namespace SwanJourney
         public float bakedGeometryScale = 1f;
         public Vector3 EffectiveScale => transform.lossyScale * bakedGeometryScale;
 
-        public void Follow(Transform anchor)
+        public void Follow(Transform anchor, Transform scalePivot = null, float scaleRatio = 1f)
         {
             if (!anchor) return;
-            if (transform.position != anchor.position || transform.rotation != anchor.rotation)
-                transform.SetPositionAndRotation(anchor.position, anchor.rotation);
-            var scale = anchor.lossyScale / bakedGeometryScale;
+            var position = scalePivot ? scalePivot.position + (anchor.position - scalePivot.position) * scaleRatio : anchor.position;
+            if (transform.position != position || transform.rotation != anchor.rotation)
+                transform.SetPositionAndRotation(position, anchor.rotation);
+            var scale = anchor.lossyScale * (scaleRatio / bakedGeometryScale);
             if(transform.parent)
             {
                 var parentScale=transform.parent.lossyScale;

@@ -56,7 +56,11 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
   for(int i=0;i<clouds.Length;i++){
    var t=sky.clouds[i];float seed=i*2.37f;
    t.localPosition=starts[i]+(FreezeCloudTransforms?Vector3.zero:new Vector3(Mathf.Sin(clock*.025f+seed)*.55f,Mathf.Sin(clock*.14f+seed)*.07f,Mathf.Cos(clock*.023f+seed)*.25f));
-   t.localScale=scales[i];block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);CloudWriteCount++;
+   if(journey.SwanInputActive&&!FreezeCloudTransforms){
+    float roll=Mathf.Sin(Evolution*.62f+seed),rise=Mathf.Sin(Evolution*.87f+seed);
+    t.localScale=Vector3.Scale(scales[i],new Vector3(1+.033f*roll,1+.065f*rise,1-.026f*roll));
+   }else t.localScale=scales[i];
+   block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);CloudWriteCount++;
   }
   if(active){emit+=dt*(5.0f+Mathf.Clamp01(journey.speed/4)*.8f);while(emit>=1){Emit();emit--;}}
   else {emit=0;if(wasActive)foreach(var p in puffs){p.alive=false;p.r.enabled=false;}}

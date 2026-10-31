@@ -10,9 +10,31 @@ namespace SwanJourney.Editor
     // Verified in APK pixels: when metal and AO share one Unity texture,
     // this exporter writes metallic R into the final ORM's occlusion R (zero
     // for wood/stone). Give AO its own texture identity. The exporter then
-    // combines AO and metal correctly. Preserve the original metallic map.
+    // combines AO and metal correctly. Bake selected finishes into the data
+    // channels so conversion to native ORM preserves their response.
     public static class SwanJourneyPbrPacking
     {
+        enum Finish { Original, Paint, Steel, Brass, Rock }
+        static Finish Surface(string name)
+        {
+            string n=name.ToLowerInvariant();
+            if(n.StartsWith("swan v23 rock ambient -",StringComparison.Ordinal))return Finish.Rock;
+            if(n.Contains("enamel")||n.Contains("rolled roof"))return Finish.Paint;
+            if(n.Contains("brass"))return Finish.Brass;
+            if(n.Contains("machined")||n.Contains("ground linkage")||n.Contains("honed liner")||n.Contains("brushedsteel")||n.Contains("structuralsteel"))return Finish.Steel;
+            return Finish.Original;
+        }
+        static Vector2 Response(Finish finish)
+        {
+            switch(finish)
+            {
+                case Finish.Paint:return new Vector2(.14f,.58f);
+                case Finish.Steel:return new Vector2(.95f,.78f);
+                case Finish.Brass:return new Vector2(.96f,.74f);
+                case Finish.Rock:return new Vector2(0,.22f);
+                default:return Vector2.one;
+            }
+        }
         [Serializable] sealed class Report
         {
             public bool passed, nativeRenderingValidated;
@@ -31,28 +53,45 @@ namespace SwanJourney.Editor
             {
                 if(m.shader.name!="Standard" || !AssetDatabase.GetAssetPath(m).StartsWith(SwanJourneyBuild.Generated+"/NativeVisuals/",StringComparison.Ordinal))continue;
                 report.materials++;
-                if(m.GetTexture("_MetallicGlossMap") is Texture2D)report.metalMaps++;
+                var finish=Surface(m.name);
+                if(m.GetTexture("_MetallicGlossMap") is Texture2D metal)
+                {
+                    report.metalMaps++;
+                    if(finish!=Finish.Original)m.SetTexture("_MetallicGlossMap",Pack(metal,false,finish));
+                }
+                else if(finish!=Finish.Original)
+                {
+                    var response=Response(finish);
+                    m.SetFloat("_Metallic",m.GetFloat("_Metallic")*response.x);
+                    m.SetFloat("_Glossiness",m.GetFloat("_Glossiness")*response.y);
+                }
                 if(m.GetTexture("_OcclusionMap") is Texture2D ao)
-                { m.SetTexture("_OcclusionMap",Pack(ao,true));report.occlusionMaps++; }
+                { m.SetTexture("_OcclusionMap",Pack(ao,true,finish==Finish.Rock?finish:Finish.Original));report.occlusionMaps++; }
                 EditorUtility.SetDirty(m);
             }
             AssetDatabase.SaveAssets();report.passed=true;
             File.WriteAllText(SwanJourneyBuild.Output+"/pbr-packing.json",JsonUtility.ToJson(report,true));
             Debug.Log("SWAN_JOURNEY_PBR_PACKING metalMaps="+report.metalMaps+" aoMaps="+report.occlusionMaps+" nativeVisuals=unverified");
-            Texture2D Pack(Texture2D source,bool ao)
+            Texture2D Pack(Texture2D source,bool ao,Finish finish)
             {
                 string src=AssetDatabase.GetAssetPath(source);
                 if(src.StartsWith(folder+"/",StringComparison.Ordinal))return source;
-                string key=AssetDatabase.AssetPathToGUID(src)+(ao?"_ao":"_metal");
+                string key=AssetDatabase.AssetPathToGUID(src)+(ao?"_ao":"_metal")+(finish==Finish.Original?"":"_"+finish);
                 if(cache.TryGetValue(key,out var cached))return cached;
                 // TextureBudget already creates canonical, <=512px linear PNGs.
                 if(!src.EndsWith(".png",StringComparison.OrdinalIgnoreCase))throw new InvalidOperationException("Data packing requires budgeted PNG: "+src);
                 var pixels=new Texture2D(2,2,TextureFormat.RGBA32,false,true);
                 if(!pixels.LoadImage(File.ReadAllBytes(src)))throw new InvalidOperationException("Invalid data PNG: "+src);
-                var values=pixels.GetPixels32();
+                var values=pixels.GetPixels32();var response=Response(finish);
                 for(int i=0;i<values.Length;i++)
                 {
-                    var c=values[i];values[i]=ao?new Color32(c.g,c.g,c.g,255):new Color32(c.r,(byte)(255-c.a),c.r,c.a);
+                    var c=values[i];
+                    if(ao)
+                    {
+                        byte occlusion=finish==Finish.Rock?(byte)(150+(105*c.g+127)/255):c.g;
+                        values[i]=new Color32(occlusion,occlusion,occlusion,255);
+                    }
+                    else values[i]=new Color32((byte)Mathf.RoundToInt(c.r*response.x),c.g,c.b,(byte)Mathf.RoundToInt(c.a*response.y));
                 }
                 pixels.SetPixels32(values);pixels.Apply();string path=folder+"/"+key+".png";
                 File.WriteAllBytes(path,pixels.EncodeToPNG());UnityEngine.Object.DestroyImmediate(pixels);

@@ -12,6 +12,7 @@ namespace SwanJourney
     {
         public SteamJourney journey;
         public Transform workbenchRoot;
+        public GameObject moveLesson, moveCaption;
         public MesaDayNightV13 sky;
         public bool Ready { get; private set; }
         public bool TwoHandActive => manipulation != null && manipulation.Active;
@@ -310,6 +311,7 @@ namespace SwanJourney
                 if (WorkbenchInputBlocked) { c.blocked = true; return; }
                 CancelExplosion("move-handle");
                 c.previousMove = c.useHand ? c.startHand : c.startHit;
+                c.objectStart=workbenchRoot.position;
                 c.moveResponse=new SwanJourneyMoveResponse();
                 if(TryHead(out var head))c.moveResponse.Begin(Vector3.Distance(head,workbenchRoot.position));
                 Debug.Log("SWAN_JOURNEY_MOVE_BEGIN mode="+(journey.inSandbox?"sandbox":"workshop"));
@@ -426,6 +428,12 @@ namespace SwanJourney
             { if (sky) sky.automatic = c.skyAutomatic; c.celestialActive = false; }
             if (c.kind == SwanJourneyTargetKind.MoveWorkbench) {
                 tabletop?.EndManipulation();
+                if(!cancel && !c.blocked && c.moveResponse!=null && moveCaption && moveLesson
+                    && !moveCaption.activeSelf && Vector3.Distance(c.objectStart,workbenchRoot.position)>.025f)
+                {
+                    moveLesson.SetActive(false);
+                    moveCaption.SetActive(true);
+                }
                 Debug.Log("SWAN_JOURNEY_MOVE_END canceled="+cancel+" position="+workbenchRoot.position.ToString("F3"));
             }
             if (!journey) { c.grabbing = false; return; }

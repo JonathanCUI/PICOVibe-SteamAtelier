@@ -51,8 +51,14 @@ namespace SwanJourney
         {
             public Renderer renderer;
             public Material[] original, effect;
-            public bool enabled;
+            public bool effectApplied;
             public float coordinate;
+            public void ShowEffect(bool show)
+            {
+                if (show == effectApplied || !renderer) return;
+                renderer.sharedMaterials = show ? effect : original;
+                effectApplied = show;
+            }
         }
         readonly List<Animated> animated = new List<Animated>();
         readonly Dictionary<Material, JourneyNativeMaterial> lookup = new Dictionary<Material, JourneyNativeMaterial>();
@@ -71,6 +77,7 @@ namespace SwanJourney
         int impactCount;
         bool scanning, finishing, lastMode;
         Bounds scanBounds;
+        float goldMin, goldMax;
         Material rippleInstance;
 
         void Awake()
@@ -108,7 +115,7 @@ namespace SwanJourney
                 {
                     var entry = scan[i];
                     if (entry.renderer && !Under(entry.renderer, previous)) continue;
-                    if (entry.renderer) { entry.renderer.sharedMaterials = entry.original; entry.renderer.enabled = entry.enabled; }
+                    entry.ShowEffect(false);
                     scan.RemoveAt(i); removedScan = true;
                 }
                 if (removedScan && scan.Count == 0)
@@ -139,7 +146,7 @@ namespace SwanJourney
             deferredEnvironment = environment;
             // The loader can bind before Awake, or attach a live additive scene.
             // Awake fills lookup; later calls can discover the new root immediately.
-            if (deferredEnvironment && block != null) Discover();
+            if (deferredEnvironment && block != null) DiscoverRoot(deferredEnvironment);
         }
 
         static bool Under(Renderer renderer, Transform root)
@@ -147,14 +154,20 @@ namespace SwanJourney
 
         void Discover()
         {
-            foreach (var r in new[] { workbench, deferredEnvironment }.Where(root => root)
-                .SelectMany(root => root.GetComponentsInChildren<Renderer>(true)).Distinct())
+            if (workbench) DiscoverRoot(workbench);
+            if (deferredEnvironment && (!workbench || !deferredEnvironment.IsChildOf(workbench))) DiscoverRoot(deferredEnvironment);
+        }
+
+        void DiscoverRoot(Transform root)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
             {
-                if (!r || r.GetComponent<TMPro.TMP_Text>() || r.GetComponent<TMPro.TMP_SubMesh>() || r.GetComponent<TMPro.TMP_SubMeshUI>() || seen.Contains(r)) continue;
+                if (!r || seen.Contains(r)) continue;
                 // StudioPartCards now owns a clone of its serialized native line
                 // material. Do not replace that binding after Start.
                 var source = r.sharedMaterial;
                 if (!source || !lookup.TryGetValue(source, out var definition)) continue;
+                if (r.GetComponent<TMPro.TMP_Text>() || r.GetComponent<TMPro.TMP_SubMesh>() || r.GetComponent<TMPro.TMP_SubMeshUI>()) continue;
                 bool hasParameters = r.HasPropertyBlock();
                 bool isWindow = windows != null && Array.IndexOf(windows, r) >= 0;
                 if (definition.kind == JourneyNativeMaterialKind.Surface && !hasParameters && !isWindow) continue;
@@ -228,6 +241,7 @@ namespace SwanJourney
                 {
                     case JourneyNativeMaterialKind.Cloud:
                         color = Color.Lerp(new Color(.42f,.51f,.65f,1),color,daylight);
+                        color.a = 1;
                         emission = new Color(color.r,color.g,color.b)*.045f;
                         break;
                     case JourneyNativeMaterialKind.Steam:
@@ -288,7 +302,7 @@ namespace SwanJourney
             if (impactCount != waterImpulses.ImpactCount) { impactCount = waterImpulses.ImpactCount; waveAge = 0; }
             waveAge += Time.deltaTime;
             bool visible = waveAge < 1.1f && !journey.inSandbox && journey.cutaway && journey.modules[1].installed;
-            waterRing.gameObject.SetActive(visible);
+            if(waterRing.gameObject.activeSelf!=visible)waterRing.gameObject.SetActive(visible);
             if (!visible) return;
             waterRing.localPosition = new Vector3(0,.006f,0);
             waterRing.localRotation = Quaternion.identity;
@@ -306,10 +320,12 @@ namespace SwanJourney
             bool first = true;
             foreach (var r in roots.Where(o=>o).SelectMany(o=>o.GetComponentsInChildren<MeshRenderer>()).Distinct())
             {
-                if (!r.enabled || r.GetComponent<TMPro.TMP_Text>() || r.sharedMaterials.Length==0 || r.sharedMaterials.Any(m=>!m||m.renderQueue>=2500)) continue;
+                if (!r.enabled || r.GetComponent<TMPro.TMP_Text>()) continue;
+                var original = r.sharedMaterials;
+                if (original.Length == 0 || original.Any(m => !m || m.renderQueue >= 2500)) continue;
                 var bounds = LocalBounds(r, workbench);
                 if (first) {scanBounds=bounds;first=false;} else scanBounds.Encapsulate(bounds);
-                scan.Add(new SweepEntry {renderer=r,original=r.sharedMaterials,effect=Enumerable.Repeat(scanMaterial,r.sharedMaterials.Length).ToArray(),enabled=r.enabled,coordinate=bounds.center.y});
+                scan.Add(new SweepEntry {renderer=r,original=original,effect=Enumerable.Repeat(scanMaterial,original.Length).ToArray(),coordinate=bounds.center.y});
             }
             scanning = scan.Count > 0;
             if (scanning && ringMesh)
@@ -325,12 +341,12 @@ namespace SwanJourney
         {
             if (!scanning) return;
             float y = Mathf.Lerp(scanBounds.min.y-.02f,scanBounds.max.y+.02f,Mathf.SmoothStep(0,1,progress));
-            foreach (var e in scan) if (e.renderer) {e.renderer.enabled=e.enabled; e.renderer.sharedMaterials=e.coordinate<=y?e.original:e.effect;}
+            foreach (var e in scan) e.ShowEffect(e.coordinate > y);
             if (scanRing) scanRing.localPosition=new Vector3(scanBounds.center.x,y,scanBounds.center.z);
         }
         void EndArrival()
         {
-            foreach (var e in scan) if(e.renderer) {e.renderer.sharedMaterials=e.original;e.renderer.enabled=e.enabled;}
+            foreach (var e in scan) e.ShowEffect(false);
             scan.Clear();scanning=false;
             if(scanRing)scanRing.gameObject.SetActive(false);
         }
@@ -343,9 +359,10 @@ namespace SwanJourney
                 var mats=r.sharedMaterials;
                 if(!r.enabled||mats.Length==0||mats.Any(m=>!m||m.renderQueue>=2500)||r.GetComponent<TMPro.TMP_Text>())continue;
                 var p=train.InverseTransformPoint(r.bounds.center);
-                gold.Add(new SweepEntry {renderer=r,original=mats,effect=Enumerable.Repeat(goldMaterial,mats.Length).ToArray(),enabled=r.enabled,coordinate=p.x-p.y*.35f});
+                gold.Add(new SweepEntry {renderer=r,original=mats,effect=Enumerable.Repeat(goldMaterial,mats.Length).ToArray(),coordinate=p.x-p.y*.35f});
             }
             finishing=gold.Count>0;
+            if(finishing){goldMin=gold.Min(e=>e.coordinate);goldMax=gold.Max(e=>e.coordinate);}
             if(goldRings.Count==0 && ringMesh && scanMaterial && journey.engine && journey.engine.sides!=null)
                 foreach(var side in journey.engine.sides) foreach(var wheel in side.wheels)
                 {
@@ -357,14 +374,15 @@ namespace SwanJourney
         void GoldProgress(float progress)
         {
             if(!finishing)return;
-            float lo=gold.Min(e=>e.coordinate),hi=gold.Max(e=>e.coordinate),width=Mathf.Max(.3f,(hi-lo)*.20f);
-            float head=Mathf.Lerp(lo-width,hi+width,progress);
-            foreach(var e in gold)if(e.renderer)e.renderer.sharedMaterials=Mathf.Abs(e.coordinate-head)<width?e.effect:e.original;
-            foreach(var r in goldRings)if(r)r.SetActive(progress>.15f&&progress<.85f);
+            float width=Mathf.Max(.3f,(goldMax-goldMin)*.20f);
+            float head=Mathf.Lerp(goldMin-width,goldMax+width,progress);
+            foreach(var e in gold) e.ShowEffect(Mathf.Abs(e.coordinate-head)<width);
+            bool visible=progress>.15f&&progress<.85f;
+            foreach(var r in goldRings)if(r&&r.activeSelf!=visible)r.SetActive(visible);
         }
         void EndGold()
         {
-            foreach(var e in gold)if(e.renderer)e.renderer.sharedMaterials=e.original;
+            foreach(var e in gold) e.ShowEffect(false);
             gold.Clear();finishing=false;foreach(var r in goldRings)if(r)r.SetActive(false);
         }
         Transform MakeRing(string label,Transform parent,Material material)
