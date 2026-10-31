@@ -1,5 +1,11 @@
 # Steam Atelier Swan · V23
 
+- 2026-10-31 0.23.24 最新佩戴反馈：山谷入场不再闪现巨大山体/空场，等待约8秒；完成扫光只播放一轮并恢复原材质，山脚起伏可接受。金属质感未改善，云偏暗偏虚；列车行驶时用户报告十几FPS，性能未验收。`session-output-20261031-170540/canyon.png` 已框住完整桌面山谷（APP约21FPS）。本轮仅分析已有证据，用户暂不方便新采样，未改游戏代码或安装。八个无双手的低帧率窗口19.32–26.04FPS，已计时工程回调2.262–2.788ms/帧；不能把未测余量全部归SDK/GPU。2608条INVALID_OBJECT最后发生在17:01:15.966，上述后续低帧率窗口均无同类错误。包内ORM像素确认黄铜粗糙度约0.310→0.489、连杆钢0.380→0.517；云新增灰蓝渐变且随昼夜压暗。详见该目录`existing-data-review.html/json`，运动列车节点同步只是待验证候选，不是已证明根因。
+
+- 0.23.24 本轮后续日志已记录双手Began与首次山谷 `driving-unity-mode-applied`，request→该Unity状态为5.635秒，其中bindings→first-frame为5.050秒；这不是原生画面完全出现的计时。山谷抓图时用户面向电脑，未框住山谷，不能据此判定尺寸或云/岩石视觉通过；等待用户反馈，详见同轮 `timing.json` 和 `release-validation.json`。
+
+- 2026-10-31 0.23.24/code24 已构建、安装并启动（PID19151）；源码提交 `1c3c209d`，用户补交 `SteamAtelier-Swan-0.23.24.zip` 内 Git bundle 与该提交完全一致，已核验而未重复覆盖。9组回归、110性能/加载检查、263包内检查、场景分包及v2签名通过；APK766348821字节，SHA256 `15b95f64dd2d4a384b6670a388e9cd5926b26c7231d2119fef3a2c2c5dfef372`。保留Development/IL2CPP Release/OptimizeSpeed与存档；真机截图已见工坊、说明牌和18/18进度，APP文字约30FPS，不代表性能改善。首次启动resource-load到workshop-handoff为22.877秒，仅Unity交接计时；原生日志有INVALID_OBJECT/Empty bounding box，未当作零错误通过。山谷加载时机与初始尺寸、材质装配反馈、云与山脚待用户戴机验收。证据 `Builds/Evidence/session-output-20261031-v2324-partner/`，归档 `Builds/SwanJourney/Releases/0.23.24/`。
+
 - 2026-10-31用户已确认0.23.23按钮点击、双手旋转与缩放恢复；日志10:54–10:55有原生Began及TwoHandBegin。保留Development/Release已验收配置，但未证明22故障的唯一根因。用户仍报告约30–40FPS；本轮只读分析保存在Builds/Evidence/session-output-20261031-105804，未改代码/重打包。当前辅助副本三角与inactive节点统计不可当实时绘制量；主瓶颈仍需原生函数或单变量对照细分。
 
 - 当前0.23.23/code23已安装Success并启动PID8619，存档保留。恢复Development + IL2CPP Release/OptimizeSpeed，只有只读INPUT_HEALTH/NATIVE_BEGIN诊断变化，三个GLB与22逐字节一致。9套/110性能保护/263包内/v2签名通过；APK758925182字节、SHA256 556b4df13f750f41130a81838de2bb7d248bad58ca03ce461b11b877fbdd8321。真机捏合仍待本轮反馈，不能声明已修复；证据session-output-20261031-v2323-input-recovery。
