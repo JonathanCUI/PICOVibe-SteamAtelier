@@ -13,6 +13,8 @@ namespace SwanAtelier
         public SwanFpsMeshText meshText;
         public Camera editorPreviewCamera;
         public Vector3 viewOffset = new Vector3(-.32f, .25f, 1.1f);
+        // Opt-in layout scale; older Swan scenes retain their original glyph size.
+        public float visualScale = 1f;
         public bool HasTrackedPose { get; private set; }
         public int PoseResult { get; private set; } = -1;
         public string DisplayText { get; private set; }
@@ -27,7 +29,7 @@ namespace SwanAtelier
         Pose latestPose, firstPose;
         float maxPositionChange, maxRotationChange;
 
-        void OnEnable() { counter.Reset(); if (meshText) meshText.gameObject.SetActive(!paused); nextDiagnostic = Time.realtimeSinceStartupAsDouble + 5; WriteLabel(); }
+        void OnEnable() { counter.Reset(); SetVisualActive(!paused && (Application.isEditor || HasTrackedPose)); nextDiagnostic = Time.realtimeSinceStartupAsDouble + 5; WriteLabel(); }
         void Update()
         {
             if (paused || !meshText) return;
@@ -40,6 +42,7 @@ namespace SwanAtelier
                     + " posePosition=" + latestPose.position.ToString("F3") + " poseRotation=" + latestPose.rotation.ToString("F3")
                     + " positionDelta=" + maxPositionChange.ToString("F3") + " angleDelta=" + maxRotationChange.ToString("F1")
                     + " hudPosition=" + VisualTransform.position.ToString("F3") + " hudRotation=" + VisualTransform.rotation.ToString("F3")
+                    + " hudScale=" + VisualTransform.lossyScale.ToString("F3") + " visualActive=" + meshText.gameObject.activeInHierarchy
                     + " visualNode=" + TrackerState(VisualTransform) + " wrapperNode=" + TrackerState(transform));
             }
         }
@@ -66,7 +69,7 @@ namespace SwanAtelier
             PoseResult=positionValid&&rotationValid&&tracked&&IsFinite(position)&&IsValid(rotation)?0:1;
             if(PoseResult!=0) {
                 if(HasTrackedPose)Debug.LogWarning("SWAN_ATELIER_HUD_TRACKING_LOST");
-                HasTrackedPose=false;meshText.gameObject.SetActive(false);return;
+                HasTrackedPose=false;SetVisualActive(false);return;
             }
             var pose=new Pose(position,rotation);
             latestPose=pose;
@@ -79,7 +82,7 @@ namespace SwanAtelier
             // The Spatial input provider exposes the Unity tracking origin. Raw
             // compositor/world HMD poses are not interchangeable with this space.
             ApplyHeadPose(pose,Matrix4x4.identity);
-            HasTrackedPose=true;meshText.gameObject.SetActive(true);
+            HasTrackedPose=true;SetVisualActive(true);
 #else
             if(editorPreviewCamera)ApplyHeadPose(new Pose(editorPreviewCamera.transform.position,editorPreviewCamera.transform.rotation),Matrix4x4.identity);
 #endif
@@ -88,7 +91,11 @@ namespace SwanAtelier
         {
             var visual = VisualTransform;
             visual.SetPositionAndRotation(nativeToUnity.MultiplyPoint3x4(pose.position + pose.rotation * viewOffset), nativeToUnity.rotation * pose.rotation);
-            visual.localScale = nativeToUnity.lossyScale;
+            visual.localScale = nativeToUnity.lossyScale * Mathf.Max(.01f, visualScale);
+        }
+        void SetVisualActive(bool value)
+        {
+            if (meshText && meshText.gameObject.activeSelf != value) meshText.gameObject.SetActive(value);
         }
         static string TrackerState(Transform target) {
             var tracker = target.GetComponent<SpatialAdapterGameObjectTracker>();
@@ -106,10 +113,10 @@ namespace SwanAtelier
         void OnApplicationPause(bool value)
         {
             paused = value; counter.Reset(); HasTrackedPose = false;
-            if (meshText) meshText.gameObject.SetActive(!value);
+            SetVisualActive(!value && Application.isEditor);
             if (!value) { nextDiagnostic = Time.realtimeSinceStartupAsDouble + 5; WriteLabel(); }
         }
-        void OnDisable() { counter.Reset(); HasTrackedPose = false; if (meshText) meshText.gameObject.SetActive(false); }
+        void OnDisable() { counter.Reset(); HasTrackedPose = false; SetVisualActive(false); }
     }
 }
 

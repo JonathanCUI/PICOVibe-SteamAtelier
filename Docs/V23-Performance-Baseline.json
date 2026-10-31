@@ -1,0 +1,184 @@
+{
+  "recordedAt": "2026-10-31",
+  "version": "0.23.23",
+  "analysis": {
+    "version": "0.23.23",
+    "analysisScope": "Existing authorized traces, packaged assets and already-generated logs; no new capture, code edits or installation",
+    "nativeInput": "User confirms buttons, two-hand rotation and scale restored; log contains INPUT_NATIVE_BEGIN and TWO_HAND_BEGIN",
+    "workshopMixedWindows": {
+      "timeRange": [
+        "10-31 10:54:46.780",
+        "10-31 10:54:51.797",
+        "10-31 10:54:56.821"
+      ],
+      "frames": 453,
+      "twoHandFrames": 298,
+      "perFrameWallTimeWeightedMs": {
+        "lateRecordedMs": 29.736589403973507,
+        "measuredCallbackMs": 3.9098278145695367,
+        "TransformFilterMs": 1.7088807947019868,
+        "SimulationMs": 1.0176843267108167,
+        "InputMs": 0.0547439293598234,
+        "NativeUiMs": 0.3680264900662252,
+        "VisualBridgeMs": 0.5711766004415011,
+        "FlowParticlesMs": 0.12366445916114789,
+        "LightingMs": 0.0046644591611479025
+      }
+    },
+    "oldTraceLimits": [
+      "0.23.18 GPU mean14.896ms is shared runtime timing, not current23 per-app shader time",
+      "PhysicsFixedUpdate ~0.001ms in18;23 logs must also retain autoSimulation=false",
+      "No native leaf-level CPU stack or controlled one-variable scene/shadow tests",
+      "Packaged triangle/material/node counts include inactive branches and cannot equal visible triangles or draw calls"
+    ],
+    "knowledgeBase": {
+      "performanceKBBackend": "unavailable",
+      "picoDevKnowledge": "Previous retrieval did not cover Unity SpatialAdapter6.1; not used as causal evidence"
+    },
+    "prioritizedHypotheses": [
+      "Native scene update/submission/wait workload coupled with high active entity/renderer count",
+      "GPU geometry/material/shadow burden",
+      "Measured app simulation and transform filtering as smaller contributors"
+    ],
+    "nextControlledExperiment": "Use23 as functional baseline. Compare same view with one group at a time disabled or simplified: auxiliary previews/ghosts, static decorative clusters, native shadows if public control is verified. Measure native CPU, GPU, active renderers and both idle/moving frame times; validate interaction after each change."
+  },
+  "geometry": {
+    "scope": "Packaged node hierarchy and initial active flags, not per-frame visible/draw counts or saved-progress runtime state",
+    "categories": {
+      "Train base visible geometry": {
+        "meshNodes": 1678,
+        "triangles": 1205611,
+        "initialActiveMeshes": 99,
+        "initialActiveTriangles": 106387
+      },
+      "Technical outlines/ghost shells": {
+        "meshNodes": 202,
+        "triangles": 303924,
+        "initialActiveMeshes": 0,
+        "initialActiveTriangles": 0
+      },
+      "Assembly target projections": {
+        "meshNodes": 36,
+        "triangles": 1271858,
+        "initialActiveMeshes": 0,
+        "initialActiveTriangles": 0
+      },
+      "Other": {
+        "meshNodes": 272,
+        "triangles": 127064,
+        "initialActiveMeshes": 79,
+        "initialActiveTriangles": 27328
+      },
+      "Instrument worktop": {
+        "meshNodes": 436,
+        "triangles": 71370,
+        "initialActiveMeshes": 247,
+        "initialActiveTriangles": 41228
+      },
+      "Module previews": {
+        "meshNodes": 166,
+        "triangles": 674606,
+        "initialActiveMeshes": 15,
+        "initialActiveTriangles": 45302
+      },
+      "Native flow particle pool": {
+        "meshNodes": 288,
+        "triangles": 13824,
+        "initialActiveMeshes": 288,
+        "initialActiveTriangles": 13824
+      }
+    },
+    "largestBaseTrainMeshInstances": [
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/05 锅炉与热循环/P02 锅炉筒体/精密紧固件_MachinedNickel",
+        "triangles": 101808,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P17 后缓冲梁/Swan rigid detail batch 6",
+        "triangles": 36096,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P01 铆接车架/XR静态细节_SatinMachinedSteel",
+        "triangles": 25900,
+        "initialActive": true
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/剖视教学模型 · 实体截面/Principle 4/Combined_Polished copper",
+        "triangles": 23664,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/05 锅炉与热循环/P02 锅炉筒体/XR静态细节_MachinedNickel",
+        "triangles": 21646,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/剖视教学模型 · 实体截面/Principle 5/Combined_Machined steel",
+        "triangles": 21152,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/剖视教学模型 · 实体截面/Principle 2/Reflective water level · open inspection/Water meniscus · animated reflections",
+        "triangles": 20480,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/Principle 1/Combined_Machined steel",
+        "triangles": 17856,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/M06-F 走行板与支座/XR静态细节_RolledTreadSteel",
+        "triangles": 14608,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P01 铆接车架/XR静态细节_GraphiteFrame",
+        "triangles": 12296,
+        "initialActive": true
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P01 铆接车架/XR静态细节_TurnedSteel",
+        "triangles": 10968,
+        "initialActive": true
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/05 锅炉与热循环/P07 汽包/XR静态细节_BrushedBrass",
+        "triangles": 10482,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/05 锅炉与热循环/M02-P 锅炉管板/火箱烟管孔板",
+        "triangles": 10328,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/剖视教学模型 · 实体截面/Principle 2/Combined_Freshly machined section edges",
+        "triangles": 10296,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/M06-F 走行板与支座/XR静态细节_MachinedSteel",
+        "triangles": 10250,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P17 前缓冲梁/精密紧固件_MachinedSteel",
+        "triangles": 9696,
+        "initialActive": false
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/01 车架与悬挂/P01 铆接车架/XR静态细节_MachinedSteel",
+        "triangles": 9272,
+        "initialActive": true
+      },
+      {
+        "path": "蒸汽工坊·V23 · Swan workbench/V23 partner composition/原理装配工坊/Playable locomotive anchor/可拆装机车/B unified cast front cradle/B removable shared horseshoe guard/Open woven hexagonal service mesh/Combined_B oxidised woven steel",
+        "triangles": 8496,
+        "initialActive": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Rock ambient - Rock ambient - Original-Rocks
+  m_Shader: {fileID: 4800000, guid: 7b61ba13111c27c49bf11f4ff140e83f, type: 3}
+  m_Parent: {fileID: 2100000, guid: 8bb065b0b9f14589aa0438d90d61ee55, type: 2}
+  m_ModifiedSerializedProperties: 4
+  m_ValidKeywords:
+  - _LAYERMODE_TOPDOWN
+  - _VERTEXCOLORCHANNEL_B
+  m_InvalidKeywords:
+  - _METALLICGLOSSMAP
+  - _NORMALMAP
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: b2746f94e43c4582acc3c9edcdb72965, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LayerAlbedo:
+        m_Texture: {fileID: 2800000, guid: f5d63d36e614b7d4fb675bb9a0642685, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LayerNormalMap:
+        m_Texture: {fileID: 2800000, guid: b06a9846ad60f1a449514924430680cd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 2cad1d5811794f3bb9bc3e89fd2b8ac8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 2800000, guid: 9bc2ee98db4f4128a630b605454a2c98, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 2800000, guid: 9bc2ee98db4f4128a630b605454a2c98, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _GlossMapScale: 0.25
+    - _OcclusionStrength: 0.5
+    - _QueueControl: 0
+    - _Tiling: 1.25
+    - _Tiling2: 0.0625
+    m_Colors:
+    - _2ndColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

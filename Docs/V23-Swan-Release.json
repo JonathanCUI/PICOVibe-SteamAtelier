@@ -1,0 +1,82 @@
+{
+  "recordedAt": "2026-10-31T10:50:55.759713+08:00",
+  "application": {
+    "name": "蒸汽工坊·V23",
+    "package": "com.picovibe.steamatelier.v23",
+    "versionName": "0.23.23",
+    "versionCode": 23,
+    "unityEditor": "2022.3.62f2c1"
+  },
+  "artifact": {
+    "file": "Builds\\SwanJourney\\Releases\\0.23.23\\SteamAtelier-V23-Swan-0.23.23.apk",
+    "bytes": 758925182,
+    "sha256": "556b4df13f750f41130a81838de2bb7d248bad58ca03ce461b11b877fbdd8321",
+    "unityBuild": "Succeeded",
+    "unityErrors": 0,
+    "signatureVerified": true,
+    "signatureScheme": "v2"
+  },
+  "installation": {
+    "deviceId": "PB3A10MGL9240036B",
+    "packageName": "com.picovibe.steamatelier.v23",
+    "running": true,
+    "pid": 8619,
+    "versionName": "0.23.23",
+    "versionCode": "23",
+    "userId": "",
+    "apkPaths": [
+      "/data/app/~~bdEO3Xk3JnfUaSMFTSxh7w==/com.picovibe.steamatelier.v23-i8aKsryzxIlj1KEmrjPGwg==/base.apk"
+    ]
+  },
+  "dataReset": false,
+  "evidence": "Builds\\Evidence\\session-output-20261031-v2323-input-recovery",
+  "buildProfile": "Development / IL2CPP Release / OptimizeSpeed",
+  "changes": [
+    "Restore Development / IL2CPP Release / OptimizeSpeed profile after 22 gesture failure",
+    "Keep 21/22 geometry and collision budget; exact three scene GLBs unchanged",
+    "Read-only input device/action/lifecycle health logs every five seconds and native Begin diagnostics"
+  ],
+  "validation": {
+    "editorSuites": 9,
+    "performanceChecks": 110,
+    "packageChecks": 263,
+    "nativeRenderingValidated": false,
+    "nativePerformanceValidated": false,
+    "target90FpsAchieved": false,
+    "sceneGlbsByteIdenticalTo22": true,
+    "nativeInputValidated": true
+  },
+  "deviceState": "Worn workshop and canyon execution confirmed in23 logs; input working.",
+  "baselineUserFps": {
+    "workshop": "Reported low; 19 log steady Late ~30.4ms; no newer steady workshop capture",
+    "canyonIdle": 41,
+    "canyonTwoHand": 30
+  },
+  "remaining": [
+    "Confirm actual native pinch button and two-hand gestures",
+    "Continue workshop/canyon frame-rate work after input is stable"
+  ],
+  "preservedOldApps": {
+    "com.picovibe.steamatelier": "0.5.6/24",
+    "com.picovibe.steamworkshop": "0.1.2/3"
+  },
+  "nativeRetest": "Button and two-hand manipulation recovered; performance not accepted. Exact22 input root cause not isolated by this two-profile comparison.",
+  "previousVersionInputFailure": {
+    "version": "0.23.22",
+    "result": "failed",
+    "hover": true,
+    "pinchButtonsAndTwoHand": false,
+    "source": "user worn-device feedback 2026-10-31",
+    "logs": "Builds/Evidence/session-output-20261031-v2323-input-recovery",
+    "rootCause": "unconfirmed; build-profile change under controlled recovery comparison"
+  },
+  "nativeInputFeedback": {
+    "version": "0.23.23",
+    "buttons": true,
+    "twoHandRotation": true,
+    "twoHandScale": true,
+    "source": "User confirmation, 2026-10-31; corroborated native logs",
+    "performance": "Still poor; user reports30–40FPS"
+  },
+  "nativeInputValidated": true
+}

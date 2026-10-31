@@ -13,331 +13,555 @@ MonoBehaviour:
   m_Name: SpatialAdapterResourceData
   m_EditorClassIdentifier: 
   PrefabLookUps:
-  - resource: 109614
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_35.prefab.glb
-  - resource: 109642
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_39.prefab.glb
-  - resource: 109672
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_28.prefab.glb
-  - resource: 109714
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_24.prefab.glb
-  - resource: 109752
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_02.prefab.glb
-  - resource: 109800
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_44.prefab.glb
-  - resource: 109834
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_40.prefab.glb
-  - resource: 109880
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_03.prefab.glb
-  - resource: 109912
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_05.prefab.glb
-  - resource: 109954
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_37.prefab.glb
-  - resource: 109986
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_08.prefab.glb
-  - resource: 110034
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_03.prefab.glb
-  - resource: 110068
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_10.prefab.glb
-  - resource: 110106
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_29.prefab.glb
-  - resource: 110146
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_17.prefab.glb
-  - resource: 110182
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_11.prefab.glb
-  - resource: 110222
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_22.prefab.glb
-  - resource: 110258
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_24.prefab.glb
-  - resource: 110304
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_01.prefab.glb
-  - resource: 110448
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_27.prefab.glb
-  - resource: 110592
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_30.prefab.glb
-  - resource: 110622
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_25.prefab.glb
-  - resource: 110656
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_21.prefab.glb
-  - resource: 110696
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_19.prefab.glb
-  - resource: 110732
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_29.prefab.glb
-  - resource: 110788
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_27.prefab.glb
-  - resource: 111008
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_20.prefab.glb
-  - resource: 111048
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_00.prefab.glb
-  - resource: 111098
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_12.prefab.glb
-  - resource: 111140
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_23.prefab.glb
-  - resource: 111184
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_02.prefab.glb
-  - resource: 111228
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_26.prefab.glb
-  - resource: 111266
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_10.prefab.glb
-  - resource: 111290
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_32.prefab.glb
-  - resource: 111332
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_38.prefab.glb
-  - resource: 111372
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_40.prefab.glb
-  - resource: 111416
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_04.prefab.glb
-  - resource: 111466
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_06.prefab.glb
-  - resource: 111504
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_12.prefab.glb
-  - resource: 111548
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_41.prefab.glb
-  - resource: 111596
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_25.prefab.glb
-  - resource: 111630
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_16.prefab.glb
-  - resource: 111674
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_22.prefab.glb
-  - resource: 111718
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_23.prefab.glb
-  - resource: 111752
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_43.prefab.glb
-  - resource: 111796
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_30.prefab.glb
-  - resource: 111832
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_36.prefab.glb
-  - resource: 111878
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_18.prefab.glb
-  - resource: 111920
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_31.prefab.glb
-  - resource: 111964
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_42.prefab.glb
-  - resource: 112010
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_37.prefab.glb
-  - resource: 112046
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_34.prefab.glb
-  - resource: 112078
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_16.prefab.glb
-  - resource: 112114
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_39.prefab.glb
-  - resource: 112162
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_38.prefab.glb
-  - resource: 112190
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_09.prefab.glb
-  - resource: 112238
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_08.prefab.glb
-  - resource: 112262
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_33.prefab.glb
-  - resource: 112312
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_14.prefab.glb
-  - resource: 112362
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_00.prefab.glb
-  - resource: 112398
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_43.prefab.glb
-  - resource: 112440
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_01.prefab.glb
-  - resource: 112480
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_41.prefab.glb
-  - resource: 112516
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_19.prefab.glb
-  - resource: 112550
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_11.prefab.glb
-  - resource: 112590
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_07.prefab.glb
-  - resource: 112614
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_07.prefab.glb
-  - resource: 112664
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_42.prefab.glb
-  - resource: 112690
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_04.prefab.glb
-  - resource: 112722
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_15.prefab.glb
-  - resource: 112762
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_44.prefab.glb
-  - resource: 112794
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_15.prefab.glb
-  - resource: 112838
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_20.prefab.glb
-  - resource: 112860
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_13.prefab.glb
-  - resource: 112908
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_21.prefab.glb
-  - resource: 112952
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_28.prefab.glb
-  - resource: 112986
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_35.prefab.glb
-  - resource: 113024
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_31.prefab.glb
-  - resource: 113064
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_34.prefab.glb
-  - resource: 113110
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_09.prefab.glb
-  - resource: 113140
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_13.prefab.glb
-  - resource: 113180
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_32.prefab.glb
-  - resource: 113212
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_05.prefab.glb
-  - resource: 113244
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_14.prefab.glb
-  - resource: 113282
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_36.prefab.glb
-  - resource: 113308
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_33.prefab.glb
-  - resource: 113344
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_18.prefab.glb
-  - resource: 113378
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Piece_17.prefab.glb
-  - resource: 113420
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_26.prefab.glb
-  - resource: 113450
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Ghost_06.prefab.glb
+  - resource: 1240746
+    path: SpatialAdapterExport\Assets\SwanJourney\Resources\SwanJourneyCanyon.prefab.glb
   TextureLookUps: []
   MaterialLookUps:
-  - resource: {fileID: 2100000, guid: 6973c40cf9ded9f43ab7982681115216, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_082.mat.glb
-  - resource: {fileID: 2100000, guid: 9b86546cff93f1846b6bddb07bafa3a9, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\PlacementGhost.mat.glb
-  - resource: {fileID: 2100000, guid: 0fc9b6f2de655cf4eb15cd46d501aad5, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_085.mat.glb
-  - resource: {fileID: 2100000, guid: f277ef1c79f0aa445951e0648a4e4b39, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_087.mat.glb
-  - resource: {fileID: 2100000, guid: 20edd1cba85c1db49983c42f1873bf2e, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_058.mat.glb
-  - resource: {fileID: 2100000, guid: 2c2ab7425a1531f4faa3314bd5ac16c3, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_041.mat.glb
-  - resource: {fileID: 2100000, guid: a19f4157ed56bcb48992d119bfb1bf30, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_014.mat.glb
-  - resource: {fileID: 2100000, guid: 5d14bcf561455f741a774ccb5f254c1b, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_023.mat.glb
-  - resource: {fileID: 2100000, guid: 5efe524a011544e49b5a6ecf2516b7e7, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_030.mat.glb
-  - resource: {fileID: 2100000, guid: dc3ae1474bbc9cf46885fc8be6343cf1, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_028.mat.glb
-  - resource: {fileID: 2100000, guid: 52626dd93f12e044782079a625173d98, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_072.mat.glb
-  - resource: {fileID: 2100000, guid: a56a84bee29a65f42948b61de82c8660, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_073.mat.glb
-  - resource: {fileID: 2100000, guid: 32ab93cb4e8907b4fae3d59a3f65b54c, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_025.mat.glb
-  - resource: {fileID: 2100000, guid: 9e633d76272b41142ba05cbd12663397, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_066.mat.glb
-  - resource: {fileID: 2100000, guid: ec894e7ae09c7f749aa7ac3109426867, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_040.mat.glb
-  - resource: {fileID: 2100000, guid: b4851de179c24894ea801efd9c9205c8, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_048.mat.glb
-  - resource: {fileID: 2100000, guid: ceb19fac6f316e040abed66b15d2048c, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_088.mat.glb
-  - resource: {fileID: 2100000, guid: 7b7796334d39fb64eb1af278e01ec9cc, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_052.mat.glb
-  - resource: {fileID: 2100000, guid: 0b440bd7cc1497f4ca400604e67fbd39, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_026.mat.glb
-  - resource: {fileID: 2100000, guid: f7ea61175d120884cb2c6af418a61813, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_032.mat.glb
-  - resource: {fileID: 2100000, guid: cf95a876b7db76b4080ee2b084e7d56e, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_038.mat.glb
+  - resource: {fileID: 2100000, guid: d37f93e040ed9244d8de3bb3bca2953b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0019.mat.glb
+  - resource: {fileID: 2100000, guid: 46b0af379c375b14eb2f5ebae599b0e7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0045.mat.glb
+  - resource: {fileID: 2100000, guid: fb69bdacd11f3144d86c97181689f498, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0097.mat.glb
+  - resource: {fileID: 2100000, guid: 1ea90ada4e3be974bbb8a40d1b8d7592, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0103.mat.glb
+  - resource: {fileID: 2100000, guid: 71c10f9f52287ca42ac274f82c908788, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0050.mat.glb
+  - resource: {fileID: 2100000, guid: f346a35a4a043dc4fba1f73ad9c69305, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0041.mat.glb
+  - resource: {fileID: 2100000, guid: d0a0eac30a3c91f4a89b6292cf1b8bd6, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_2.mat.glb
+  - resource: {fileID: 2100000, guid: 4a119284172d7db46a68188bf86b5253, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0185.mat.glb
+  - resource: {fileID: 2100000, guid: d42466b7bd7df3f44877c6e2b888ee5a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0216.mat.glb
+  - resource: {fileID: 2100000, guid: c5e3d5c5aad663b46a7012c0669b75ea, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0061.mat.glb
+  - resource: {fileID: 2100000, guid: 310fb5922239ad24d830355c0fac19c6, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0130.mat.glb
+  - resource: {fileID: 2100000, guid: 2cfd1bb07b2342d458bdec762ce6a56f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0062.mat.glb
+  - resource: {fileID: 2100000, guid: fd7032f7e61b99940b35940ee7d34d30, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0093.mat.glb
+  - resource: {fileID: 2100000, guid: 9a7d930866ac6824abbcca12d64ace17, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0053.mat.glb
+  - resource: {fileID: 2100000, guid: b8738d5bedfa956458fe7592404677aa, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0189.mat.glb
+  - resource: {fileID: 2100000, guid: 7f389a2e667363b4eb89b74ab50472b4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0109.mat.glb
+  - resource: {fileID: 2100000, guid: eb9a8515824cadb41a4b90cd157c8b78, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0224.mat.glb
+  - resource: {fileID: 2100000, guid: fb91f2dd58d17f9439a88981d5566c4a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0222.mat.glb
+  - resource: {fileID: 2100000, guid: a3ea2df45fcf3c345b5ec6dde282918d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0175.mat.glb
+  - resource: {fileID: 2100000, guid: 53b34cb71b4b41b4c9f7bba4288241d3, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0008.mat.glb
+  - resource: {fileID: 2100000, guid: d72e871f507138a43bcf849694910001, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0187.mat.glb
+  - resource: {fileID: 2100000, guid: 744d28dff5a2a5c4681e60029f2c8fdf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_2.mat.glb
+  - resource: {fileID: 2100000, guid: 78d101990cff58d4088924bffee9f199, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0016.mat.glb
+  - resource: {fileID: 2100000, guid: 5330d97e5838feb469651edc5f3e0d37, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0081.mat.glb
+  - resource: {fileID: 2100000, guid: 56cadbc327da9e24198eb66f1cd3a949, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0181.mat.glb
+  - resource: {fileID: 2100000, guid: b18541511a4942e4f818b2ce113376c2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0144.mat.glb
+  - resource: {fileID: 2100000, guid: bfb88991337d1fe4589fba3adfdd21fa, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0056.mat.glb
+  - resource: {fileID: 2100000, guid: bb03b3eabf7c22e4491a93906f1f6cf0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0162.mat.glb
+  - resource: {fileID: 2100000, guid: a6cfb28e49452cd46955217ffa620115, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0027.mat.glb
+  - resource: {fileID: 2100000, guid: 7e06c117c6fe8fa4c909b128d334a5c9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0161.mat.glb
+  - resource: {fileID: 2100000, guid: 468738c7479ff6244acb44529699f40f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_7.mat.glb
+  - resource: {fileID: 2100000, guid: 6a3f97c8dca379d49826ecb7a643d0ac, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\MoveHandleBrass.mat.glb
+  - resource: {fileID: 2100000, guid: b4e987896efe60c4596f97c5e98f1ce5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0182.mat.glb
+  - resource: {fileID: 2100000, guid: 68af012f0eb01cd42b04789e061b5942, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_5.mat.glb
+  - resource: {fileID: 2100000, guid: d40e9d3cb192a0d4c8ba8f21d39f1094, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_0.mat.glb
+  - resource: {fileID: 2100000, guid: 986ac2a88ff96f048aa3e2f36dfb1ea2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0126.mat.glb
+  - resource: {fileID: 2100000, guid: 8e167769d6a74c34bb85f763d5ccc57f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0023.mat.glb
+  - resource: {fileID: 2100000, guid: c9d31b3e692019d4b8d0d1afda17c252, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0087.mat.glb
+  - resource: {fileID: 2100000, guid: 8a9a95fd1dea0624284b9eb9d65c2c9d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0217.mat.glb
+  - resource: {fileID: 2100000, guid: 08ee01d8ab2f1a04b821f16e0dd0a65a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0159.mat.glb
+  - resource: {fileID: 2100000, guid: e40ceca21dc86254e896a509ee994d67, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\FpsGlyph.mat.glb
+  - resource: {fileID: 2100000, guid: c404241346cea5f4782013c5c075cfd0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0214.mat.glb
+  - resource: {fileID: 2100000, guid: 0fdd8fe718a7496468e1d757d6570ac0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0088.mat.glb
+  - resource: {fileID: 2100000, guid: 0ace884680d7c42408b21fb2b96b1c65, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0171.mat.glb
+  - resource: {fileID: 2100000, guid: dede6d97bb5dff44bb900be94aadee41, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0100.mat.glb
+  - resource: {fileID: 2100000, guid: bfc7035fb1ee08a40873795a9cb127a8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_6.mat.glb
+  - resource: {fileID: 2100000, guid: 7a78a9010db907f4d8ddd37041bb96fd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\CompletionGold.mat.glb
+  - resource: {fileID: 2100000, guid: 9f69490c88fb3f448914e9d5fe391e57, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0200.mat.glb
+  - resource: {fileID: 2100000, guid: a44b34b0b6f16654aa73e6e591bc1b50, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0079.mat.glb
+  - resource: {fileID: 2100000, guid: eed01c48e8bef1e428e6279e2ddae6c5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0006.mat.glb
+  - resource: {fileID: 2100000, guid: f512fded89794d8428d11331e7071dff, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0051.mat.glb
+  - resource: {fileID: 2100000, guid: 714830f252c59044c84b2e4835ca106c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0205.mat.glb
+  - resource: {fileID: 2100000, guid: 2b63ad574c3b26e409b73f5c6d0589ca, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0106.mat.glb
+  - resource: {fileID: 2100000, guid: 1346f92b4a311f04a8c1feaebb89503f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0167.mat.glb
+  - resource: {fileID: 2100000, guid: ecefc1bbc2afab64dacfb841e0fd37f5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0148.mat.glb
+  - resource: {fileID: 2100000, guid: 095f00d84076d8843ba064b4de649da1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0005.mat.glb
+  - resource: {fileID: 2100000, guid: 9ddc9b3a216f5d04c8eaa3d4206529ff, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0209.mat.glb
+  - resource: {fileID: 2100000, guid: 4dfe2a1a22a4aeb48ad2af872f2dbf60, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0015.mat.glb
+  - resource: {fileID: 2100000, guid: 72d656c1fa546954a8e2ca4f555c2fcd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0211.mat.glb
+  - resource: {fileID: 2100000, guid: 3767474d4c2961247a1aaa6eb0d54ae5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0157.mat.glb
+  - resource: {fileID: 2100000, guid: 864e29371a93b474db1ddc198bc6404c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0170.mat.glb
+  - resource: {fileID: 2100000, guid: e02dcadf219fef248a4da8d62f18821f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0155.mat.glb
+  - resource: {fileID: 2100000, guid: bb046b9a7dd64dc4787920bd537fca47, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0191.mat.glb
+  - resource: {fileID: 2100000, guid: eba1e0968a1b1034a9f94b06b204b9dd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0168.mat.glb
+  - resource: {fileID: 2100000, guid: 8b50ba9c39e07894ca3874c5c24439de, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0183.mat.glb
+  - resource: {fileID: 2100000, guid: 3a9574dd42301a44da5132c3273a87ed, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0156.mat.glb
+  - resource: {fileID: 2100000, guid: 599e634d2a8697c48a4e6d40d0e06e86, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0164.mat.glb
+  - resource: {fileID: 2100000, guid: 7f0246d2043093c409593957da1db44a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0190.mat.glb
+  - resource: {fileID: 2100000, guid: ff74ac0dec1cc674195c243dcde15bb4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0194.mat.glb
+  - resource: {fileID: 2100000, guid: cf95f4e5f81e6894f82a1ed57838d0a1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0184.mat.glb
+  - resource: {fileID: 2100000, guid: 253b0d2be75d41d4192d8f4918326559, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\CardPanel.mat.glb
+  - resource: {fileID: 2100000, guid: a3f83820b20ba094d8e1680b746f4b44, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0160.mat.glb
+  - resource: {fileID: 2100000, guid: 980a472a34f514041a02561aec6693fe, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0169.mat.glb
+  - resource: {fileID: 2100000, guid: dcc8029be108baa42ae1ccfdd2b294a9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0158.mat.glb
+  - resource: {fileID: 2100000, guid: a0a2c9219d1413243b8b60aee881305f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0197.mat.glb
+  - resource: {fileID: 2100000, guid: 80b75a62ec10d7f43aaf0e7647a6c417, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0172.mat.glb
+  - resource: {fileID: 2100000, guid: 64191eb85df7a5d4fa31a3bbddb35203, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0186.mat.glb
+  - resource: {fileID: 2100000, guid: d9f7b18f8014c0646852a78208efd804, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0188.mat.glb
+  - resource: {fileID: 2100000, guid: c89e06989c1fe0140a263e598e4e9a0a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0166.mat.glb
+  - resource: {fileID: 2100000, guid: 413904f5e144a9a4792fd1a296013a9d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0173.mat.glb
+  - resource: {fileID: 2100000, guid: 468fbb07f4cff4a48a1c24af40636e1e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0193.mat.glb
+  - resource: {fileID: 2100000, guid: bf78b40da79d93545a05b29da6f376fb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0199.mat.glb
+  - resource: {fileID: 2100000, guid: 6a88aaebfa8ddcd4b8fd95ee8b4918e2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0198.mat.glb
+  - resource: {fileID: 2100000, guid: 0ffbfaef442074a4fb35df73a048ace0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0180.mat.glb
+  - resource: {fileID: 2100000, guid: 12810a39d5be63348ab129ead0f0f3b1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0195.mat.glb
+  - resource: {fileID: 2100000, guid: 2f9cd4b8055a54a4bb9be1405f8bc741, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0174.mat.glb
+  - resource: {fileID: 2100000, guid: 3249e0519113b3b4cab3312cc655d5bc, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0210.mat.glb
+  - resource: {fileID: 2100000, guid: 82cd8343283f4fb42a2ec6f38cec5a67, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\CardSurfaces\Card_9E7A45E6.mat.glb
+  - resource: {fileID: 2100000, guid: 2c84033a600294a478b718facc5952a2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0035.mat.glb
+  - resource: {fileID: 2100000, guid: 3cd1d7bdb3a382b43a15482a1cc35ff9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0115.mat.glb
+  - resource: {fileID: 2100000, guid: 08955413062d56e4c8508be71837e6e4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0132.mat.glb
+  - resource: {fileID: 2100000, guid: 5e5bb21ef8af8ad4a960a071d48af40c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0000.mat.glb
+  - resource: {fileID: 2100000, guid: 1e028e42c696a8746b51bf6dea10bb7b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0066.mat.glb
+  - resource: {fileID: 2100000, guid: 7e790cac116529848913d75737403798, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0049.mat.glb
+  - resource: {fileID: 2100000, guid: c5099763ae44dd047898385efb9d3e4c, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0042.mat.glb
+  - resource: {fileID: 2100000, guid: afe42fd793efad440ac2a8ce90bed2b8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0058.mat.glb
+  - resource: {fileID: 2100000, guid: f874588a91f432649965d4633463a963, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_4.mat.glb
+  - resource: {fileID: 2100000, guid: f2cff56b60c871d42aa487356d738e13, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_2.mat.glb
+  - resource: {fileID: 2100000, guid: ead0d42e379e9d54e895eb3df54e73ee, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_0.mat.glb
+  - resource: {fileID: 2100000, guid: 9505b98458e1f1b498a7f3726481babf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_1.mat.glb
+  - resource: {fileID: 2100000, guid: cfe5fab9803ba3947bba162cbf019881, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0063.mat.glb
+  - resource: {fileID: 2100000, guid: ce4c3e958f61dbe40801427ec6a7b666, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0131.mat.glb
+  - resource: {fileID: 2100000, guid: ac5c0f582b4bf4d46a2d99d58221bc3f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0136.mat.glb
+  - resource: {fileID: 2100000, guid: 651d600cfd5fe494b803314940d55b48, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_2.mat.glb
+  - resource: {fileID: 2100000, guid: 101c2f0b4b569ef42b1bff7675256784, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0004.mat.glb
+  - resource: {fileID: 2100000, guid: 7a24fbd3e9cca954487cf4e5fc32e9fe, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\LoadingTrack.mat.glb
+  - resource: {fileID: 2100000, guid: 48bd5b6576882e2458a2ac6e4addd399, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0083.mat.glb
+  - resource: {fileID: 2100000, guid: 9d5c77e1e5bbce24e9fd7454e801fd0d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\WaterRipple.mat.glb
+  - resource: {fileID: 2100000, guid: 8788261f125ac0b488272a70ec3526de, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0116.mat.glb
+  - resource: {fileID: 2100000, guid: 2daca9ee6c080324d97a283052e7dfa8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0037.mat.glb
+  - resource: {fileID: 2100000, guid: d7bfe001e9b70e541892a0edc45d781a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0192.mat.glb
+  - resource: {fileID: 2100000, guid: dea6f671be183f049b1229dbe93b392a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0080.mat.glb
+  - resource: {fileID: 2100000, guid: a1dc366e76001174d8ef9d1210be5f2a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0108.mat.glb
+  - resource: {fileID: 2100000, guid: 8005814c7cc724c43b250fb868a17232, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_3.mat.glb
+  - resource: {fileID: 2100000, guid: fd239591c0e076c478e9cbefa4c84da1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0215.mat.glb
+  - resource: {fileID: 2100000, guid: 5e3ed2f99a561b74791de736fea5e349, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0212.mat.glb
+  - resource: {fileID: 2100000, guid: ac5271b35428a9b4e831bcd450cab4ce, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0018.mat.glb
+  - resource: {fileID: 2100000, guid: 37ff96e4080b6c044a00c7904c79e1f1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\LoadingBackdrop.mat.glb
+  - resource: {fileID: 2100000, guid: eca73898b3c6dbe499e2673e52e0c5fb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0213.mat.glb
+  - resource: {fileID: 2100000, guid: e79de126d1d18f24d98b53c18222b644, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0025.mat.glb
+  - resource: {fileID: 2100000, guid: e30a8023d04bb974a890d353534fe0da, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0052.mat.glb
+  - resource: {fileID: 2100000, guid: 7e514a0e46af3f840ab4a12a69b466ea, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0133.mat.glb
+  - resource: {fileID: 2100000, guid: 77879fa38693c874183c2cec8159f634, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0179.mat.glb
+  - resource: {fileID: 2100000, guid: d52b7b418c0fcce4fb94bdaf786d9199, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0137.mat.glb
+  - resource: {fileID: 2100000, guid: 05c8034f58397674caf512174878a850, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0220.mat.glb
+  - resource: {fileID: 2100000, guid: 71695adc5f0b8cc45a69f4809fc63adf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0123.mat.glb
+  - resource: {fileID: 2100000, guid: de57e38918d7c20498719294fbedb864, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0152.mat.glb
+  - resource: {fileID: 2100000, guid: 8b346bcc5d06d594b817281200b22a11, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0089.mat.glb
+  - resource: {fileID: 2100000, guid: cf3616eb7337b114998a462c601c650b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0028.mat.glb
+  - resource: {fileID: 2100000, guid: b6c18cc4a0315084ebd880b4567861cc, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_7.mat.glb
+  - resource: {fileID: 2100000, guid: 43df6f9e713ae6c479ef98a342041950, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0091.mat.glb
+  - resource: {fileID: 2100000, guid: a3173aa89035c514b91735b7b7a20f24, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0225.mat.glb
+  - resource: {fileID: 2100000, guid: a00ec12aa461d404baba87378acef7fb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0104.mat.glb
+  - resource: {fileID: 2100000, guid: c1741a983e05b834ab66168ca7d87d64, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0077.mat.glb
+  - resource: {fileID: 2100000, guid: d2f49fcd38c13c645b3d85c9e18f5660, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0219.mat.glb
+  - resource: {fileID: 2100000, guid: 0da21ed7952e63745bb485814c55cd33, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0017.mat.glb
+  - resource: {fileID: 2100000, guid: a5c272d54a438864fa4e7826b98e2e34, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0071.mat.glb
+  - resource: {fileID: 2100000, guid: 1e6388a157f753f4e94bfea0de778700, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0096.mat.glb
+  - resource: {fileID: 2100000, guid: fd47152c78483044382767f7f53698fa, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0030.mat.glb
+  - resource: {fileID: 2100000, guid: cf30cd51a7d24b044a4df563b7738203, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0057.mat.glb
+  - resource: {fileID: 2100000, guid: 758a564a2805add43867fabf096d541e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0095.mat.glb
+  - resource: {fileID: 2100000, guid: 1a87443bd84d1d747b80a40d884cf3a2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0204.mat.glb
+  - resource: {fileID: 2100000, guid: 5e44e2e479a2f32408ec8acb234331e9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_0.mat.glb
+  - resource: {fileID: 2100000, guid: 42e88c5cf50b68f46b74d35eb7ec57e3, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0122.mat.glb
+  - resource: {fileID: 2100000, guid: 074ccdb6b1c18fb4793920b593f8d917, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0176.mat.glb
+  - resource: {fileID: 2100000, guid: eae2a79afa67e1545ade504c07e2532a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0141.mat.glb
+  - resource: {fileID: 2100000, guid: b1b342cf3fe5d3e42a4772d21824ed48, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0120.mat.glb
+  - resource: {fileID: 2100000, guid: aef6aa57877c064488dd87f0c23e3fcf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0226.mat.glb
+  - resource: {fileID: 2100000, guid: 1a0f2fa36049d9543877141e68f365f2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0138.mat.glb
+  - resource: {fileID: 2100000, guid: edb4fe9e2ffac9a48a91c9e756a288bf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0024.mat.glb
+  - resource: {fileID: 2100000, guid: 88e2bac92048e894f9052fb5d3573dfb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0014.mat.glb
+  - resource: {fileID: 2100000, guid: 6d19e5bb13d13da4e8d848cc893ce31f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0177.mat.glb
+  - resource: {fileID: 2100000, guid: 223792e956133914a81bc874070eae9b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0107.mat.glb
+  - resource: {fileID: 2100000, guid: 5646319088b146248a07c71e4b4b2ad9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_3.mat.glb
+  - resource: {fileID: 2100000, guid: d428e3501bbd1284b990cf7c35eb6236, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0113.mat.glb
+  - resource: {fileID: 2100000, guid: e5e80602151ec5a4a8f0c9a19000c7cd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0073.mat.glb
+  - resource: {fileID: 2100000, guid: 528ab9545ae640342b8d2285841b75c0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_5.mat.glb
+  - resource: {fileID: 2100000, guid: 74d3d763224c0b444a8e9ee9a2bd2268, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_6.mat.glb
+  - resource: {fileID: 2100000, guid: 55d877ea3322c9a4b991e0ba8ce3e352, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0208.mat.glb
+  - resource: {fileID: 2100000, guid: 7da142e73a7eb0a4b81982d1969242cb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0044.mat.glb
+  - resource: {fileID: 2100000, guid: d55a242de6c0c9c46b1517c196d1ee8a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_4.mat.glb
+  - resource: {fileID: 2100000, guid: 1f6dbd9ea59596640866dea8f4c010f5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0140.mat.glb
+  - resource: {fileID: 2100000, guid: 58cabe361c215454b85e58aab9ef5f52, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0121.mat.glb
+  - resource: {fileID: 2100000, guid: a1b9b3c7fb801e44c9cfcd80ed9ac2f1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0047.mat.glb
+  - resource: {fileID: 2100000, guid: 4891512f0da73c9458b1d943cad71365, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0201.mat.glb
+  - resource: {fileID: 2100000, guid: c5a6155306b2c924fb06760d07708173, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0075.mat.glb
+  - resource: {fileID: 2100000, guid: 4e1447ffd54240445a1b178af2d9ab0a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0153.mat.glb
+  - resource: {fileID: 2100000, guid: 5408652dc9b657c4696f6ba555d07fd7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0098.mat.glb
+  - resource: {fileID: 2100000, guid: 7994cb82b0ac1b84db11fe86ba889f8f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_173_230_245_1.mat.glb
+  - resource: {fileID: 2100000, guid: 118788e62e7b7ea49a0bf02fff0f4e9e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0048.mat.glb
+  - resource: {fileID: 2100000, guid: c0bc1fc687936d54bb175d9b1b132725, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0202.mat.glb
+  - resource: {fileID: 2100000, guid: 2ddb4b1d5e40f2744b8836aa3aa2bf38, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0072.mat.glb
+  - resource: {fileID: 2100000, guid: 93d64c80fa0fdb3458118c3a08f9c659, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0031.mat.glb
+  - resource: {fileID: 2100000, guid: a1e49c07806d086488ed247a76433dbf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0099.mat.glb
+  - resource: {fileID: 2100000, guid: 4a9186c0e74b74b4696027c32ba24ba7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0112.mat.glb
+  - resource: {fileID: 2100000, guid: a54588b2717412142b8ce7748aa5ab57, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0046.mat.glb
+  - resource: {fileID: 2100000, guid: d80bad2b933ba4444bba0c0d9e22620d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0135.mat.glb
+  - resource: {fileID: 2100000, guid: 7f737f1604d549148affbb4e93bc4fb4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0055.mat.glb
   - resource: {fileID: 4060910613580231630, guid: 1c94ffad5123c5c43889e75e98c80cb3,
       type: 2}
     path: SpatialAdapterExport\Assets\SteamLab\UI\Chinese.asset.glb
-  - resource: {fileID: 2100000, guid: 2b49b921b0c05d440bb299e802f8c4b7, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_033.mat.glb
-  - resource: {fileID: 2100000, guid: 3fec04a2498ae5b4b9a2c5ee3494ac12, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_053.mat.glb
-  - resource: {fileID: 2100000, guid: b70a4b7d3e943874189a02b48ae504da, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_013.mat.glb
-  - resource: {fileID: 2100000, guid: 454383e51798e6343abbeeebd0f6f5df, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_050.mat.glb
-  - resource: {fileID: 2100000, guid: 38f8bb6baadae224dabf3ae536c05827, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_051.mat.glb
-  - resource: {fileID: 2100000, guid: 1bbbad128bb14bc45871a37b5d468cd8, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_086.mat.glb
-  - resource: {fileID: 2100000, guid: 59b81b5346920734fa43dfd1eceaa6a2, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_064.mat.glb
-  - resource: {fileID: 2100000, guid: d079fb9cf1891554e80c548f3a562b1e, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_063.mat.glb
-  - resource: {fileID: 2100000, guid: bf0d4f609b791e847bc0412842d89d33, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_016.mat.glb
-  - resource: {fileID: 2100000, guid: f9ef30826a8edc14bb64e8ade2a31132, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_017.mat.glb
-  - resource: {fileID: 2100000, guid: 239c4abadaca5f54b9d15c6731198a5f, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_080.mat.glb
-  - resource: {fileID: 2100000, guid: d2cbfc45366213942a6526da222f679a, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_018.mat.glb
-  - resource: {fileID: 2100000, guid: db3447e126099ea4cb273b88acbeef2a, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_049.mat.glb
-  - resource: {fileID: 2100000, guid: 9dd27103e72ae6948843d36ad5190d80, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_047.mat.glb
-  - resource: {fileID: 2100000, guid: 5c804ce6cfb111d4c8aff5081b645a3d, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_068.mat.glb
-  - resource: {fileID: 2100000, guid: 0ccbe1a72349d294fafe5d534b26b40a, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_074.mat.glb
-  - resource: {fileID: 2100000, guid: 895d4acb02fa449438750c22dc7cb6b7, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_019.mat.glb
-  - resource: {fileID: 2100000, guid: e12cdd6995c7647488e8a16298b18618, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_054.mat.glb
-  - resource: {fileID: 2100000, guid: d1e57d967633cd54f9d135d550ed274d, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_031.mat.glb
-  - resource: {fileID: 2100000, guid: cc4202be8e5583549b7f15b7cf7e8edd, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_059.mat.glb
-  - resource: {fileID: 2100000, guid: 424a99693011ee642a7703a9c1bb6ea4, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_055.mat.glb
-  - resource: {fileID: 2100000, guid: 5d2c24f9009f06f4a83b6e5913daff03, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_021.mat.glb
-  - resource: {fileID: 2100000, guid: a66a3734a31402543aa9ba502a048b26, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_045.mat.glb
-  - resource: {fileID: 2100000, guid: 34884a6e8f90e2847898bc068e793a68, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_046.mat.glb
-  - resource: {fileID: 2100000, guid: 0d0c5e239957fba409ac931c2e5addb3, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_042.mat.glb
-  - resource: {fileID: 2100000, guid: 48fdac44376dc4e438b8cb5c4b260aa8, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_043.mat.glb
-  - resource: {fileID: 2100000, guid: ed40011863db51945a416db4b064d4e9, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_044.mat.glb
-  - resource: {fileID: 2100000, guid: e59f68f768e03614b8736f1eaba24bf9, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_071.mat.glb
-  - resource: {fileID: 2100000, guid: ce98bf20d857242408d10ff464a7aa8e, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_056.mat.glb
-  - resource: {fileID: 2100000, guid: 45180b2b0850f6d49a32e7e1ec50a08a, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_057.mat.glb
-  - resource: {fileID: 2100000, guid: 561345ab392574241b265f0305dfaf36, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_076.mat.glb
-  - resource: {fileID: 2100000, guid: 248346564da5582458cd3ab920d2bdde, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_081.mat.glb
-  - resource: {fileID: 2100000, guid: c2fd43a5c8ac6b74f82aef581100abd2, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_077.mat.glb
-  - resource: {fileID: 2100000, guid: eeb29b3699a6ff944a63e0881fc66196, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_037.mat.glb
-  - resource: {fileID: 2100000, guid: d49854a3e7a508748bb66bc45548cc5d, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_083.mat.glb
-  - resource: {fileID: 2100000, guid: a8e5602fb64be7b49add3a4c31cebb1b, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_078.mat.glb
-  - resource: {fileID: 2100000, guid: 24dcb962106d854428d0c256e1170da6, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_089.mat.glb
-  - resource: {fileID: 2100000, guid: e1be83879a79fc04c860b7345ac0ef8a, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_039.mat.glb
-  - resource: {fileID: 2100000, guid: 162f9c5fa3a18234185d62e3aac83a11, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_065.mat.glb
-  - resource: {fileID: 2100000, guid: 84d4e0739780c414e81d938d1bceac2f, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_079.mat.glb
-  - resource: {fileID: 2100000, guid: 1000eb00d761ae346b49497305969f03, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_029.mat.glb
-  - resource: {fileID: 2100000, guid: a5bb0a8e30427244a950e1a74396d13c, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_027.mat.glb
-  - resource: {fileID: 2100000, guid: 9a50314a8bcce9344bd4c169d6c21f73, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_084.mat.glb
-  - resource: {fileID: 2100000, guid: 606406bf5d63fa7449a299925ea2b288, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_024.mat.glb
-  - resource: {fileID: 2100000, guid: eaa99a7ff272ddc43914623593dbe746, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_015.mat.glb
-  - resource: {fileID: 2100000, guid: 413e577c2d648c849bee87e9c05d0ea2, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_022.mat.glb
-  - resource: {fileID: 2100000, guid: e2f8952ca3f5f2f49955c8d18924ebb5, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_020.mat.glb
-  - resource: {fileID: 2100000, guid: 0ac31a7b119c0df40b89cbc379e7d12f, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_075.mat.glb
-  - resource: {fileID: 2100000, guid: ee173fff185184f4e80192fc0a729367, type: 2}
-    path: SpatialAdapterExport\Assets\SwanAtelier\Generated\Material_067.mat.glb
+  - resource: {fileID: 2100000, guid: 2838dc559833da043886a500c23abc6e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0119.mat.glb
+  - resource: {fileID: 2100000, guid: 936311c300e79c645bc1ed10bdef7c2d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0074.mat.glb
+  - resource: {fileID: 2100000, guid: df9f80debec5b364aba6e3e3b5ed878f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_1.mat.glb
+  - resource: {fileID: 2100000, guid: e7f6c08aa9bc0b34ba1db91d7680f243, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0078.mat.glb
+  - resource: {fileID: 2100000, guid: 5fa53d525abebb647810a6909f9a3421, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0032.mat.glb
+  - resource: {fileID: 2100000, guid: bd2589c57444a564693cf4e29c7ff61d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0149.mat.glb
+  - resource: {fileID: 2100000, guid: 2a512e2e0c5f26747989d58b404801e0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_6.mat.glb
+  - resource: {fileID: 2100000, guid: 870824135270c5f4a92a91122021a6a4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0069.mat.glb
+  - resource: {fileID: 2100000, guid: a365eb0eb0618a64b89ad245561bcf55, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0142.mat.glb
+  - resource: {fileID: 2100000, guid: 728d6661f397fbb44b073bbb9855acca, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0059.mat.glb
+  - resource: {fileID: 2100000, guid: b4bdc769f0ba1024a91d403c8c153fdd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0150.mat.glb
+  - resource: {fileID: 2100000, guid: 8c3d78cbbf00e0e4fa06a8e14e50f0a9, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0154.mat.glb
+  - resource: {fileID: 2100000, guid: c094f05cbafe3c24dab9cd9da7cdc3b7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0033.mat.glb
+  - resource: {fileID: 2100000, guid: 0afe6214b972c074a87d56d7614f8164, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0117.mat.glb
+  - resource: {fileID: 2100000, guid: 06fb9474dc936104ea38890aaa259b1b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0043.mat.glb
+  - resource: {fileID: 2100000, guid: f2d391c902c8792489d47a249906d18a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0039.mat.glb
+  - resource: {fileID: 2100000, guid: c2e49d5153992b34fbc8286ead24a1d5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0206.mat.glb
+  - resource: {fileID: 2100000, guid: a6d0d84a32c99a344b688a234d387ad0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0002.mat.glb
+  - resource: {fileID: 2100000, guid: 1189898ee7cfe1a4c9b9cf8645e436da, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0038.mat.glb
+  - resource: {fileID: 2100000, guid: e8ff6ac7888b320418c9c308efa35c57, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0125.mat.glb
+  - resource: {fileID: 2100000, guid: 87b5cc01db66d474e9f57ff5347eaa6d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0067.mat.glb
+  - resource: {fileID: 2100000, guid: 4065ad41f5ec7cc4f86bda0781b688ee, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0001.mat.glb
+  - resource: {fileID: 2100000, guid: dd0bc0a85183e5746b189a6488f22ee0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0110.mat.glb
+  - resource: {fileID: 2100000, guid: 3e7274379715a1e448f05a1ff059b5cf, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0163.mat.glb
+  - resource: {fileID: 2100000, guid: cba1402e31b61594ca1f9334ff21d094, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\CardSurfaces\Card_050708FF.mat.glb
+  - resource: {fileID: 2100000, guid: 2782f8c0352866e47b0c78f3078b29c8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0076.mat.glb
+  - resource: {fileID: 2100000, guid: b06b45e5a09382f448724bf19bd3c823, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0178.mat.glb
+  - resource: {fileID: 2100000, guid: 080dc78e57d7f74498745c5290ed141b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0114.mat.glb
+  - resource: {fileID: 2100000, guid: 68a48f8d4f97ba54f8e27c295ed178c8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_5.mat.glb
+  - resource: {fileID: 2100000, guid: c12028070ffc68947ae9ebbac8ad8bc8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_1.mat.glb
+  - resource: {fileID: 2100000, guid: 8a6f6cd4096bf914f8c49cee22bfaa10, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0022.mat.glb
+  - resource: {fileID: 2100000, guid: fcc68feadc314ec45af32cfa8e5e321b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0102.mat.glb
+  - resource: {fileID: 2100000, guid: 48332cba098897647a64e84c12787365, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0127.mat.glb
+  - resource: {fileID: 2100000, guid: 2ef3bd0d6d8690448bb45ee00b9367c8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0218.mat.glb
+  - resource: {fileID: 2100000, guid: 3dbbb7d322038ee48829267949a24abd, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0139.mat.glb
+  - resource: {fileID: 2100000, guid: e4207c817d4a7bf44996def3fd80b111, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0196.mat.glb
+  - resource: {fileID: 2100000, guid: 866e51171abd6d144888e69494075844, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0092.mat.glb
+  - resource: {fileID: 2100000, guid: 944146aaf4cefb14784efb6c38da90ef, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0118.mat.glb
+  - resource: {fileID: 2100000, guid: c7c192d27737ed144acedc24abe1cbdb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0060.mat.glb
+  - resource: {fileID: 2100000, guid: 461b62aa93e3d814b94e43b05740b989, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_6.mat.glb
+  - resource: {fileID: 2100000, guid: a70c30a860c638441884ecd5088591c2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0003.mat.glb
+  - resource: {fileID: 2100000, guid: 43b5f3b4ab2dac34499ba9150fa2e899, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0129.mat.glb
+  - resource: {fileID: 2100000, guid: b68fd631cff0c8d4bbfc6ecb4996aebb, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0036.mat.glb
+  - resource: {fileID: 2100000, guid: 933d7fd5b12a62046adb7e1bacde02f1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0009.mat.glb
+  - resource: {fileID: 2100000, guid: 835251f8ad1885d43a59e60744ceefb6, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0029.mat.glb
+  - resource: {fileID: 2100000, guid: 283f8f48b376d59449173ec6039a3c1d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0090.mat.glb
+  - resource: {fileID: 2100000, guid: d093b28239e2a95469c9225079caa43f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0145.mat.glb
+  - resource: {fileID: 2100000, guid: 13178c9504c3d5d498b0675cc0da1a55, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_7.mat.glb
+  - resource: {fileID: 2100000, guid: bd426c5c348f1e44ab8de7a3006893ed, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0040.mat.glb
+  - resource: {fileID: 2100000, guid: db743a5e08de612418ffcacda02c10b5, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0134.mat.glb
+  - resource: {fileID: 2100000, guid: 236962341fba23b4b82609c0fe7c6b1e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_4.mat.glb
+  - resource: {fileID: 2100000, guid: 1772539bd2d4fc84883abadaafe79ae7, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_0.mat.glb
+  - resource: {fileID: 2100000, guid: b1e595e15d1be7746b01183c5d8beb08, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0223.mat.glb
+  - resource: {fileID: 2100000, guid: bd4351017c336ac4eb31657950209f5f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0021.mat.glb
+  - resource: {fileID: 2100000, guid: 0f59349e9b7103d4988e7308cbfa1436, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0082.mat.glb
+  - resource: {fileID: 2100000, guid: 56263e6010c74794ba1c88245525525f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0227.mat.glb
+  - resource: {fileID: 2100000, guid: af4f51c7e92f1e74fb176432bfb60f01, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0010.mat.glb
+  - resource: {fileID: 2100000, guid: d9ed4c06b3051234a913433790c17d67, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0143.mat.glb
+  - resource: {fileID: 2100000, guid: b31dcd2121bb61a458095c386e764274, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0070.mat.glb
+  - resource: {fileID: 2100000, guid: f49fc520feb722a459e089a88da6e1c8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_191_204_204_3.mat.glb
+  - resource: {fileID: 2100000, guid: a59bf06431f779442a19acb57511ac5d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0207.mat.glb
+  - resource: {fileID: 2100000, guid: d6662b4587ab8b142a1f34976c585c22, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0013.mat.glb
+  - resource: {fileID: 2100000, guid: 816fdbfc4f0bfb849a60566271d0759d, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0086.mat.glb
+  - resource: {fileID: 2100000, guid: fb11d46b8c827694aa921fa9001d96df, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0128.mat.glb
+  - resource: {fileID: 2100000, guid: 08d17345a87997245b0f90ee6e5e5cf4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0094.mat.glb
+  - resource: {fileID: 2100000, guid: 372fac8219a565c45914952918ba122b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0146.mat.glb
+  - resource: {fileID: 2100000, guid: aefb58e54d511b94d8f114f3f60f7721, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0203.mat.glb
+  - resource: {fileID: 2100000, guid: 28f1bb6fc45f1f448b665587f150403f, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0124.mat.glb
+  - resource: {fileID: 2100000, guid: 1ac94ac3e893c4246b8c084f63b5b493, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0054.mat.glb
+  - resource: {fileID: 2100000, guid: fd1b31aff14d2e1418329e6fc4870a99, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0085.mat.glb
+  - resource: {fileID: 2100000, guid: 85e35f5b541adb44ca9224ba2613695a, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0064.mat.glb
+  - resource: {fileID: 2100000, guid: ce8d5c7700a00f044b34b62060831777, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_4.mat.glb
+  - resource: {fileID: 2100000, guid: 15a950254b40401438c2403dd0d789ae, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0065.mat.glb
+  - resource: {fileID: 2100000, guid: 247826899596f964eb499691442b72de, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0151.mat.glb
+  - resource: {fileID: 2100000, guid: ae3d56b7d552ad54ea87c39fd64bc211, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0034.mat.glb
+  - resource: {fileID: 2100000, guid: ad6108c34b4dcc045a1f04b9edf873aa, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0221.mat.glb
+  - resource: {fileID: 2100000, guid: 281c382328d18eb429335b4d5f1023f0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_94_89_82_3.mat.glb
+  - resource: {fileID: 2100000, guid: aef3a54e926fbc74a9e19d7706e96140, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\LoadingAccent.mat.glb
+  - resource: {fileID: 2100000, guid: cefd45fc1814c6645aba63ed3e6e348e, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0147.mat.glb
+  - resource: {fileID: 2100000, guid: ae07205834368d34dba79621a3bbad07, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0011.mat.glb
+  - resource: {fileID: 2100000, guid: 447084ba5c6ef6f40a4c1d0f96376d3b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0084.mat.glb
+  - resource: {fileID: 2100000, guid: ea6b719745dc8724cab184e36bdfeac2, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0068.mat.glb
+  - resource: {fileID: 2100000, guid: c1fe5dc323d36ce4fa646a140ec9e681, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0165.mat.glb
+  - resource: {fileID: 2100000, guid: e2b8f2a4bf304ad4eaff96775854df72, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_7.mat.glb
+  - resource: {fileID: 2100000, guid: eed33b6d948690749acfbbe8b714aca4, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Flow_219_237_245_5.mat.glb
+  - resource: {fileID: 2100000, guid: a180ae642289aed47b3561433b6e42a0, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\BlueReveal.mat.glb
+  - resource: {fileID: 2100000, guid: 965f71a69d26d9247ba4f272818982e1, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0101.mat.glb
+  - resource: {fileID: 2100000, guid: 1acbe15fa16f9204182bccc84878c197, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0020.mat.glb
+  - resource: {fileID: 2100000, guid: a1d7267f6249d9f41aae7cb267766e26, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0026.mat.glb
+  - resource: {fileID: 2100000, guid: d5c83bb6c3c2c4c49893bff6e33c7a16, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0012.mat.glb
+  - resource: {fileID: 2100000, guid: bd92fddb73b362d4888c6482f38a1c3b, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0007.mat.glb
+  - resource: {fileID: 2100000, guid: 587d2c2fe18cb6642a4dbc39bc0b28b8, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0105.mat.glb
+  - resource: {fileID: 2100000, guid: f7923cc5020eca94abbe19d5424f88a6, type: 2}
+    path: SpatialAdapterExport\Assets\SwanJourney\Generated\NativeVisuals\Material_0111.mat.glb
   - resource: {fileID: 2103686, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
     path: SpatialAdapterExport\Assets\TextMesh Pro\Resources\Sprite Assets\EmojiOne.asset.glb
   - resource: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

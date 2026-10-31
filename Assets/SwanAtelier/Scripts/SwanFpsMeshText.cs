@@ -8,10 +8,13 @@ namespace SwanAtelier
     {
         public GameObject[] variants = new GameObject[33];
         public int ShownValue { get; private set; } = -1;
+        bool valueApplied;
 
         public void Show(double? fps)
         {
-            ShownValue = fps.HasValue ? Mathf.Clamp(Mathf.RoundToInt((float)fps.Value), 0, 999) : -1;
+            int nextValue = fps.HasValue ? Mathf.Clamp(Mathf.RoundToInt((float)fps.Value), 0, 999) : -1;
+            if (valueApplied && ShownValue == nextValue) return;
+            ShownValue = nextValue; valueApplied = true;
             for (int slot = 0; slot < 3; slot++) {
                 int selected = ShownValue < 0 ? (slot == 0 ? -1 : 10) :
                     slot == 0 ? (ShownValue >= 100 ? ShownValue / 100 : -1) :

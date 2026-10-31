@@ -6,8 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SwanAtelier/Scenes/SteamAtelierSwan.unity
-    guid: 0f0fcee1d0f4a42448c4e0886768d183
+    path: Assets/SwanJourney/Scenes/SteamJourneyBoot.unity
+    guid: 52172559b6254504d8bb9c833d445e6a
+  - enabled: 1
+    path: Assets/SwanJourney/Scenes/SteamJourneySwan.unity
+    guid: c7d3b22549659cc4eb851ebdb02852fb
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 2ad61b00b4ba3ba44803991f96402498,
       type: 2}

@@ -14,6 +14,8 @@ MemoryCaptures/
 *.apk
 *.aab
 *.log
+__pycache__/
+*.py[cod]
 
 # Generated native payload; rebuilt by SpatialAdapter from the saved scene.
 /Assets/StreamingAssets/SpatialAdapterExport/
