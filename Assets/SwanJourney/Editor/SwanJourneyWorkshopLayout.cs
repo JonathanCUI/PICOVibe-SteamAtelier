@@ -14,16 +14,13 @@ namespace SwanJourney.Editor
         static readonly string[] ButtonNames = { "一键拆开", "暂停 / 继续", "慢放 / 常速" };
         readonly bool[] buttonsVisible;
         readonly bool lessonVisible;
-        readonly Vector3 deskPosition, previewPosition, gripPosition, gripScale;
+        readonly Vector3 deskPosition, previewPosition;
 
         SwanJourneyWorkshopLayout(SwanJourneyPresentation table, SwanJourneyInteraction input)
         {
             buttonsVisible = ButtonNames.Select(name => Button(table, name).activeSelf).ToArray();
             deskPosition = table.workshopSupports[1].localPosition;
             previewPosition = table.journey.previewRoot.transform.localPosition;
-            var grip = Grip(table);
-            gripPosition = grip.localPosition;
-            gripScale = grip.localScale;
             lessonVisible = input.moveLesson.activeSelf;
         }
 
@@ -53,10 +50,27 @@ namespace SwanJourney.Editor
                 Button(table, ButtonNames[i]).SetActive(buttonsVisible[i]);
             table.workshopSupports[1].localPosition = deskPosition;
             table.journey.previewRoot.transform.localPosition = previewPosition;
-            var grip = Grip(table);
-            grip.localPosition = gripPosition;
-            grip.localScale = gripScale;
             input.moveLesson.SetActive(lessonVisible);
+            table.RefreshFootprint();
+        }
+
+        internal static void CentreConsole(SwanJourneyPresentation table)
+        {
+            var journey = table.journey;
+            var workshop = journey.workshopRoot.transform;
+            var desk = table.workshopSupports[1];
+            // +Z is the player-facing side of the authored workshop (the Swan
+            // composition rotates it 180 degrees). Centre across the train's X
+            // axis, retaining the authored reach, elevation and button visibility.
+            float centreX = workshop.InverseTransformPoint(journey.trainAnchor.position).x;
+            float shift = centreX - desk.localPosition.x;
+            desk.localPosition += Vector3.right * shift;
+            journey.previewRoot.transform.position += workshop.TransformVector(Vector3.right * shift);
+            if (!SwanJourneyPresentation.TryBounds(desk, workshop, out var bounds))
+                throw new InvalidOperationException("Operation console has no geometry.");
+            var row = new Vector3(centreX, bounds.center.y, bounds.max.z + .7f);
+            for (int i = 0; i < ButtonNames.Length; i++)
+                Button(table, ButtonNames[i]).transform.localPosition = row + Vector3.right * ((i - 1) * 3.15f);
             table.RefreshFootprint();
         }
 
@@ -64,8 +78,5 @@ namespace SwanJourney.Editor
         static GameObject Button(SwanJourneyPresentation table, string name) =>
             table.journey.workshopRoot.transform.Cast<Transform>().Single(child => child.name == name).gameObject;
 
-        static Transform Grip(SwanJourneyPresentation table) =>
-            table.moveHandle.GetComponentsInChildren<SwanJourneyTarget>(true)
-                .Single(target => target.kind == SwanJourneyTargetKind.MoveWorkbench).transform;
     }
 }

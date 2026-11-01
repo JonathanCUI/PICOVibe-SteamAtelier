@@ -1,0 +1,36 @@
+{
+  "version": "0.23.36",
+  "versionCode": 36,
+  "package": "com.picovibe.steamatelier.v23",
+  "baseCommit": "7daf779078e115a174c1e717c4036f62ff13a3fc",
+  "changes": [
+    "Centre the workshop operation desk in front of the train from the player's view, including preview and utility row.",
+    "Replace the plate grip with an 18 cm by 1.2 cm brass rod, retaining a 21 by 4 by 5 cm selection volume and native interaction components.",
+    "Reset Swan assembly to step 1 on application Start; preserve this session's progress on pause/resume and canyon return."
+  ],
+  "regressionSuites": 12,
+  "visibilityChecks": 33,
+  "cardChecks": 270,
+  "freshSessionRegressionPassed": true,
+  "resumeProgressRegressionPassed": true,
+  "nativePackageChecksPassed": true,
+  "v2SignatureVerified": true,
+  "apk": "Builds/SwanJourney/Releases/0.23.36/SteamAtelier-V23-Swan-0.23.36.apk",
+  "apkBytes": 606538191,
+  "sha256": "fc94277d8d4542c4de27e484da52af36d7f3a1e11aef87ab51d43330ba106c97",
+  "device": "PB3A10MGL9240036B",
+  "installedVersionVerified": true,
+  "installedApkHashMatches": true,
+  "launchCommandSucceeded": true,
+  "observedPid": 21170,
+  "deviceState": "Asleep; app is in background after boot resource-load-start. Workshop startup and appearance remain to be checked while worn.",
+  "nativeRenderingValidated": false,
+  "nativeGesturesValidated": false,
+  "devicePerformanceMeasured": false,
+  "evidence": [
+    "Builds/Evidence/unity-v23-build.log",
+    "Builds/SwanJourney/feedback-checks.json",
+    "Builds/Evidence/v2336-native-checks.json",
+    "Builds/Evidence/v2336-startup-log.txt"
+  ]
+}

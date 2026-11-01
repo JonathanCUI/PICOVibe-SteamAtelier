@@ -49,7 +49,7 @@ namespace SwanJourney.Editor
         {
             var journey=input.journey;var all=journey.modules.Concat(journey.finishing).ToArray();
             int count=input.ExplodeCount;
-            Check(input.ExplodeAll()&&input.ExplodingCount==18,"explode did not start all 18 installed groups");
+            Check(input.ExplodeAll()&&input.ExplodingCount==17,"explode did not start all 17 installed groups");
             Check(all.All(m=>!m.installed&&m.parked&&m.preview.activeInHierarchy),"explode bypassed Journey detach state or hid a parked preview");
             Check(journey.stage==0&&all.All(m=>!m.verified&&m.observed==0),"explode did not invalidate stage/observation state");
             input.TickExplosion(10);
@@ -60,9 +60,9 @@ namespace SwanJourney.Editor
 
             // Leave one preview parked. Re-exploding the installed subset must
             // not pull an already detached object away from its user position.
-            for(int i=0;i<17;i++)Check(journey.InstallCurrent(),"prepare installed subset for explosion takeover");
+            for(int i=0;i<16;i++)Check(journey.InstallCurrent(),"prepare installed subset for explosion takeover");
             var parked=all.First(m=>!m.installed);var parkedPose=parked.preview.transform.position;
-            Check(input.ExplodeAll()&&input.ExplodingCount==17,"partial explode changed the missing-group contract");
+            Check(input.ExplodeAll()&&input.ExplodingCount==16,"partial explode changed the missing-group contract");
             for(int i=0;i<8;i++)input.TickExplosion(1f/90);
             Check(Vector3.Distance(parked.preview.transform.position,parkedPose)<.00001f,"explode moved a previously parked preview");
             var localPoses=all.Select(m=>journey.trainAnchor.InverseTransformPoint(m.preview.transform.position)).ToArray();
@@ -77,14 +77,14 @@ namespace SwanJourney.Editor
 
             // Restore the starting assembly, then detach the first part to
             // cancel completion and leave the existing gesture suite unblocked.
-            for(int i=0;i<18;i++)Check(journey.InstallCurrent(),"restore assembly after explosion checks");
+            for(int i=0;i<17;i++)Check(journey.InstallCurrent(),"restore assembly after explosion checks");
             Check(journey.DetachModule(all[0]),"cancel restored completion for remaining gesture checks");
         }
         public static void Run(SwanJourneyInteraction input)
         {
             Check(input&&input.Ready,"input bridge is not ready");
             var journey=input.journey;var root=input.workbenchRoot;
-            Check(journey.modules.Length==7&&journey.finishing.Length==11,"expected the V23 7 + 11 state model");
+            Check(journey.modules.Length==7&&journey.finishing.Length==10,"expected the V23 7 + 10 state model");
             Check(journey.Complete&&!journey.inSandbox&&!journey.SwanInputBlocked,"start with completed workshop and settled arrival/completion effects");
             var position=root.position;var rotation=root.rotation;var scale=root.localScale;
             bool persistence=journey.suppressPersistence,locked=journey.verificationInputLock;
@@ -156,7 +156,7 @@ namespace SwanJourney.Editor
                 journey.verificationInputLock=true;
                 Tap(input,second,ref now);Tap(input,second,ref now);
                 Check(!input.QuickReturning&&journey.SwanHeldModule==null,"verification input lock failed");
-                Debug.Log("SWAN_JOURNEY_GESTURES_PASSED checks=18-groups,explode-animation,explode-partial,explode-takeover,double-pinch,stage-order,canceled-tap,canceled-snap,two-hand-takeover,stable-ids,scale-bounds,tracking-rejection,input-lock");
+                Debug.Log("SWAN_JOURNEY_GESTURES_PASSED checks=17-groups,explode-animation,explode-partial,explode-takeover,double-pinch,stage-order,canceled-tap,canceled-snap,two-hand-takeover,stable-ids,scale-bounds,tracking-rejection,input-lock");
             }
             finally
             {

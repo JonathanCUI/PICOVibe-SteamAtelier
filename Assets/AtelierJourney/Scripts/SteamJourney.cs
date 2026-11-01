@@ -65,7 +65,14 @@ public sealed partial class SteamJourney : MonoBehaviour {
         audioSource=gameObject.AddComponent<AudioSource>();audioSource.playOnAwake=false;audioSource.volume=.42f;
         if(throttleLever)throttleRest=throttleLever.localRotation;if(brakeLever)brakeRest=brakeLever.localRotation;if(directionLever)directionRest=directionLever.localRotation;
         shoeHome=brakeShoes.Select(t=>t.localPosition).ToArray();
-        LoadProgress();BuildUI();SetMode(false);RefreshPreview();ApplyVisibility();UpdateText();
+        if(!SwanInputActive)LoadProgress();
+        BuildUI();
+        // Each new Swan application session starts at the first assembly step.
+        // Start runs once; headset sleep, focus changes and canyon returns must
+        // not clear the assembly that is in progress during this session.
+        if(SwanInputActive){ResetJourney();Debug.Log("SWAN_JOURNEY_FRESH_SESSION step=1 installed=0");}
+        else{SetMode(false);RefreshPreview();}
+        ApplyVisibility();UpdateText();
         Application.targetFrameRate=72;
     }
     void Update() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Simulation)) CpuMeasuredUpdate(); }
@@ -344,7 +351,34 @@ public sealed partial class SteamJourney : MonoBehaviour {
     void Play(AudioClip clip){if(clip&&audioSource){GetComponent<JourneyBackgroundMusic>()?.Duck(clip.length);audioSource.PlayOneShot(clip);}}
     void Notify(string text){if(noticeText)noticeText.text=text;noticeUntil=Time.unscaledTime+7;}
     void SaveProgress(){if(suppressPersistence)return;var s=new Saved{stage=stage,finishIndex=finishIndex,installed=modules.Select(m=>m.installed).ToArray(),verified=modules.Select(m=>m.verified).ToArray(),finished=finishing.Select(m=>m.installed).ToArray()};PlayerPrefs.SetString(SaveKey,JsonUtility.ToJson(s));PlayerPrefs.Save();}
-    void LoadProgress(){if(!PlayerPrefs.HasKey(SaveKey))return;try{var s=JsonUtility.FromJson<Saved>(PlayerPrefs.GetString(SaveKey));if(s.finished.Length==13&&finishing.Length==11){var old=s.finished;s.finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};s.finishIndex=0;}if(s.installed.Length!=modules.Length||s.finished.Length!=finishing.Length)return;stage=Mathf.Clamp(s.stage,0,modules.Length);finishIndex=Mathf.Clamp(s.finishIndex,0,finishing.Length-1);for(int i=0;i<modules.Length;i++){modules[i].installed=s.installed[i];modules[i].verified=s.verified[i];modules[i].observed=s.verified[i]?RequiredObservation(i):0;}for(int i=0;i<finishing.Length;i++)finishing[i].installed=s.finished[i];stage=modules.TakeWhile(m=>m.installed).Count();}catch{stage=0;}}
+    public static bool[] UpgradeFinishedProgress(bool[] finished,int targetCount){
+        if(finished==null)return null;
+        if(finished.Length==13&&(targetCount==11||targetCount==10)){
+            var old=finished;
+            finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};
+        }
+        if(finished.Length==11&&targetCount==10)
+            return finished.Take(9).Append(finished[9]&&finished[10]).ToArray();
+        // The editable desktop source still has two individual lamp steps.
+        if(finished.Length==10&&targetCount==11)return finished.Append(finished[9]).ToArray();
+        return finished;
+    }
+    void LoadProgress(){
+        if(!PlayerPrefs.HasKey(SaveKey))return;
+        try{
+            var s=JsonUtility.FromJson<Saved>(PlayerPrefs.GetString(SaveKey));
+            if(s==null)return;
+            var finished=UpgradeFinishedProgress(s.finished,finishing.Length);
+            if(s.installed==null||s.verified==null||finished==null||s.installed.Length!=modules.Length||s.verified.Length!=modules.Length||finished.Length!=finishing.Length)return;
+            finishIndex=Mathf.Clamp(s.finishIndex,0,finishing.Length-1);
+            for(int i=0;i<modules.Length;i++){
+                modules[i].installed=s.installed[i];modules[i].verified=s.verified[i];
+                modules[i].observed=s.verified[i]?RequiredObservation(i):0;
+            }
+            for(int i=0;i<finishing.Length;i++)finishing[i].installed=finished[i];
+            stage=modules.TakeWhile(m=>m.installed).Count();
+        }catch{stage=0;}
+    }
     void OnApplicationPause(bool pause){if(pause)SaveProgress();}void OnApplicationQuit(){SaveProgress();}
     void UpdateText(){if(!progress)return;
         if(!SwanInputActive)progress.text=inSandbox?"山谷铁路   /   第 "+(laps+1)+" 圈":"已装配  "+(modules.Count(m=>m.installed)+finishing.Count(m=>m.installed))+" / "+(modules.Length+finishing.Length);

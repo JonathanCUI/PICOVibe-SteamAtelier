@@ -25,6 +25,8 @@ namespace SwanJourney.Editor
             var report=new Report();
             try
             {
+                Fresh(SwanJourneyAssemblySteps.CheckMergedSteps);report.suites.Add("paired-headlamps-and-progress");
+                Fresh(SwanJourneyStartupChecks.Run);report.suites.Add("fresh-session-and-resume");
                 Fresh(()=>{report.visibilityChecks=SwanJourneyVisibilityChecks.Run();});report.suites.Add("visibility");
                 Fresh(SwanJourneyCardChecks.Run);report.suites.Add("prepared-cards");
                 Fresh(SwanJourneyRenderPathChecks.Run);report.suites.Add("native-camera");
