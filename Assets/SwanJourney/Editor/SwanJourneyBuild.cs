@@ -100,6 +100,7 @@ namespace SwanJourney.Editor
             SwanJourneyColliderBudget.Apply(content);
             SwanJourneyStaticBatching.Optimize(journey,Generated);
             SwanJourneyRigidBatching.Apply(journey,nativeVisuals);
+            SwanJourneyRigidBatching.CombineWorkshopSleepers(journey);
             var meshAudit=SwanJourneyMeshAudit.Run(content,Output+"/mesh-export-audit.json");
             if(!meshAudit.passed||meshAudit.negativeScaleBoxes.Length>0)throw new Exception("Derived mesh/collider export audit failed; see mesh-export-audit.json");
             var hudRoot=new GameObject("Swan V23 view-following FPS");hudRoot.transform.position=new Vector3(-.85f,1.65f,1.15f);
@@ -132,8 +133,11 @@ namespace SwanJourney.Editor
             File.WriteAllText(Output+"/workshop-mesh-budget.json",JsonUtility.ToJson(meshBudget,true));
             SwanJourneyPerformanceProbeBuild.Configure(journey,interaction);
             SwanJourneyEmptyNodeBudget.Apply(journey);
+            SwanJourneyMaterials.ConfigureCompletionBadge(journey, nativeVisuals);
+            SwanJourneySmokeBuild.Configure(journey);
             SwanJourneyBootScene.Generate(journey.font);
             SwanJourneyUrp.UpgradeAndValidateGenerated();
+            SwanJourneyTextureBudget.ShareIdenticalCopies(Generated);
             savedLayout?.Apply(presentation, interaction);
             SwanJourneyNodeAlignment.ValidateAndBind(scene,EnvironmentScenePath);
             // The Windows Resources scan passes backslash paths to the SDK's

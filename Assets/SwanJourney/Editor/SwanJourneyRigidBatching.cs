@@ -220,6 +220,83 @@ namespace SwanJourney.Editor
             }
         }
         static long Triangles(Mesh mesh)=>Enumerable.Range(0,mesh.subMeshCount).Sum(s=>(long)mesh.GetIndexCount(s)/3);
+        // The individual sleeper assets already contain wood and hardware submeshes.
+        // They share one rigid workshop parent; keep their two material passes.
+        internal static void CombineWorkshopSleepers(SteamJourney journey)
+        {
+            var root = journey.workshopRoot.transform;
+            var sleepers = root.Cast<Transform>().Where(t => t.name == "Timber sleeper")
+                .Select(t => t.GetComponent<MeshRenderer>()).Where(r => r).ToArray();
+            if (sleepers.Length < 2) return;
+            var first = sleepers[0];
+            var materials = first.sharedMaterials;
+            if (materials.Length != 2 || materials.Any(m => !m || m.renderQueue >= 2500)) return;
+            var sources = new List<Mesh>();
+            var worldToOwner = first.transform.worldToLocalMatrix;
+            var tracked = new HashSet<UnityEngine.Object>();
+            foreach (var r in sleepers)
+            {
+                var t = r.transform;
+                if (!r.enabled || !t.gameObject.activeSelf || t.childCount != 0 ||
+                    t.GetComponents<Component>().Any(c => !(c is Transform || c is MeshFilter || c is MeshRenderer)) ||
+                    !r.TryGetComponent<MeshFilter>(out var f) || !f.sharedMesh || !f.sharedMesh.isReadable ||
+                    f.sharedMesh.subMeshCount != materials.Length || !r.sharedMaterials.SequenceEqual(materials) ||
+                    t.localToWorldMatrix.determinant <= 0 || r.HasPropertyBlock() || r.additionalVertexStreams ||
+                    r.gameObject.layer != first.gameObject.layer || r.renderingLayerMask != first.renderingLayerMask ||
+                    r.shadowCastingMode != first.shadowCastingMode || r.receiveShadows != first.receiveShadows ||
+                    r.sortingLayerID != first.sortingLayerID || r.sortingOrder != first.sortingOrder ||
+                    r.probeAnchor != first.probeAnchor || r.reflectionProbeUsage != first.reflectionProbeUsage ||
+                    r.lightProbeUsage != first.lightProbeUsage || r.lightmapIndex >= 0 || r.realtimeLightmapIndex >= 0 ||
+                    GameObjectUtility.GetStaticEditorFlags(r.gameObject) != GameObjectUtility.GetStaticEditorFlags(first.gameObject)) return;
+                if (Enumerable.Range(0,materials.Length).Any(i=>f.sharedMesh.GetTopology(i)!=MeshTopology.Triangles)) return;
+                if (sources.Count>0 && !sources[0].GetVertexAttributes().SequenceEqual(f.sharedMesh.GetVertexAttributes())) return;
+                sources.Add(f.sharedMesh);
+                tracked.UnionWith(new UnityEngine.Object[]{t,t.gameObject,r,f});
+            }
+            foreach (var component in journey.gameObject.scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<Component>(true)))
+            {
+                if (!component || component is Transform || tracked.Contains(component)) continue;
+                using (var serialized = new SerializedObject(component))
+                {
+                    var field=serialized.GetIterator();
+                    while (field.Next(true))
+                        if (field.propertyType==SerializedPropertyType.ObjectReference && tracked.Contains(field.objectReferenceValue)) return;
+                }
+            }
+            var passes = new List<Mesh>();
+            Mesh combined = null;
+            try
+            {
+                for (int slot=0;slot<materials.Length;slot++)
+                {
+                    var pass=new Mesh{indexFormat=IndexFormat.UInt32};passes.Add(pass);
+                    var inputs=sleepers.Select((r,i)=>new CombineInstance {mesh=sources[i],subMeshIndex=slot,
+                        transform=worldToOwner*r.transform.localToWorldMatrix}).ToArray();
+                    pass.CombineMeshes(inputs,true,true,false);
+                }
+                combined=new Mesh{name="Timber sleepers",indexFormat=IndexFormat.UInt32};
+                combined.CombineMeshes(passes.Select(p=>new CombineInstance{mesh=p}).ToArray(),false,false,false);
+                combined.RecalculateBounds();
+                for(int s=0;s<materials.Length;s++)
+                    if(sources.Sum(m=>(long)m.GetIndexCount(s))!=combined.GetIndexCount(s))
+                        throw new InvalidOperationException("Timber sleeper batch lost geometry");
+                string path=SwanJourneyBuild.Generated+"/RigidBatches/TimberSleepers.asset";
+                var saved=AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if(saved){EditorUtility.CopySerialized(combined,saved);EditorUtility.SetDirty(saved);}
+                else{AssetDatabase.CreateAsset(combined,path);saved=combined;combined=null;}
+                first.GetComponent<MeshFilter>().sharedMesh=saved;
+                foreach(var r in sleepers.Skip(1)){
+                    UnityEngine.Object.DestroyImmediate(r.GetComponent<MeshFilter>());
+                    UnityEngine.Object.DestroyImmediate(r);
+                }
+                EditorUtility.SetDirty(first.GetComponent<MeshFilter>());
+                Debug.Log("SWAN_SLEEPER_BATCH "+sleepers.Length+" renderers -> 1, material slots "+sleepers.Length*materials.Length+" -> "+materials.Length);
+            }
+            finally{
+                if(combined)UnityEngine.Object.DestroyImmediate(combined);
+                foreach(var pass in passes)UnityEngine.Object.DestroyImmediate(pass);
+            }
+        }
         static Mesh CombineByMaterial(CombineInstance[] instances,List<MeshRenderer> sources,Material[] materials,string name)
         {
             var temporary=new List<Mesh>();

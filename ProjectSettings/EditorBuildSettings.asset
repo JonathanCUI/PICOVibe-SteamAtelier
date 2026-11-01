@@ -12,6 +12,8 @@ EditorBuildSettings:
     path: Assets/SwanJourney/Scenes/SteamJourneySwan.unity
     guid: c7d3b22549659cc4eb851ebdb02852fb
   m_configObjects:
+    ByteDance.PICO.XR.Settings: {fileID: 11400000, guid: c800080a8eeb37f45882320bc3404de8,
+      type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 2ad61b00b4ba3ba44803991f96402498,
       type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 5fc985d64a6b07546bd4ed1bb1222c6a,

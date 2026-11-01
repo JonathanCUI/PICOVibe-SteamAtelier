@@ -10,7 +10,7 @@ using UnityEngine;using UnityEngine.EventSystems;
  public void EndCelestialDrag(){CapturesPointer=false;sky.automatic=WasAutomatic;}
  public void PollPointer(){if(journey.SwanInputActive)return;if(!journey.inSandbox){if(CapturesPointer)EndCelestialDrag();return;}if(journey.verificationInputLock)return;bool over=EventSystem.current&&EventSystem.current.IsPointerOverGameObject();if(Input.GetMouseButtonDown(0)&&!over)BeginCelestialDrag(Input.mousePosition);if(CapturesPointer&&Input.GetMouseButton(0))DragCelestial(Input.mousePosition);if(CapturesPointer&&Input.GetMouseButtonUp(0))EndCelestialDrag();}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Clouds)) CpuMeasuredLateUpdate(); }
-    void CpuMeasuredLateUpdate(){clock+=Time.unscaledDeltaTime;bool active=journey.inSandbox;legacySmoke.enabled=active?false:smokeWasEnabled;
+    void CpuMeasuredLateUpdate(){clock+=Time.unscaledDeltaTime;bool active=journey.inSandbox;legacySmoke.enabled=!active&&smokeWasEnabled&&(!journey.bakedChimney||!journey.ChimneyConnected);
   // The bench steam controller still owns its later legacy-smoke override.
   // Only hidden sandbox work is skipped; its clock continues across mode changes.
   if(journey.SwanInputActive){

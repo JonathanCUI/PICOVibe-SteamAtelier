@@ -19,6 +19,49 @@ namespace SwanJourney.Editor
         const int TextureLimit = 512, HeroAlbedoLimit = 1024;
         const string Version = "SwanJourneyTextureBudget-v2-memory";
 
+        // Keep each source's generated file so a later art edit can diverge again.
+        // Only share material bindings for byte-identical PNGs with matching import settings.
+        internal static int ShareIdenticalCopies(string generated)
+        {
+            var materials = AssetDatabase.FindAssets("t:Material", new[] { generated + "/NativeVisuals" })
+                .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, StringComparer.Ordinal)
+                .Select(AssetDatabase.LoadAssetAtPath<Material>).Where(material => material).ToArray();
+            var slots = new Dictionary<Texture2D, List<Slot>>();
+            foreach (var material in materials)
+            foreach (string property in material.GetTexturePropertyNames())
+            {
+                if (!(material.GetTexture(property) is Texture2D texture)) continue;
+                string path = AssetDatabase.GetAssetPath(texture);
+                if (!path.StartsWith(generated + "/TextureBudget/", StringComparison.Ordinal) &&
+                    !path.StartsWith(generated + "/NativePbr/", StringComparison.Ordinal)) continue;
+                if (!path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!slots.TryGetValue(texture, out var bindings)) slots.Add(texture, bindings = new List<Slot>());
+                bindings.Add(new Slot { material = material, property = property });
+            }
+            int count = 0;
+            var canonical = new Dictionary<string, Texture2D>();
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+            foreach (var pair in slots.OrderBy(item => AssetDatabase.GetAssetPath(item.Key), StringComparer.Ordinal))
+            {
+                string path = AssetDatabase.GetAssetPath(pair.Key);
+                string importer = string.Join("\n", File.ReadLines(path + ".meta").Where(line =>
+                    !line.StartsWith("guid:", StringComparison.Ordinal) && !line.StartsWith("  userData:", StringComparison.Ordinal)));
+                string stem = Path.GetFileNameWithoutExtension(path);
+                int suffix = stem.IndexOf('_');
+                if (suffix < 0) continue;
+                string key = Path.GetDirectoryName(path) + "/" + stem.Substring(suffix) + "\n" + importer;
+                using (var source = File.OpenRead(path)) key += "\n" + Convert.ToBase64String(hash.ComputeHash(source));
+                if (!canonical.TryGetValue(key, out var texture)) { canonical.Add(key, pair.Key); continue; }
+                foreach (var slot in pair.Value)
+                {
+                    slot.material.SetTexture(slot.property, texture);
+                    EditorUtility.SetDirty(slot.material);
+                    count++;
+                }
+            }
+            return count;
+        }
+
         sealed class Slot { public Material material; public string property; }
         sealed class Request
         {

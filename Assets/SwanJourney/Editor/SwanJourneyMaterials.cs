@@ -181,14 +181,35 @@ namespace SwanJourney.Editor
             }
             bridge.materials=definitions.ToArray();
             bridge.scanMaterial=Save(Effect("Native blue reveal",new Color(.10f,.68f,1,.42f),new Color(.05f,.55f,1)*1.4f),folder+"/BlueReveal.mat");
-            bridge.goldMaterial=Save(Effect("Native completion gold",new Color(.91f,.64f,.23f,1),new Color(1,.54f,.10f)*.9f,false),folder+"/CompletionGold.mat");
-            bridge.goldMaterial.SetFloat("_Metallic",.78f);bridge.goldMaterial.SetFloat("_Smoothness",.72f);
             bridge.rippleMaterial=Save(Effect("Native contact ripple",new Color(.38f,.75f,.83f,.42f),new Color(.10f,.31f,.38f)),folder+"/WaterRipple.mat");
             var flowMaps=ParticleMaps(alpha);
             ConfigureFlowParticles(journey,workbench,folder,flowMaps.surface,flowMaps.emission);
             EditorUtility.SetDirty(bridge);AssetDatabase.SaveAssets();
             Debug.Log("SWAN_JOURNEY_MATERIALS converted="+map.Count+" plumePools=42+32 nativeReveal=true nativeGold=true");
             return bridge;
+        }
+
+        internal static void ConfigureCompletionBadge(SteamJourney journey, SwanJourneyVisualBridge bridge)
+        {
+            if (bridge.completionBadge) return;
+            const string art = "Assets/SwanJourney/Branding/AssemblyComplete";
+            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(art + ".asset");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(art + ".mat");
+            if (!mesh || !material) throw new InvalidOperationException("Missing Swan assembly completion badge");
+            var badge = new GameObject("Assembly complete check", typeof(MeshFilter), typeof(MeshRenderer));
+            badge.transform.SetParent(journey.engine.locomotive, false);
+            badge.transform.localPosition = new Vector3(.15f, 4.65f, 0);
+            badge.transform.localScale = Vector3.one * 1.15f;
+            badge.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = badge.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.lightProbeUsage = LightProbeUsage.Off;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            badge.SetActive(false);
+            bridge.completionBadge = badge.transform;
+            EditorUtility.SetDirty(bridge);
         }
 
         static void ConfigureFlowParticles(SteamJourney journey,Transform workbench,string folder,Texture2D alpha,Texture2D emissionMask)

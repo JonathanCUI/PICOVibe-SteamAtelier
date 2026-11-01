@@ -64,7 +64,15 @@ namespace SwanJourney.Editor
                     // the same bounds. Protect fixed text and every digit variant.
                     bool hudGlyph = group.Any(f => f.GetComponentInParent<SwanAtelier.SwanFpsMeshText>(true));
                     bool visibleGeometry = role == Role.Surface || role == Role.Precision;
-                    if (visibleGeometry) report.preservedVisibleMeshes += count;
+                    Mesh water = NativeWaterSurface(path);
+                    if (water && group.All(f => !f.GetComponent<Collider>() && f.TryGetComponent<MeshRenderer>(out var r) &&
+                        r.sharedMaterial && AssetDatabase.GetAssetPath(r.sharedMaterial) == SwanJourneyBuild.Generated + "/NativeVisuals/Material_0066.mat"))
+                    {
+                        mesh = water;
+                        foreach (var filter in group) filter.sharedMesh = mesh;
+                        report.derivedMeshes++;
+                    }
+                    else if (visibleGeometry) report.preservedVisibleMeshes += count;
                     if (!hudGlyph && !visibleGeometry && original > 96 && source.isReadable && source.blendShapeCount == 0 &&
                         !source.name.ToLowerInvariant().Contains("water") && !path.StartsWith(Folder + "/") &&
                         Enumerable.Range(0, source.subMeshCount).All(i => source.GetTopology(i) == MeshTopology.Triangles))
@@ -99,6 +107,29 @@ namespace SwanJourney.Editor
             Debug.Log("SWAN_WORKSHOP_MESH_BUDGET " + JsonUtility.ToJson(report));
             if (report.after > Limit) throw new InvalidOperationException("Workshop exceeds " + Limit + " triangles: " + report.after);
             return report;
+        }
+        static Mesh NativeWaterSurface(string path)
+        {
+            const string input = "Assets/AtelierJourney/StudioVisual/AssemblyWaterV9/Meshes/";
+            string asset, fingerprint;
+            switch (path)
+            {
+                case input + "Water surface.asset":
+                    asset = "BoilerWaterSurfaceVR";
+                    fingerprint = "1408706a36ab5f71e71fe8e135cfa7663becf954923988099ab277166d983f1f"; break;
+                case input + "Crown water surface.asset":
+                    asset = "CrownWaterSurfaceVR";
+                    fingerprint = "84ac9ea8245d88d4d4254160880e2755a1183f62146921fc238f73af5f18a70d"; break;
+                default: return null;
+            }
+            // Only use the authored VR variant while its source matches. Later water edits take precedence.
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(path).Replace("\r\n", "\n"));
+                var actual = BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "");
+                if (!actual.Equals(fingerprint, StringComparison.OrdinalIgnoreCase)) return null;
+            }
+            return AssetDatabase.LoadAssetAtPath<Mesh>(Folder + "/" + asset + ".asset");
         }
         static Mesh Reduce(Mesh source, float ratio)
         {

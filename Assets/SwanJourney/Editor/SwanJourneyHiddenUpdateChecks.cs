@@ -71,7 +71,7 @@ namespace SwanJourney.Editor
                 var source = new Material(shader) { color = Color.white };
                 source.SetColor("_EmissionColor", Color.black); owned.Add(source);
                 var scan = new Material(source); owned.Add(scan);
-                var gold = new Material(source); owned.Add(gold);
+                var badge = new GameObject("Completion check"); badge.transform.SetParent(root.transform, false); badge.SetActive(false);
                 var journey = root.AddComponent<SteamJourney>();
                 journey.workshopRoot = root; journey.previewRoot = root;
                 var displayParent = new GameObject("Hidden display parent");
@@ -88,7 +88,7 @@ namespace SwanJourney.Editor
                 Write(Color.white, Color.black);
                 bridge = root.AddComponent<SwanJourneyVisualBridge>();
                 bridge.journey = journey; bridge.workbench = root.transform;
-                bridge.scanMaterial = scan; bridge.goldMaterial = gold;
+                bridge.scanMaterial = scan; bridge.completionBadge = badge.transform;
                 bridge.materials = new[] { new JourneyNativeMaterial { material = source, kind = JourneyNativeMaterialKind.Surface, color = Color.white } };
                 Invoke(bridge, "Awake");
                 var live = renderer.sharedMaterial;
@@ -124,18 +124,17 @@ namespace SwanJourney.Editor
                         && Mathf.Abs(live.GetColor("_EmissionColor").r - 5) < .0001f, "unchanged visible producer output skips duplicate material writes");
                 }
 
-                foreach (bool arrival in new[] { true, false })
-                {
-                    if (arrival) Invoke(bridge, "BeginArrival"); else Invoke(bridge, "BeginGold", child.transform);
-                    if (!arrival) Invoke(bridge, "GoldProgress", .5f);
-                    var temporary = renderer.sharedMaterial;
-                    Check(temporary == (arrival ? scan : gold), "transition installs its temporary material");
-                    renderer.enabled = false; Invoke(bridge, "LateUpdate");
-                    renderer.enabled = true; Write(Color.cyan, Color.yellow); Invoke(bridge, "LateUpdate");
-                    Check(renderer.sharedMaterial == temporary, "visible refresh does not overwrite scan/gold material ownership");
-                    Invoke(bridge, arrival ? "EndArrival" : "EndGold");
-                    Check(renderer.sharedMaterial == live && renderer.enabled, "transition cleanup restores exact live binding");
-                }
+                Invoke(bridge, "BeginArrival");
+                Check(renderer.sharedMaterial == scan, "arrival installs its temporary material");
+                renderer.enabled = false; Invoke(bridge, "LateUpdate");
+                renderer.enabled = true; Write(Color.cyan, Color.yellow); Invoke(bridge, "LateUpdate");
+                Check(renderer.sharedMaterial == scan, "visible refresh preserves arrival material ownership");
+                Invoke(bridge, "EndArrival");
+                Check(renderer.sharedMaterial == live, "arrival restores the live binding");
+                Invoke(bridge, "BeginGold", child.transform);
+                Check(bridge.GoldActive && renderer.sharedMaterial == live, "completion shows its badge and preserves the train finish");
+                Invoke(bridge, "EndGold");
+                Check(!bridge.GoldActive && renderer.sharedMaterial == live, "completion hides the badge cleanly");
                 Check(source.color == Color.white && source.GetColor("_EmissionColor") == Color.black,
                     "shared source material is unchanged");
             }

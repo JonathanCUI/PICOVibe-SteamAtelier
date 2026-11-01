@@ -8,12 +8,13 @@ public sealed class WorkshopSteamV20 : MonoBehaviour {
  public int ActivePuffs{get;private set;}public float MaxDiameter{get;private set;}
  sealed class Puff{public Transform t;public Renderer r;public float age,life,seed;public Vector3 position;public bool alive;}
  readonly Puff[] pool=new Puff[32];MaterialPropertyBlock block;float credit;int serial;bool lastSandbox;
- void Awake(){block=new MaterialPropertyBlock();var root=new GameObject("Bench rolling white steam V20");root.transform.SetParent(journey.workshopRoot.transform,false);
+ void Awake(){if(journey.bakedChimney)return;block=new MaterialPropertyBlock();var root=new GameObject("Bench rolling white steam V20");root.transform.SetParent(journey.workshopRoot.transform,false);
   for(int i=0;i<pool.Length;i++){var o=new GameObject("Bench steam "+i);o.transform.SetParent(root.transform,false);o.AddComponent<MeshFilter>().sharedMesh=source.volumeMesh;var r=o.AddComponent<MeshRenderer>();r.sharedMaterial=material;r.shadowCastingMode=ShadowCastingMode.Off;r.receiveShadows=false;r.enabled=false;pool[i]=new Puff{t=o.transform,r=r};}
  }
- public void Clear(){foreach(var p in pool)if(p!=null){p.alive=false;if(p.r)p.r.enabled=false;}credit=0;ActivePuffs=0;}
+ public void Clear(){if(journey&&journey.bakedChimney){journey.bakedChimney.Clear();return;}foreach(var p in pool)if(p!=null){p.alive=false;if(p.r)p.r.enabled=false;}credit=0;ActivePuffs=0;}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.WorkshopSteam)) CpuMeasuredLateUpdate(); }
     void CpuMeasuredLateUpdate(){
+  if(journey.bakedChimney)return;
   if(lastSandbox!=journey.inSandbox){Clear();lastSandbox=journey.inSandbox;}if(journey.inSandbox)return;
   bool chimney=journey.ChimneyConnected;var legacy=journey.smoke.GetComponent<Renderer>();legacy.enabled=!chimney;
   if(!chimney){Clear();return;}if(journey.paused)return;float power=journey.ChimneyExhaustPower;

@@ -25,14 +25,15 @@ namespace SwanJourney
         public Transform deferredEnvironment;
         public JourneyNativeMaterial[] materials = Array.Empty<JourneyNativeMaterial>();
         public Mesh softVolume, flameVolume, cloudVolume, beamVolume, waterVolume, jacketVolume, ringMesh;
-        public Material scanMaterial, goldMaterial, rippleMaterial;
+        public Material scanMaterial, rippleMaterial;
+        public Transform completionBadge;
         public int NativeAnimatedRenderers => animated.Count;
         public int NativeOwnedMaterialCount => animated.Select(a=>a.instance).Where(m=>m).Distinct().Count();
         public int NativeSharedGhostCount => sharedGhosts.Count;
         public int NativeWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count();
         public int NativeAnimatedWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count(r=>animated.Any(a=>a.renderer==r));
         public bool ScanActive => scanning;
-        public bool GoldActive => finishing;
+        public bool GoldActive => completionBadge && completionBadge.gameObject.activeSelf;
         // Per-update work counters, not frame-time or native-rendering measurements.
         public int LastAnimatedVisited { get; private set; }
         public int LastHiddenSkipped { get; private set; }
@@ -77,8 +78,7 @@ namespace SwanJourney
         readonly Dictionary<Material, JourneyNativeMaterial> lookup = new Dictionary<Material, JourneyNativeMaterial>();
         readonly Dictionary<Material, SharedGhost> sharedGhosts = new Dictionary<Material, SharedGhost>();
         readonly HashSet<Renderer> seen = new HashSet<Renderer>();
-        readonly List<SweepEntry> scan = new List<SweepEntry>(), gold = new List<SweepEntry>();
-        readonly List<GameObject> goldRings = new List<GameObject>();
+        readonly List<SweepEntry> scan = new List<SweepEntry>();
         MaterialPropertyBlock block;
         JourneySceneArrival arrival;
         StudioAssemblyFinishV9 finish;
@@ -89,9 +89,8 @@ namespace SwanJourney
         Transform scanRing, waterRing;
         float discoverUntil, nextDiscover, waveAge = 10;
         int impactCount;
-        bool scanning, finishing, lastMode;
+        bool scanning, lastMode;
         Bounds scanBounds;
-        float goldMin, goldMax;
         Material rippleInstance;
 
         void Awake()
@@ -108,7 +107,7 @@ namespace SwanJourney
             sky = Find<MesaDayNightV13>();
             windows = refinement ? refinement.passengerWindows : Array.Empty<Renderer>();
             if (arrival) { arrival.nativeBegin = BeginArrival; arrival.nativeProgress = ArrivalProgress; arrival.nativeCancel = EndArrival; }
-            if (finish) { finish.nativeBegin = BeginGold; finish.nativeProgress = GoldProgress; finish.nativeRestore = EndGold; }
+            if (finish) { finish.nativeBegin = BeginGold; finish.nativeRestore = EndGold; }
             discoverUntil = Time.unscaledTime + 5;
             Discover();
         }
@@ -392,37 +391,22 @@ namespace SwanJourney
 
         void BeginGold(Transform train)
         {
-            EndGold(); if(!train||!goldMaterial)return;
-            foreach(var r in train.GetComponentsInChildren<MeshRenderer>())
+            if (!completionBadge || !train || !isActiveAndEnabled) return;
+            completionBadge.localRotation = Quaternion.identity;
+            if (SwanAtelier.SwanHeadPose.TryRead(out var head))
             {
-                var mats=r.sharedMaterials;
-                if(!r.enabled||mats.Length==0||mats.Any(m=>!m||m.renderQueue>=2500)||r.GetComponent<TMPro.TMP_Text>())continue;
-                var p=train.InverseTransformPoint(r.bounds.center);
-                gold.Add(new SweepEntry {renderer=r,original=mats,effect=Enumerable.Repeat(goldMaterial,mats.Length).ToArray(),coordinate=p.x-p.y*.35f});
-            }
-            finishing=gold.Count>0;
-            if(finishing){goldMin=gold.Min(e=>e.coordinate);goldMax=gold.Max(e=>e.coordinate);}
-            if(goldRings.Count==0 && ringMesh && scanMaterial && journey.engine && journey.engine.sides!=null)
-                foreach(var side in journey.engine.sides) foreach(var wheel in side.wheels)
+                var direction = completionBadge.position - head.position;
+                if (direction.sqrMagnitude > .0001f)
                 {
-                    var ring=MakeRing("Native wheel lock glint",wheel,scanMaterial);
-                    ring.localPosition=Vector3.zero;ring.localRotation=Quaternion.Euler(90,0,0);ring.localScale=Vector3.one*.45f;
-                    goldRings.Add(ring.gameObject);
+                    var up = Mathf.Abs(Vector3.Dot(direction.normalized, train.up)) > .98f ? train.forward : train.up;
+                    completionBadge.rotation = Quaternion.LookRotation(direction, up);
                 }
-        }
-        void GoldProgress(float progress)
-        {
-            if(!finishing)return;
-            float width=Mathf.Max(.3f,(goldMax-goldMin)*.20f);
-            float head=Mathf.Lerp(goldMin-width,goldMax+width,progress);
-            foreach(var e in gold) e.ShowEffect(Mathf.Abs(e.coordinate-head)<width);
-            bool visible=progress>.15f&&progress<.85f;
-            foreach(var r in goldRings)if(r&&r.activeSelf!=visible)r.SetActive(visible);
+            }
+            completionBadge.gameObject.SetActive(true);
         }
         void EndGold()
         {
-            foreach(var e in gold) e.ShowEffect(false);
-            gold.Clear();finishing=false;foreach(var r in goldRings)if(r)r.SetActive(false);
+            if (GoldActive) completionBadge.gameObject.SetActive(false);
         }
         Transform MakeRing(string label,Transform parent,Material material)
         {

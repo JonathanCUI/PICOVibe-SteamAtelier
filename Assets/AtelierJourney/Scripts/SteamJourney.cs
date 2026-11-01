@@ -20,6 +20,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
     public Transform throttleLever,brakeLever,directionLever,pressureNeedle,speedNeedle;
     public TMP_Text consoleSpeed,consolePressure,consoleStatus;
     public ParticleSystem fire,smoke,steam,sparks;
+    public SwanJourney.SwanJourneyChimneySmoke bakedChimney;
     public JourneyFlow[] flows;
     public JourneyDetail[] detailMeshes;
     public GameObject[] lessonModels;

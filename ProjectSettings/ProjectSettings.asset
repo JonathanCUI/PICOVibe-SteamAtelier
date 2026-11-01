@@ -844,6 +844,7 @@ PlayerSettings:
   webGLPowerPreference: 2
   scriptingDefineSymbols:
     Android: PICO_MS_SDK;PICO_SPATIALIZER
+    Standalone: PICO_SPATIALIZER;ENABLE_PICO_XR_SDK;PICO_MS_SDK
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

@@ -18,6 +18,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
  void Awake(){
   block=new MaterialPropertyBlock();clouds=new Renderer[3];starts=new Vector3[3];scales=new Vector3[3];
   for(int i=0;i<3;i++){clouds[i]=sky.clouds[i].GetComponent<Renderer>();starts[i]=sky.clouds[i].localPosition;scales[i]=sky.clouds[i].localScale;}
+  if(journey.bakedChimney){puffs=System.Array.Empty<Puff>();return;}
   var root=new GameObject("Rolling volumetric exhaust V16");root.transform.SetParent(journey.sandboxRoot.transform,false);
   for(int i=0;i<Capacity;i++){
    var go=new GameObject("Steam puff "+i);go.transform.SetParent(root.transform,false);go.AddComponent<MeshFilter>().sharedMesh=volumeMesh;
@@ -64,6 +65,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    }else t.localScale=scales[i];
    block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);CloudWriteCount++;
   }
+  if(journey.bakedChimney)return;
   if(active){emit+=dt*((journey.SwanInputActive?3.65f:5f)+Mathf.Clamp01(journey.speed/4)*.8f);while(emit>=1){Emit();emit--;}}
   else {emit=0;if(wasActive)foreach(var p in puffs){p.alive=false;p.r.enabled=false;}}
   wasActive=active;ActivePuffs=0;ConfinedPuffs=0;InvalidCenters=0;

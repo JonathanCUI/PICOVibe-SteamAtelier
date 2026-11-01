@@ -8,7 +8,7 @@ public sealed partial class SteamJourney {
   // During a hard stop the contact friction must be audible above the exhaust pulses.
   exhaustAudio.volume=Mathf.MoveTowards(exhaustAudio.volume,.34f*(1-.60f*HardBrakeIntensity),dt*.8f);
   bool moving=active&&(inSandbox?speed>.035f:WheelPower>.1f&&modules[5].installed&&brakeApplied<.99f);
-  for(int i=0;i<engine.sides.Length;i++){var p=engine.sides[i].pose;for(int e=0;e<2;e++){bool open=ValvePortOpen(i,e==0?3:4);if(soundReady&&moving&&open&&!exhaustWasOpen[i,e]&&chuffSound){exhaustAudio.pitch=.96f+i*.04f;exhaustAudio.PlayOneShot(chuffSound,inSandbox?.55f+.45f*throttle:.70f);if(smoke&&inSandbox&&ChimneyConnected)smoke.Emit(3);}exhaustWasOpen[i,e]=open;}}
+  for(int i=0;i<engine.sides.Length;i++){var p=engine.sides[i].pose;for(int e=0;e<2;e++){bool open=ValvePortOpen(i,e==0?3:4);if(soundReady&&moving&&open&&!exhaustWasOpen[i,e]&&chuffSound){exhaustAudio.pitch=.96f+i*.04f;exhaustAudio.PlayOneShot(chuffSound,inSandbox?.55f+.45f*throttle:.70f);if(smoke&&!bakedChimney&&inSandbox&&ChimneyConnected)smoke.Emit(3);}exhaustWasOpen[i,e]=open;}}
   soundReady=true;
   // Rail-joint double knocks removed; retain steam exhaust, wheel friction and whistle.
   fireAudio.volume=Mathf.Lerp(fireAudio.volume,active?(inSandbox?.025f:FireLevel*.065f):0,dt*4);if(active&&!fireAudio.isPlaying)fireAudio.Play();if(!active&&fireAudio.isPlaying)fireAudio.Stop();
