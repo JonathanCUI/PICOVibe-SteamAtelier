@@ -61,6 +61,19 @@ namespace SwanJourney.Editor
                 Check(f.refine.WindowGlow > .08f && f.refine.cabLight.enabled && f.headlamp.enabled && f.journey.furnaceLight.enabled,
                     "Entering sandbox restores current window and driving lighting without changing furnace light", checks);
 
+                var extraLamp = new GameObject("Test headlamp");
+                extraLamp.transform.SetParent(f.headlamp.transform, false);
+                var extraLight = extraLamp.AddComponent<Light>();
+                extraLight.enabled = false;
+                f.Tick();
+                Check(extraLight.enabled, "A new light under an existing driving lamp is discovered", checks);
+                f.journey.GetType().GetField("lamps", Private).SetValue(f.journey, false); f.Tick();
+                Check(!extraLight.enabled && !f.headlamp.enabled && f.journey.furnaceLight.enabled && f.refine.cabLight.enabled,
+                    "Turning off the cached driving lights preserves the furnace and cab", checks);
+                f.journey.GetType().GetField("lamps", Private).SetValue(f.journey, true); f.Tick();
+                Check(extraLight.enabled && f.headlamp.enabled, "Turning the cached headlamps back on restores both lights", checks);
+                Object.DestroyImmediate(extraLamp);
+
                 // A changed sentinel proves that equal displayed values avoid even a
                 // redundant text assignment, rather than relying on TMP's own equality guard.
                 f.refine.throttleReadout.text = "cached throttle"; f.refine.driveMessage.text = "cached message";

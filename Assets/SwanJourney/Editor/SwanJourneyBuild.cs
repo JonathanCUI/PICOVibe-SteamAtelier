@@ -42,6 +42,7 @@ namespace SwanJourney.Editor
             foreach(var root in roots)root.transform.SetParent(content,false);
             content.localScale=Vector3.one*.12f;content.localRotation=Quaternion.Euler(0,180,0);
             journey.SwanInputActive=true;journey.spatialRoot=content;
+            ObservationBuild.PairHeadlamps(journey);
             SwanJourneyNodeAlignment.NormalizeContent(content);
             SwanJourneyScenePreparation.Prepare(journey,content);
             // The saved Journey owns simulation and all process state. Only the
@@ -90,6 +91,9 @@ namespace SwanJourney.Editor
             foreach(var cards in content.GetComponentsInChildren<StudioPartCards>(true))cards.spatialLeaderMaterial=nativeVisuals.rippleMaterial;
             SwanJourneyTextureBudget.Apply(content,Generated);
             SwanJourneyPbrPacking.Apply(content);
+            VRFireboxBuild.Configure(journey, nativeVisuals);
+            ObservationBuild.ConfigureArrows(journey);
+            SwanJourneyEffectCleanup.Apply(journey);
             SwanJourneyFireChecks.Validate(journey);
             SwanJourneySoftParticleChecks.Validate(journey);
             var ui=stage.AddComponent<SwanJourneyNativeUi>();ui.content=stage.transform;

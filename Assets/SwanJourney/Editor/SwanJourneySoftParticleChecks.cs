@@ -29,12 +29,12 @@ namespace SwanJourney.Editor
                 Check(bridge&&bridge.softVolume,"Generated visual bridge and plume mesh exist",report);
                 DiscMesh(bridge.softVolume,216,"Plume",report);
                 var flow=journey.GetComponent<SwanJourneyFlowParticles>();
-                Check(flow&&flow.markers.Length==288&&flow.SourceCount==125,"All process sources and fixed marker capacity remain intact",report);
-                DiscMesh(flow.markers[0].GetComponent<MeshFilter>().sharedMesh,48,"Flow",report);
+                Check(flow&&flow.markers.Length==4*SwanJourneyFlowParticles.ArrowsPerKind&&flow.SourceCount==125,"All process sources and fixed marker capacity remain intact",report);
+                Check(flow.UsesArrows && flow.markers[0].GetComponent<MeshFilter>().sharedMesh.triangles.Length==66,"One 22-triangle directional mesh",report);
                 var materials=new HashSet<Material>(bridge.materials.Where(m=>m.material&&Soft(m.kind)).Select(m=>m.material));
-                foreach(var source in flow.sources)foreach(var material in source.alphaMaterials)materials.Add(material);
+                if(!flow.UsesArrows)foreach(var source in flow.sources)foreach(var material in source.alphaMaterials)materials.Add(material);
                 VerifyPersistedEmission(materials,report);
-                Check(SwanJourneyFlowParticles.AlphaLevels[0]>.02f && flow.sources.All(source=>
+                if(!flow.UsesArrows)Check(SwanJourneyFlowParticles.AlphaLevels[0]>.02f && flow.sources.All(source=>
                     source.alphaMaterials[0].color.a==SwanJourneyFlowParticles.AlphaLevels[0]
                     &&source.alphaMaterials[0].GetColor("_EmissionColor").maxColorComponent>0),
                     "Alpha index zero is a visible 4-percent palette entry, never an export exemption",report);
@@ -126,6 +126,14 @@ namespace SwanJourney.Editor
 
         static void CheckLifetimeFade(SwanJourneyVisualBridge generated,Report report)
         {
+            if(!generated.materials.Any(m=>m.kind==JourneyNativeMaterialKind.Steam))
+            {
+                var smoke=generated.journey.bakedChimney;
+                Check(smoke && smoke.frames.Length==32 && smoke.frames.All(f=>f
+                    &&f.GetComponent<MeshFilter>().sharedMesh&&f.GetComponent<MeshRenderer>().sharedMaterial),
+                    "Removed legacy puff materials are replaced by the complete baked chimney animation",report);
+                return;
+            }
             var root=new GameObject("Soft-particle check fixture"){hideFlags=HideFlags.HideAndDontSave};
             Material source=null,instance=null;
             try

@@ -159,7 +159,7 @@ public sealed class StudioPartCards : MonoBehaviour {
    if(!journey.SwanInputActive)lastPointer=Input.mousePosition;UpdateAnchor();
   }
   if(SelectedIndex!=last){ShowContent();UpdateAnchor();}
-  status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / 18     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
+  status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / "+parts.Length.ToString("D2")+"     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
   if(active)Layout();
  }
  void UpdateAnchor(){

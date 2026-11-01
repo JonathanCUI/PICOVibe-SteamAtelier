@@ -139,6 +139,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         if(sandbox&&!Complete)return;
         if(SwanInputActive&&SwanModeRequest!=null&&!SwanModeRequest(sandbox))return;
         var arrival=GetComponent<JourneySceneArrival>();if(arrival)arrival.Cancel();
+        cachedDrivingLightRoot = null;
         bool changed=inSandbox!=sandbox;CancelAssembly();bool returning=inSandbox&&!sandbox;held=null;heldControl=null;inSandbox=sandbox;speed=0;throttle=0;brake=0;running=false;paused=false;ResetProcess();
         workshopRoot.SetActive(!sandbox);sandboxRoot.SetActive(sandbox);consoleRoot.SetActive(sandbox);
         trainAnchor.SetParent(sandbox?sandboxRoot.transform:workshopRoot.transform,false);
@@ -267,9 +268,29 @@ public sealed partial class SteamJourney : MonoBehaviour {
         }
         UpdateDrivingLights();
     }
+    readonly List<Light> drivingLights = new List<Light>();
+    Transform cachedDrivingLightRoot;
+    int cachedDrivingHierarchyCount = -1;
+
     void UpdateDrivingLights(){
         var spatialLighting=GetComponent<StudioSpatialRefineV19>();
-        foreach(var l in trainAnchor.GetComponentsInChildren<Light>(true)){if(l==furnaceLight||(spatialLighting&&l==spatialLighting.cabLight))continue;var part=l.GetComponentInParent<LocomotivePart>();bool isLamp=part&&(part.partId=="P25-R"||part.partId=="P25-L");l.enabled=lamps&&inSandbox&&isLamp;}
+        // Driving reuses the assembled train. Its lights include inactive parts.
+        // Rebuild on mode entry, a different train, or a hierarchy size change.
+        bool cache = SwanInputActive && inSandbox;
+        int hierarchyCount = cache ? trainAnchor.hierarchyCount : -1;
+        if (!cache || cachedDrivingLightRoot != trainAnchor || cachedDrivingHierarchyCount != hierarchyCount)
+        {
+            trainAnchor.GetComponentsInChildren(true, drivingLights);
+            cachedDrivingLightRoot = cache ? trainAnchor : null;
+            cachedDrivingHierarchyCount = hierarchyCount;
+        }
+        foreach (var light in drivingLights)
+        {
+            if (!light || light == furnaceLight || (spatialLighting && light == spatialLighting.cabLight)) continue;
+            var part = light.GetComponentInParent<LocomotivePart>();
+            bool enabled = lamps && inSandbox && part && (part.partId == "P25-R" || part.partId == "P25-L");
+            if (light.enabled != enabled) light.enabled = enabled;
+        }
     }
     void Chamber(Renderer r,float a,float b,bool admission,bool exhaust,bool active){if(!r)return;r.enabled=cutaway&&!inSandbox&&b>a;
         r.transform.localPosition=new Vector3((a+b)*.5f,.65f,1.085f);r.transform.localScale=new Vector3(Mathf.Max(.001f,b-a),.46f,.46f);
@@ -283,9 +304,9 @@ public sealed partial class SteamJourney : MonoBehaviour {
         if(outlet>0)mass=Mathf.Lerp(mass,.035f*volume,1-Mathf.Exp(-dt*2.3f*outlet));if(!active)mass*=Mathf.Exp(-dt*.85f);
         chamberCharge[side]=Mathf.Clamp(mass,0,1.1f);float target=1-Mathf.Exp(-Mathf.Min(1.6f,mass/volume)*1.15f);
         float last=left?leftMist:rightMist,vent=left?leftVent:rightVent;
-        last=Mathf.Lerp(last,target,1-Mathf.Exp(-dt*2.2f));vent=Mathf.Lerp(vent,outlet,1-Mathf.Exp(-dt*2));
+        last=Mathf.Lerp(last,target,1-Mathf.Exp(-dt*2.2f));if(!SwanInputActive)vent=Mathf.Lerp(vent,outlet,1-Mathf.Exp(-dt*2));
         if(left){leftMist=last;leftVent=vent;}else{rightMist=last;rightVent=vent;}
-        fxBlock.SetFloat("_Density",last);fxBlock.SetFloat("_Front",1);fxBlock.SetFloat("_FlowTime",FlowTime);fxBlock.SetFloat("_Direction",left?1:-1);fxBlock.SetFloat("_Exhaust",vent);r.SetPropertyBlock(fxBlock);}
+        fxBlock.SetFloat("_Density",last);if(!SwanInputActive){fxBlock.SetFloat("_Front",1);fxBlock.SetFloat("_FlowTime",FlowTime);fxBlock.SetFloat("_Direction",left?1:-1);fxBlock.SetFloat("_Exhaust",vent);}r.SetPropertyBlock(fxBlock);}
     readonly float[] chamberCharge=new float[2];
     public static void SetEmission(ParticleSystem ps,float rate){if(!ps)return;var e=ps.emission;e.rateOverTime=rate;if(!ps.isPlaying)ps.Play();}
     public void RefreshPreview(){if(!previewRoot)return;
@@ -344,7 +365,33 @@ public sealed partial class SteamJourney : MonoBehaviour {
     void Play(AudioClip clip){if(clip&&audioSource){GetComponent<JourneyBackgroundMusic>()?.Duck(clip.length);audioSource.PlayOneShot(clip);}}
     void Notify(string text){if(noticeText)noticeText.text=text;noticeUntil=Time.unscaledTime+7;}
     void SaveProgress(){if(suppressPersistence)return;var s=new Saved{stage=stage,finishIndex=finishIndex,installed=modules.Select(m=>m.installed).ToArray(),verified=modules.Select(m=>m.verified).ToArray(),finished=finishing.Select(m=>m.installed).ToArray()};PlayerPrefs.SetString(SaveKey,JsonUtility.ToJson(s));PlayerPrefs.Save();}
-    void LoadProgress(){if(!PlayerPrefs.HasKey(SaveKey))return;try{var s=JsonUtility.FromJson<Saved>(PlayerPrefs.GetString(SaveKey));if(s.finished.Length==13&&finishing.Length==11){var old=s.finished;s.finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};s.finishIndex=0;}if(s.installed.Length!=modules.Length||s.finished.Length!=finishing.Length)return;stage=Mathf.Clamp(s.stage,0,modules.Length);finishIndex=Mathf.Clamp(s.finishIndex,0,finishing.Length-1);for(int i=0;i<modules.Length;i++){modules[i].installed=s.installed[i];modules[i].verified=s.verified[i];modules[i].observed=s.verified[i]?RequiredObservation(i):0;}for(int i=0;i<finishing.Length;i++)finishing[i].installed=s.finished[i];stage=modules.TakeWhile(m=>m.installed).Count();}catch{stage=0;}}
+    void LoadProgress(){if(PlayerPrefs.HasKey(SaveKey))RestoreSavedProgress(PlayerPrefs.GetString(SaveKey));}
+    void RestoreSavedProgress(string json){
+        try {
+            var saved=JsonUtility.FromJson<Saved>(json);
+            if(saved==null||saved.installed==null||saved.verified==null||saved.finished==null||
+                saved.installed.Length!=modules.Length||saved.verified.Length!=modules.Length)return;
+            if(saved.finished.Length==13&&(finishing.Length==11||finishing.Length==10)){
+                var old=saved.finished;
+                saved.finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};
+                saved.finishIndex=0;
+            }
+            if(finishing.Length==10&&saved.finished.Length==11){
+                bool earned=saved.finished[9]||saved.finished[10];
+                Array.Resize(ref saved.finished,10);saved.finished[9]=earned;
+            }else if(finishing.Length==11&&saved.finished.Length==10){
+                Array.Resize(ref saved.finished,11);saved.finished[10]=saved.finished[9];
+            }
+            if(saved.finished.Length!=finishing.Length)return;
+            finishIndex=Mathf.Clamp(saved.finishIndex,0,finishing.Length-1);
+            for(int i=0;i<modules.Length;i++){
+                modules[i].installed=saved.installed[i];modules[i].verified=saved.verified[i];
+                modules[i].observed=saved.verified[i]?RequiredObservation(i):0;
+            }
+            for(int i=0;i<finishing.Length;i++)finishing[i].installed=saved.finished[i];
+            stage=modules.TakeWhile(part=>part.installed).Count();
+        }catch(ArgumentException){return;}
+    }
     void OnApplicationPause(bool pause){if(pause)SaveProgress();}void OnApplicationQuit(){SaveProgress();}
     void UpdateText(){if(!progress)return;
         if(!SwanInputActive)progress.text=inSandbox?"山谷铁路   /   第 "+(laps+1)+" 圈":"已装配  "+(modules.Count(m=>m.installed)+finishing.Count(m=>m.installed))+" / "+(modules.Length+finishing.Length);

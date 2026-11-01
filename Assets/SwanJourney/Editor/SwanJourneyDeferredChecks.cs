@@ -67,7 +67,7 @@ namespace SwanJourney.Editor
             public void CheckUnchanged(string label, Report report)
             {
                 Check(journey && journey.gameObject.scene.handle == sceneHandle && Groups(journey).SequenceEqual(groups),
-                    label + ": same 18 module instances remain in the startup scene", report);
+                    label + ": same 17 module instances remain in the startup scene", report);
                 Check(JsonUtility.ToJson(journey) == serialized && groups.Select(m => m.parked).SequenceEqual(parked),
                     label + ": serialized lesson/driving state and nonserialized parked flags are unchanged", report);
                 Check(objects.All(p => p.Unchanged) && GroupObjects(groups).All(g => g && g.scene.handle == sceneHandle),
@@ -105,7 +105,7 @@ namespace SwanJourney.Editor
                     "Startup holds an empty placement anchor and no canyon payload", report);
                 Check(!loader.Environment && !loader.visuals.deferredEnvironment && !loader.Busy,
                     "Saved startup has no attached environment or busy loader", report);
-                Check(journey.modules.Length == 7 && journey.finishing.Length == 11 && Groups(journey).All(m => m != null),
+                Check(journey.modules.Length == 7 && journey.finishing.Length == 10 && Groups(journey).All(m => m != null),
                     "All seven lesson modules and eleven finishing groups remain in startup", report);
                 Check(GroupObjects(Groups(journey)).All(g => g && g.scene == main)
                     && Groups(journey).All(m => m.preview && m.objects != null && m.objects.Length > 0),

@@ -24,7 +24,7 @@ public sealed class WorkshopSteamV20 : MonoBehaviour {
   foreach(var p in pool){if(!p.alive)continue;p.age+=dt;if(p.age>p.life){p.alive=false;if(p.r)p.r.enabled=false;continue;}float u=p.age/p.life;
    p.position+=(Vector3.up*Mathf.Lerp(.98f,.22f,Mathf.SmoothStep(0,1,p.age/2.0f))+journey.WorldDirectionToScene(journey.trainAnchor.right)*(-Mathf.Lerp(.10f,1.05f,Mathf.SmoothStep(0,1,p.age/1.6f))+.07f*Mathf.Sin(p.seed+p.age*2))+journey.WorldDirectionToScene(journey.trainAnchor.forward)*(.06f*Mathf.Sin(p.age+p.seed)))*dt;
    p.t.position=journey.ScenePointToWorld(p.position);float size=Mathf.Lerp(.28f,1.38f,Mathf.Pow(u,.66f));p.t.localScale=new Vector3(size,size*1.12f,size*.94f);MaxDiameter=Mathf.Max(MaxDiameter,size);
-   float fade=Mathf.SmoothStep(0,1,u/.07f)*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.62f,1,u)));block.Clear();block.SetFloat("_Seed",p.seed);block.SetFloat("_Phase",p.seed+p.age*.85f);block.SetFloat("_Opacity",fade*1.1f);p.r.SetPropertyBlock(block);ActivePuffs++;
+   float fade=Mathf.SmoothStep(0,1,u/.07f)*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.62f,1,u)));block.Clear();if(!journey.SwanInputActive){block.SetFloat("_Seed",p.seed);block.SetFloat("_Phase",p.seed+p.age*.85f);}block.SetFloat("_Opacity",fade*1.1f);p.r.SetPropertyBlock(block);ActivePuffs++;
   }
  }
  void OnDisable(){Clear();}

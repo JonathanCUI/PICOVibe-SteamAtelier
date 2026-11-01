@@ -31,38 +31,25 @@ namespace SwanJourney.Editor
                 Check(!journey.fire.emission.enabled && journey.fire.emission.rateOverTime.constantMax==0,
                     "Replaced legacy fire cannot emit in exported native particle state",report);
                 Check(journey.fire.gameObject.activeSelf,"Legacy source object remains intact for authored references",report);
-                var mesh=journey.flameVolume.GetComponent<MeshFilter>().sharedMesh;
-                Check(mesh==bridge.flameVolume && AssetDatabase.Contains(mesh),"Flame renderer uses its saved tapered mesh",report);
-                report.flameTriangles=mesh.triangles.Length/3;
-                Check(mesh.vertexCount>0 && report.flameTriangles==224 && mesh.uv.Length==mesh.vertexCount,
-                    "Tapered flame has 224 triangles and complete UVs",report);
-                Check(mesh.bounds.min.y>=-.501f && mesh.bounds.max.y<=.501f && mesh.bounds.size.x<1 && mesh.bounds.size.z<1,
-                    "Flame stays within original unit volume",report);
-                var material=journey.flameVolume.sharedMaterial;
-                Check(material && material.shader.name==SwanJourneyUrp.Lit && bridge.materials.Any(m=>m.material==material&&m.kind==JourneyNativeMaterialKind.Furnace),
-                    "Flame uses a native-exportable furnace material",report);
-                Check(material.GetFloat("_Surface")==1 && material.GetInt("_ZWrite")==0 && material.renderQueue==3000
-                    && material.IsKeywordEnabled("_SURFACE_TYPE_TRANSPARENT") && !material.IsKeywordEnabled("_ALPHATEST_ON"),
-                    "Flame blends alpha without opaque depth writes",report);
-                var texture=material.mainTexture;
-                Check(texture && material.GetTexture("_EmissionMap")==texture,"Alpha and emissive RGB share the saved soft flame mask",report);
-                string path=AssetDatabase.GetAssetPath(texture);
-                Check(!string.IsNullOrEmpty(path)&&File.Exists(path),"Soft flame texture is a real exported PNG asset",report);
-                var pixels=new Texture2D(2,2,TextureFormat.RGBA32,false);
-                try
-                {
-                    Check(pixels.LoadImage(File.ReadAllBytes(path)),"Saved flame mask decodes",report);
-                    for(int y=0;y<pixels.height;y++)for(int x=0;x<pixels.width;x++)
-                    {
-                        if(x!=0&&y!=0&&x!=pixels.width-1&&y!=pixels.height-1)continue;
-                        Color color=pixels.GetPixel(x,y);report.checkedBorderPixels++;
-                        if(color.a>.001f||color.r+color.g+color.b>.003f)
-                            throw new InvalidOperationException("Flame texture edge is opaque or emissive at "+x+","+y);
-                    }
-                    Check(pixels.GetPixel(pixels.width/2,pixels.height/2).a>.15f,"Flame mask keeps a visible soft core",report);
-                    Check(report.checkedBorderPixels>0,"All border pixels are transparent and non-emissive",report);
-                }
-                finally {UnityEngine.Object.DestroyImmediate(pixels);}
+                var ps=journey.furnaceParticles;
+                Check(journey.bakedFirebox && ps && journey.pausedFurnace, "Native particles and paused sprite mesh bound",report);
+                Check(!journey.flameVolume.enabled && !journey.flameVolume.gameObject.activeSelf,"Replaced polygonal fire hidden",report);
+                var layers=ps.GetComponentsInChildren<ParticleSystem>(true);
+                Check(layers.Length==4 && layers.Sum(p=>p.main.maxParticles)==108,"Original fire/core/base/ember layers within 108-particle ceiling",report);
+                Check(layers.All(p=>p.main.cullingMode==ParticleSystemCullingMode.AlwaysSimulate && p.main.simulationSpace==ParticleSystemSimulationSpace.Local),"Native camera and miniature-transform compatibility",report);
+                Check(layers.All(p=>!p.collision.enabled&&!p.trails.enabled&&!p.lights.enabled&&!p.noise.enabled&&!p.subEmitters.enabled),"No expensive particle modules",report);
+                var material=ps.GetComponent<ParticleSystemRenderer>().sharedMaterial;
+                Check(material && material.shader.name=="Universal Render Pipeline/Particles/Unlit" && material.GetFloat("_Surface")==1 && material.GetFloat("_Blend")==2,"Original additive campfire uses native-supported unlit material",report);
+                var texture=material.GetTexture("_BaseMap");
+                Check(texture&&texture.width<=512&&texture.height<=512&&AssetDatabase.GetAssetPath(texture).EndsWith("CampfireSource/FX_fire.png"),"Original campfire texture retained within 512 budget",report);
+                Check(layers.All(p=>p.GetComponent<ParticleSystemRenderer>().sharedMaterial==material),"All four layers share one material",report);
+                Check(!ps.gameObject.activeSelf && !journey.pausedFurnace.gameObject.activeSelf
+                    && layers.All(p=>p.GetComponent<ParticleSystemRenderer>().shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.Off),"Cold fire hidden without shadows",report);
+                var mesh=journey.pausedFurnace.GetComponent<MeshFilter>().sharedMesh;report.flameTriangles=mesh.triangles.Length/3;
+                Check(mesh.subMeshCount==1&&report.flameTriangles>0&&report.flameTriangles<=432&&mesh.uv.Length==mesh.vertexCount&&mesh.colors32.Length==mesh.vertexCount,"Paused sample preserves original particle colors and UVs in one bounded mesh",report);
+                Check(mesh.bounds.size.y<1.5f,"Original campfire gravity adapted to the miniature train scale",report);
+                Check(!journey.furnaceLight || (!journey.furnaceLight.enabled && !journey.furnaceLight.gameObject.activeSelf),
+                    "Furnace illumination is disabled in the exported scene",report);
                 Check(bridge.materials.All(m=>!m.material||!m.material.shader.name.StartsWith("TextMeshPro/",StringComparison.OrdinalIgnoreCase)),
                     "Native visual animation table excludes SDF font materials",report);
                 report.passed=true;

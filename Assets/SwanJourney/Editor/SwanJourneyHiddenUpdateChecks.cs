@@ -124,13 +124,9 @@ namespace SwanJourney.Editor
                         && Mathf.Abs(live.GetColor("_EmissionColor").r - 5) < .0001f, "unchanged visible producer output skips duplicate material writes");
                 }
 
-                Invoke(bridge, "BeginArrival");
-                Check(renderer.sharedMaterial == scan, "arrival installs its temporary material");
-                renderer.enabled = false; Invoke(bridge, "LateUpdate");
-                renderer.enabled = true; Write(Color.cyan, Color.yellow); Invoke(bridge, "LateUpdate");
-                Check(renderer.sharedMaterial == scan, "visible refresh preserves arrival material ownership");
-                Invoke(bridge, "EndArrival");
-                Check(renderer.sharedMaterial == live, "arrival restores the live binding");
+                journey.SwanInputActive = true;
+                var arrival = root.AddComponent<JourneySceneArrival>(); arrival.owner = journey; arrival.Request();
+                Check(!arrival.Active && renderer.sharedMaterial == live, "Swan mode switches keep the train visible without a scan");
                 Invoke(bridge, "BeginGold", child.transform);
                 Check(bridge.GoldActive && renderer.sharedMaterial == live, "completion shows its badge and preserves the train finish");
                 Invoke(bridge, "EndGold");

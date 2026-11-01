@@ -17,9 +17,9 @@ public sealed class MesaSteamTunnelV17 : MonoBehaviour {
   if(freeAir){nx=freeAir.width;ny=freeAir.height;nz=freeAir.depth;pixels=freeAir.GetPixelData<byte>(0).ToArray();}
   Bind();
  }
- public void Bind(){Shader.SetGlobalMatrix("_MesaWorldToLocal",journey?journey.SpatialWorldToLocal:Matrix4x4.identity);Shader.SetGlobalTexture("_MesaFreeAir",freeAir);Shader.SetGlobalVector("_MesaFieldMin",fieldMin);Shader.SetGlobalVector("_MesaFieldInvSize",new Vector3(1/fieldSize.x,1/fieldSize.y,1/fieldSize.z));Shader.SetGlobalFloat("_MesaFieldEnabled",protectionEnabled&&freeAir&&(!journey||journey.inSandbox)?1:0);}
- void OnDisable(){Shader.SetGlobalFloat("_MesaFieldEnabled",0);}
- void OnDestroy(){Shader.SetGlobalFloat("_MesaFieldEnabled",0);}
+ public void Bind(){if(journey&&journey.SwanInputActive)return;Shader.SetGlobalMatrix("_MesaWorldToLocal",journey?journey.SpatialWorldToLocal:Matrix4x4.identity);Shader.SetGlobalTexture("_MesaFreeAir",freeAir);Shader.SetGlobalVector("_MesaFieldMin",fieldMin);Shader.SetGlobalVector("_MesaFieldInvSize",new Vector3(1/fieldSize.x,1/fieldSize.y,1/fieldSize.z));Shader.SetGlobalFloat("_MesaFieldEnabled",protectionEnabled&&freeAir&&(!journey||journey.inSandbox)?1:0);}
+ void OnDisable(){if(!journey||!journey.SwanInputActive)Shader.SetGlobalFloat("_MesaFieldEnabled",0);}
+ void OnDestroy(){if(!journey||!journey.SwanInputActive)Shader.SetGlobalFloat("_MesaFieldEnabled",0);}
  // Path and field queries use authored scene coordinates; convert external world hits explicitly.
  public Vector3 WorldToField(Vector3 point)=>journey?journey.WorldPointToScene(point):point;
  public Vector3 AtWorld(float s)=>journey?journey.ScenePointToWorld(At(s)):At(s);

@@ -44,7 +44,7 @@ namespace SwanJourney.Editor
                     input=UnityEngine.Object.FindObjectOfType<SwanJourneyInteraction>();
                     if(!input||!input.Ready||elapsed<4)return;
                     journey=input.journey;journey.suppressPersistence=true;
-                    Check(journey.modules.Length==7&&journey.finishing.Length==11,"18 assembly groups retained");
+                    Check(journey.modules.Length==7&&journey.finishing.Length==10,"17 assembly groups retained");
                     Check(PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android)==SwanJourneyBuild.PackageId,"Independent V23 application identifier");
                     Check(UnityEngine.Object.FindObjectsOfType<UnityEngine.EventSystems.StandaloneInputModule>(true).Length==0,"No legacy mouse input module");
                     Check(journey.SwanInputActive&&journey.spatialRoot,"Native input and spatial coordinates active");
@@ -52,7 +52,7 @@ namespace SwanJourney.Editor
                     Check(input.GetComponent<SwanTabletopPlacement>().supportPoints.Length>0,"Tabletop footprints configured");
                     Check(input.GetComponent<SwanJourneyNativeUi>().ConvertedLabelCount>10,"World-space labels exported to native text");
                     var flow=journey.GetComponent<SwanJourneyFlowParticles>();
-                    Check(flow&&flow.SourceCount==125&&flow.PoolCapacity==288,"All 125 process paths bound to a fixed 288-marker native pool");
+                    Check(flow&&flow.SourceCount==125&&flow.UsesArrows&&flow.PoolCapacity==4*SwanJourneyFlowParticles.ArrowsPerKind,"All 125 process paths bound to a bounded directional arrow pool");
                     Check(flow.poolRoot.GetComponentsInChildren<Collider>(true).Length==0&&flow.poolRoot.GetComponentsInChildren<SpatialAdapterHoverEffect>(true).Length==0,"Process flow cannot intercept gaze or pinch input");
                     foreach(var module in journey.modules.Concat(journey.finishing)) {
                         Check(module.preview&&SwanTwoHandManipulation.Finite(module.socket),"Preview and socket present: "+module.title);
@@ -60,8 +60,8 @@ namespace SwanJourney.Editor
                         Check(module.objects.Where(g=>g).SelectMany(g=>g.GetComponentsInChildren<SpatialAdapterHoverEffect>(true)).Any(),"Installed hover: "+module.title);
                     }
                     journey.ResetJourney();Capture("workshop-start");
-                    for(int i=0;i<18;i++)Check(journey.InstallCurrent(),"Manual install "+i);
-                    Check(journey.Complete,"All 18 groups assemble");Advance();
+                    for(int i=0;i<17;i++)Check(journey.InstallCurrent(),"Manual install "+i);
+                    Check(journey.Complete,"All 17 groups assemble");Advance();
                 } else if(phase==1&&elapsed>3) {
                     Check(!journey.CompletionActive,"Completion effect restores input");Capture("workshop-assembled");
                     SwanJourneyGestureChecks.Run(input);passed.Add("Gesture regression suite");

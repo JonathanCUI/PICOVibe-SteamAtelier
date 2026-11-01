@@ -48,6 +48,13 @@ namespace SwanJourney.Editor
                 Check(journey && flow.poolRoot, "Journey and pool root are bound", report);
                 report.sourceCount = flow.SourceCount; report.poolCapacity = flow.PoolCapacity;
                 Check(flow.SourceCount == 125 && flow.sources.All(s => s.field && s.field.system), "All 125 authored fields remain bound", report);
+                if (flow.UsesArrows)
+                {
+                    CheckDirections(flow, report);
+                    report.passed=true;
+                    Debug.Log("SWAN_JOURNEY_ARROW_CHECKS_PASS checks="+report.checks.Count);
+                    return;
+                }
                 Check(flow.PoolCapacity == 288 && flow.markers.All(r => r), "Fixed 288-slot pool is complete", report);
                 Check(flow.poolRoot.GetComponentsInChildren<Collider>(true).Length == 0
                     && flow.poolRoot.GetComponentsInChildren<SpatialAdapterHoverEffect>(true).Length == 0,
@@ -157,6 +164,46 @@ namespace SwanJourney.Editor
             }
         }
 
+        static void CheckDirections(SwanJourneyFlowParticles flow,Report report)
+        {
+            var j=flow.journey;
+            Check(j.directionalFlow && flow.PoolCapacity==4*SwanJourneyFlowParticles.ArrowsPerKind,"Four bounded arrow pools",report);
+            Check(flow.markers.All(r=>r && !r.gameObject.activeSelf && !r.GetComponent<Collider>())
+                && flow.arrowMaterials.Distinct().Count()==4,"Cold markers are hidden, with four distinct fluid colors",report);
+            flow.SendMessage("Awake",SendMessageOptions.RequireReceiver);
+            j.cutaway=true;j.inSandbox=false;
+            var paths=flow.sources.Select(s=>s.field).ToArray();
+            foreach(var f in paths){
+                for(var t=f.system.transform;t;t=t.parent)t.gameObject.SetActive(true);
+                f.ResetField();
+            }
+            var downstream=paths.First(f=>f.upstream);
+            downstream.AdvanceArrow(.05f,1);
+            Check(!downstream.HasWisps && !downstream.Arrived,"Downstream waits for the upstream front",report);
+            for(int step=0;step<800;step++)foreach(var f in paths)f.AdvanceArrow(.05f,1);
+            var draw=typeof(SwanJourneyFlowParticles).GetMethod("DrawArrows",BindingFlags.Instance|BindingFlags.NonPublic);
+            draw.Invoke(flow,new object[]{true});
+            for(int kind=0;kind<4;kind++){
+                var active=flow.markers.Skip(kind*SwanJourneyFlowParticles.ArrowsPerKind).Take(SwanJourneyFlowParticles.ArrowsPerKind).Where(r=>r.gameObject.activeInHierarchy).ToArray();
+                Check(active.Length>0&&active.All(r=>r.sharedMaterial==flow.arrowMaterials[kind]),"Correct material for "+(JourneyFluidKind)kind,report);
+                var samples=paths.Where(f=>(int)f.kind==kind).ToArray();
+                foreach(var r in active){
+                    bool found=samples.Any(f=>f.TryArrow(out var pos,out var dir,out var span)
+                        && Vector3.Distance(f.system.transform.TransformPoint(pos),r.transform.position)<.0002f
+                        && Vector3.Dot(f.system.transform.TransformDirection(dir).normalized,r.transform.forward)>.999f);
+                    Check(found,"Arrow points along its actual route",report);
+                }
+            }
+            var first=paths.First(f=>f.HasWisps);
+            first.TryArrow(out var prev,out _,out _);first.AdvanceArrow(0,1);first.TryArrow(out var paused,out _,out _);
+            Check(prev==paused,"Pausing freezes a packet",report);
+            for(int n=0;n<800;n++)first.AdvanceArrow(.05f,0);
+            Check(!first.HasWisps,"Stopped supply lets the last packet leave",report);
+            report.visibleMarkers=flow.ActiveMarkerCount; report.representedFields=flow.RepresentedFieldCount;
+            draw.Invoke(flow,new object[]{false});
+            Check(flow.markers.All(r=>!r.gameObject.activeSelf),"Solid view removes all flow arrows",report);
+            report.visibleMarkers=flow.ActiveMarkerCount;
+        }
         static void Refresh(SwanJourneyFlowParticles flow, ParticleSystem source)
         {
             if (source.GetComponent<ParticleSystemRenderer>().enabled) throw new InvalidOperationException("Native flow must have only one drawing owner");

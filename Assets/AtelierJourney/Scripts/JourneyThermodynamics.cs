@@ -4,6 +4,64 @@ using UnityEngine;
 // It intentionally does not claim to be a boiler pressure/temperature engineering simulation.
 public sealed partial class SteamJourney {
     public Renderer flameVolume;
+    public bool bakedFirebox;
+    public ParticleSystem furnaceParticles;
+    public Renderer pausedFurnace;
+    public bool directionalFlow;
+    Vector3 flameRestScale;
+    Vector3 furnaceRestScale;
+    ParticleSystem[] furnaceParticleLayers;
+    bool furnaceEmitting, furnaceStateSet;
+    float nextFlameUpdate;
+
+    void AnimateBakedFire(float power)
+    {
+        if (furnaceParticles)
+        {
+            var source = furnaceParticles;
+            bool visible = !inSandbox && modules[0].installed && power > .012f;
+            bool emit = visible && !paused;
+            // Keep the group alive so the native adapter receives the stopped
+            // state of every child emitter before any ancestor is hidden.
+            if (!source.gameObject.activeSelf) source.gameObject.SetActive(true);
+            if (furnaceParticleLayers == null) furnaceParticleLayers = source.GetComponentsInChildren<ParticleSystem>(true);
+            bool changed = !furnaceStateSet || furnaceEmitting != emit;
+            if (changed)
+            {
+                furnaceStateSet = true; furnaceEmitting = emit;
+                foreach (var layer in furnaceParticleLayers) { var emission=layer.emission; emission.enabled=emit; }
+                if (emit) source.Play(true);
+                else source.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+            if (pausedFurnace && pausedFurnace.gameObject.activeSelf != (visible && paused))
+                pausedFurnace.gameObject.SetActive(visible && paused);
+            if (!emit) return;
+            float rate = slow ? .25f : 1f;
+            foreach (var layer in furnaceParticleLayers)
+            {
+                var main = layer.main;
+                if (!Mathf.Approximately(main.simulationSpeed, rate)) main.simulationSpeed = rate;
+            }
+            if (!changed && Time.unscaledTime < nextFlameUpdate) return;
+            nextFlameUpdate = Time.unscaledTime + 1f / 12f;
+            if (furnaceRestScale == Vector3.zero) furnaceRestScale = source.transform.localScale;
+            source.transform.localScale = furnaceRestScale * Mathf.Lerp(.7f, 1f, power);
+            if (pausedFurnace) pausedFurnace.transform.localScale = source.transform.localScale;
+            return;
+        }
+        if (!flameVolume) return;
+        var t = flameVolume.transform;
+        bool show = !inSandbox && modules[0].installed && power > .012f;
+        bool wasShowing = t.gameObject.activeSelf;
+        if (show != wasShowing) t.gameObject.SetActive(show);
+        if (!show || (wasShowing && (paused || Time.unscaledTime < nextFlameUpdate))) return;
+        nextFlameUpdate = Time.unscaledTime + 1f / 12f;
+        if (flameRestScale == Vector3.zero) flameRestScale = t.localScale;
+        float flicker = 1f + .095f * Mathf.Sin(FlowTime * 8.7f) + .055f * Mathf.Sin(FlowTime * 15.1f);
+        float height = Mathf.SmoothStep(.18f, 1f, power) * flicker;
+        t.localScale = new Vector3(flameRestScale.x * (1f + .035f * Mathf.Sin(FlowTime * 6.5f)),
+            flameRestScale.y * height, flameRestScale.z);
+    }
     public Renderer fireJacket;
     public Transform[] rockingBars;
     public Transform cutLever;
@@ -52,11 +110,11 @@ public sealed partial class SteamJourney {
     public bool ProcessReached(int s){switch(s){case 0:return GasLevel>.85f;case 1:return SteamPressure>.75f;case 2:return SteamPressure>.75f;case 3:bool reached=Delivery>.85f;foreach(var f in fluidFields)if(f.stage==3&&!f.Arrived)reached=false;return reached;case 4:return CylinderPower>.85f&&(modules[5].installed||benchStroke>.99f);case 5:return WheelPower>.85f;default:return brakeApplied>.99f;}}
     public string ProcessCaption(){
         if(!running)return Current.observation;
-        if(FireLevel<.6f)return "点火中 · 煤层先出现红热，火焰逐渐形成。";
+        if(FireLevel<.6f)return SwanInputActive?"点火中 · 炉火逐渐形成，开始加热锅炉。":"点火中 · 煤层先出现红热，火焰逐渐形成。";
         if(GasLevel<.7f)return "燃烧形成烟气 · 观察烟气离开煤层，沿火箱上部流向烟管入口。";
         if(!modules[1].installed)return "煤层持续燃烧 · 尚未接上锅炉，烟气从敞开的火箱逸出。";
         if(WaterHeat<.68f)return "烟气已进入烟管 · 金属管壁正在把热量传给周围的水，动力机构仍静止。";
-        if(SteamPressure<.45f)return "水逐渐沸腾 · 水面起伏、气泡上升，上部空间开始积聚蒸汽。";
+        if(SteamPressure<.45f)return SwanInputActive?"水受热产生蒸汽 · 蓝色箭头表示水的流向，蒸汽逐渐积聚。":"水逐渐沸腾 · 水面起伏、气泡上升，上部空间开始积聚蒸汽。";
         if(!modules[2].installed)return "烟箱通道已断开 · 炉火与锅炉继续换热，下游供汽逐渐减弱。";
         if(!modules[3].installed)return "蒸汽在水面上方汇集 · 供汽通路尚未装入，汽缸与车轮不工作。";
         if(Delivery<.67f||!ProcessReached(3))return "开启供汽 · 蒸汽沿汽包取汽管、过热器和主汽管逐段向前流动。";
@@ -95,13 +153,16 @@ public sealed partial class SteamJourney {
         bool active=inSandbox||running||ResidualEnergy;
         float firePower=inSandbox?.85f:FireLevel;
         float effectDt=(!active||paused&&!inSandbox)?0:dt*(slow&&!inSandbox?.25f:1);
-        if(fxBlock==null)fxBlock=new MaterialPropertyBlock();Shader.SetGlobalFloat("_JourneyTime",FlowTime);
-        if(flameVolume){flameVolume.enabled=!inSandbox&&modules[0].installed;fxBlock.Clear();fxBlock.SetFloat("_Burn",active?firePower:0);fxBlock.SetFloat("_FlowTime",FlowTime);flameVolume.SetPropertyBlock(fxBlock);}
+        if(fxBlock==null)fxBlock=new MaterialPropertyBlock();if(!SwanInputActive)Shader.SetGlobalFloat("_JourneyTime",FlowTime);
+        if(bakedFirebox) AnimateBakedFire(active ? firePower : 0);
+        else if(flameVolume){flameVolume.enabled=!inSandbox&&modules[0].installed;fxBlock.Clear();fxBlock.SetFloat("_Burn",active?firePower:0);fxBlock.SetFloat("_FlowTime",FlowTime);flameVolume.SetPropertyBlock(fxBlock);}
         if(fireJacket)fireJacket.enabled=!inSandbox&&cutaway&&modules[1].installed;
-        if(emberRenderers!=null){fxBlock.Clear();fxBlock.SetColor("_EmissionColor",new Color(2.5f,.34f,.018f)*(active?firePower:0));foreach(var r in emberRenderers)if(r)r.SetPropertyBlock(fxBlock);}
-        if(waterSkin){waterSkin.SetFloat("_Heat",WaterHeat);waterSkin.SetFloat("_FlowTime",FlowTime);}
-        if(waterBody)waterBody.SetFloat("_FlowTime",FlowTime);
-        if(furnaceLight){
+        if(!bakedFirebox&&emberRenderers!=null){fxBlock.Clear();fxBlock.SetColor("_EmissionColor",new Color(2.5f,.34f,.018f)*(active?firePower:0));foreach(var r in emberRenderers)if(r)r.SetPropertyBlock(fxBlock);}
+        if(!SwanInputActive){
+            if(waterSkin){waterSkin.SetFloat("_Heat",WaterHeat);waterSkin.SetFloat("_FlowTime",FlowTime);}
+            if(waterBody)waterBody.SetFloat("_FlowTime",FlowTime);
+        }
+        if(!bakedFirebox&&furnaceLight){
             furnaceLight.enabled=!inSandbox&&modules[0].installed&&active&&FireLevel>.01f;
             // Local light follows combustion, including residual heat and a frozen teaching pause.
             float flutter=.91f+.06f*Mathf.Sin(FlowTime*7.3f)+.03f*Mathf.Sin(FlowTime*13.7f+1.8f);
@@ -115,8 +176,9 @@ public sealed partial class SteamJourney {
             if(SwanInputActive && (effectDt<=0 || (!modules[field.stage].installed && !field.HasWisps)))continue;
             float strength=active&&modules[field.stage].installed?FluidStrength(field):0;
             if(field.port>0){bool open=field.port==5?(ValvePortOpen(0,3)||ValvePortOpen(0,4)):ValvePortOpen(0,field.port);strength*=open?1:0;}
-            field.Advance(effectDt,strength,publishFields);}
-        SetEmission(fire,0); // Replaced by a depth-tested volumetric furnace, not billboard blobs.
+            if(directionalFlow && SwanInputActive) field.AdvanceArrow(effectDt,strength);
+            else field.Advance(effectDt,strength,publishFields);}
+        if(!bakedFirebox) SetEmission(fire,0); // Replaced by a depth-tested volumetric furnace, not billboard blobs.
         bool exhaustArrived=true;int lastGas=ChimneyConnected?2:BoilerGasConnected?1:0;if(fluidFields!=null)foreach(var f in fluidFields)if(f.stage==lastGas&&f.kind==JourneyFluidKind.Smoke&&!f.Arrived)exhaustArrived=false;
         float smokePower=active?(inSandbox?.8f:modules[0].installed&&exhaustArrived?GasLevel:0):0;
         float exhaustPulse=.8f+.2f*Mathf.Sin(engine.phase*Mathf.Deg2Rad*4);

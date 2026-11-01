@@ -3,7 +3,7 @@ public enum JourneyFluidKind { Smoke, Steam, Bubble, Air }
 
 // Local-space, path-constrained wisps: no arrows or glyphs. Each packet has an age and
 // cannot appear downstream before it travels there. Gating stops emission, not existing travel.
-public sealed class JourneyFluidField : MonoBehaviour {
+public sealed partial class JourneyFluidField : MonoBehaviour {
     public Vector3[] points;
     public JourneyFluidKind kind;
     public int stage,port;
@@ -13,18 +13,20 @@ public sealed class JourneyFluidField : MonoBehaviour {
     public JourneyFluidField upstream;
     public bool Arrived => lengths!=null&&TravelFront>=length-.005f;
     public float TravelFront {get;private set;}
-    public bool HasWisps => count > 0;
+    public bool HasWisps => count > 0 || arrowAlive;
     struct Wisp {public float distance,seed,strength,age,speed,size,opacity; public int segment;}
     Vector3[] tangents,rights,ups; int published;
-    Wisp[] wisps=new Wisp[384];ParticleSystem.Particle[] particles=new ParticleSystem.Particle[384];
+    Wisp[] wisps;ParticleSystem.Particle[] particles;
     float[] lengths;float length,spawn,time;int count;uint serial;
     void Init(){if(lengths!=null)return;lengths=new float[points.Length]; tangents=new Vector3[points.Length];rights=new Vector3[points.Length];ups=new Vector3[points.Length];for(int i=1;i<points.Length;i++){length+=Vector3.Distance(points[i-1],points[i]);lengths[i]=length;var t=tangents[i]=(points[i]-points[i-1]).normalized;rights[i]=Vector3.Cross(t,Mathf.Abs(t.y)>.9f?Vector3.forward:Vector3.up).normalized;ups[i]=Vector3.Cross(rights[i],t);}system.Pause();}
-    public void ResetField(){count=published=0;spawn=time=TravelFront=0;if(system)system.Clear();}
+    public void ResetField(){arrowAlive=false;arrowDistance=0;arrowSegment=1;count=published=0;spawn=time=TravelFront=0;if(system)system.Clear();}
     public void Advance(float dt,float strength,bool publish=true){
         if(!system||points==null||points.Length<2||dt<=0)return;
         if(upstream&&!upstream.Arrived)strength=0;
         if(strength<=.01f&&count==0&&published==0)return;
-        Init();time+=dt;
+        Init();
+        if(wisps==null){wisps=new Wisp[384];particles=new ParticleSystem.Particle[384];}
+        time+=dt;
         if(strength>.01f){spawn+=dt*density*strength;TravelFront=Mathf.Min(length,TravelFront+velocity*dt);}
         while(spawn>=1){spawn--;serial++;float seed=Mathf.Repeat(serial*.6180339f,1)*31;if(count<wisps.Length)wisps[count++]=new Wisp{distance=0,seed=seed,segment=1,strength=strength,size=radius*(kind==JourneyFluidKind.Bubble?.22f+.22f*Mathf.PerlinNoise(seed,0):1.25f+.65f*Mathf.PerlinNoise(seed,1)),opacity=.65f+.35f*Mathf.Pow(Mathf.Sin(seed*3),2),speed=.78f+.44f*Mathf.PerlinNoise(seed,2.7f)};}
         for(int i=count-1;i>=0;i--){var w=wisps[i];w.age+=dt;w.distance+=velocity*dt*w.speed;if(w.distance>=length){wisps[i]=wisps[--count];continue;}wisps[i]=w;}

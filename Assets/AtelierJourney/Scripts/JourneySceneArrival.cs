@@ -10,7 +10,7 @@ using System;using System.Linq;using System.Collections.Generic;using UnityEngin
  sealed class Entry {public Renderer r;public Material[] original,reveal;public bool enabled,lit;public ShadowCastingMode shadows;public float centre;}
  readonly List<Entry> entries=new List<Entry>();readonly Dictionary<Material,Material> materials=new Dictionary<Material,Material>();
  readonly List<UnityEngine.Object> temporary=new List<UnityEngine.Object>();GameObject visual;bool pending;float elapsed,minimum,span,gridSpan;
- public void Request(){Cancel();pending=true;elapsed=Progress=0;}
+ public void Request(){if(owner&&owner.SwanInputActive)return;Cancel();pending=true;elapsed=Progress=0;}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Arrival)) CpuMeasuredLateUpdate(); }
     void CpuMeasuredLateUpdate(){bool beginning=pending;if(pending){pending=false;Begin();}if(entries.Count==0&&!nativeActive)return;if(!manual){if(!beginning)elapsed+=Time.unscaledDeltaTime;SetProgress(Mathf.Clamp01(elapsed/duration));if(Progress>=1)Cancel();}}
  public void SetProgress(float value){Progress=Mathf.Clamp01(value);if(nativeActive){nativeProgress?.Invoke(Progress);return;}Shader.SetGlobalMatrix("_ArrivalWorldToLocal",owner?owner.SpatialWorldToLocal:Matrix4x4.identity);float sweep=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.06f,.94f,Progress));Shader.SetGlobalVector("_ArrivalRange",new Vector4(minimum,span,sweep,gridSpan));
@@ -50,7 +50,7 @@ using System;using System.Linq;using System.Collections.Generic;using UnityEngin
   else mesh.CombineMeshes(pieces.ToArray(),true,true);temporary.Add(mesh);
   var material=new Material(ghostShader);material.SetFloat("_Wire",wire?1:0);temporary.Add(material);var go=new GameObject(name,typeof(MeshFilter),typeof(MeshRenderer));go.transform.SetParent(visual.transform,false);go.GetComponent<MeshFilter>().sharedMesh=mesh;var r=go.GetComponent<MeshRenderer>();r.sharedMaterial=material;r.shadowCastingMode=ShadowCastingMode.Off;r.receiveShadows=false;
  }
- public void Cancel(){if(nativeActive){nativeActive=false;nativeCancel?.Invoke();}pending=false;Shader.SetGlobalFloat("_ArrivalNative21",0);foreach(var e in entries)if(e.r){e.r.sharedMaterials=e.original;e.r.enabled=e.enabled;e.r.shadowCastingMode=e.shadows;}entries.Clear();if(visual){visual.SetActive(false);Destroy(visual);}visual=null;
-  foreach(var m in materials.Values)Destroy(m);materials.Clear();foreach(var item in temporary)Destroy(item);temporary.Clear();Shader.SetGlobalVector("_ArrivalRange",new Vector4(0,1,2,0));}
+ public void Cancel(){if(nativeActive){nativeActive=false;nativeCancel?.Invoke();}pending=false;if(!owner||!owner.SwanInputActive)Shader.SetGlobalFloat("_ArrivalNative21",0);foreach(var e in entries)if(e.r){e.r.sharedMaterials=e.original;e.r.enabled=e.enabled;e.r.shadowCastingMode=e.shadows;}entries.Clear();if(visual){visual.SetActive(false);Destroy(visual);}visual=null;
+  foreach(var m in materials.Values)Destroy(m);materials.Clear();foreach(var item in temporary)Destroy(item);temporary.Clear();if(!owner||!owner.SwanInputActive)Shader.SetGlobalVector("_ArrivalRange",new Vector4(0,1,2,0));}
  void OnDisable(){Cancel();}void OnDestroy(){Cancel();}
 }

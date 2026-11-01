@@ -63,7 +63,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
     float roll=Mathf.Sin(Evolution*.62f+seed),rise=Mathf.Sin(Evolution*.87f+seed);
     t.localScale=Vector3.Scale(scales[i],new Vector3(1+.033f*roll,1+.065f*rise,1-.026f*roll));
    }else t.localScale=scales[i];
-   block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);CloudWriteCount++;
+   if(!journey.SwanInputActive){block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);}CloudWriteCount++;
   }
   if(journey.bakedChimney)return;
   if(active){emit+=dt*((journey.SwanInputActive?3.65f:5f)+Mathf.Clamp01(journey.speed/4)*.8f);while(emit>=1){Emit();emit--;}}
@@ -90,7 +90,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    if(tunnel&&tunnel.Air(p.position)<.5f)InvalidCenters++;
    float fade=Mathf.SmoothStep(0,1,u/.065f)*(1-Mathf.SmoothStep(.62f,1,u));
    fade*=1-Mathf.Clamp01(p.blocked/.5f);if(p.confined)fade*=.68f;
-   block.Clear();block.SetFloat("_Seed",p.seed);block.SetFloat("_Phase",p.age*.64f+p.seed);block.SetFloat("_Opacity",fade*1.18f);p.r.SetPropertyBlock(block);ActivePuffs++;
+   block.Clear();if(!journey.SwanInputActive){block.SetFloat("_Seed",p.seed);block.SetFloat("_Phase",p.age*.64f+p.seed);}block.SetFloat("_Opacity",fade*1.18f);p.r.SetPropertyBlock(block);ActivePuffs++;
   }
  }
 }

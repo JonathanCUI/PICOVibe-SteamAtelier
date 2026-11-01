@@ -6,7 +6,7 @@ namespace SwanJourney
     // SpatialAdapter translates emitter settings, not ParticleSystem.SetParticles arrays.
     // Sample the partner's existing CPU simulation; never advance or re-create its flow model.
     [DefaultExecutionOrder(9100)]
-    public sealed class SwanJourneyFlowParticles : MonoBehaviour
+    public sealed partial class SwanJourneyFlowParticles : MonoBehaviour
     {
         public const int MaximumMarkers = 288;
         public const int SamplesPerField = 4;
@@ -33,19 +33,20 @@ namespace SwanJourney
             public Source source;
             public ParticleSystem system;
             public ParticleSystemRenderer renderer;
-            public readonly ParticleSystem.Particle[] selected = new ParticleSystem.Particle[SamplesPerField];
-            public readonly ParticleSystem.Particle[] next = new ParticleSystem.Particle[SamplesPerField];
+            public ParticleSystem.Particle[] selected;
+            public ParticleSystem.Particle[] next;
             public int count, quota;
         }
         // JourneyFluidField itself has a fixed 384-wisp capacity.
-        readonly ParticleSystem.Particle[] readBuffer = new ParticleSystem.Particle[384];
-        readonly int[] eligible = new int[384];
+        ParticleSystem.Particle[] readBuffer;
+        int[] eligible;
         State[] states;
         Transform[] markerTransforms;
         float nextRefresh;
 
         void Awake()
         {
+            if (!UsesArrows) { readBuffer = new ParticleSystem.Particle[384]; eligible = new int[384]; }
             states = new State[sources.Length];
             for (int i = 0; i < sources.Length; i++)
             {
@@ -53,15 +54,18 @@ namespace SwanJourney
                 var system = source.field ? source.field.system : null;
                 states[i] = new State { source = source, system = system,
                     renderer = system ? system.GetComponent<ParticleSystemRenderer>() : null };
+                if (!UsesArrows) { states[i].selected = new ParticleSystem.Particle[SamplesPerField]; states[i].next = new ParticleSystem.Particle[SamplesPerField]; }
                 if (journey && journey.SwanInputActive && states[i].renderer) states[i].renderer.enabled = false;
             }
             markerTransforms = new Transform[markers.Length];
             for (int i = 0; i < markers.Length; i++) if (markers[i])
             {
                 markerTransforms[i] = markers[i].transform;
-                markers[i].enabled = false;
+                if(UsesArrows) markers[i].gameObject.SetActive(false);
+                else markers[i].enabled = false;
             }
-            Debug.Log("SWAN_JOURNEY_FLOW_BRIDGE sources=" + SourceCount + " pool=" + PoolCapacity + " source=GetParticles");
+            if(UsesArrows) InitializeArrows();
+            Debug.Log("SWAN_JOURNEY_FLOW_BRIDGE sources=" + SourceCount + " pool=" + PoolCapacity + (UsesArrows ? " source=path tangents" : " source=GetParticles"));
         }
 
         void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.FlowParticles)) CpuMeasuredLateUpdate(); }
@@ -72,7 +76,7 @@ namespace SwanJourney
             if (!show) { HideAll(); return; }
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + 1f / 24f;
-            RefreshSamples();
+            if (UsesArrows) DrawArrows(true); else RefreshSamples();
         }
 
         void RefreshSamples()
@@ -84,9 +88,12 @@ namespace SwanJourney
                 if (!state.source.field || !state.source.field.HasWisps || !state.system || !state.system.gameObject.activeInHierarchy) { state.count = 0; continue; }
                 int count = state.system.GetParticles(readBuffer);
                 LastSourceParticleCount += count;
+                // All current internal paths have constant particle color. Ask Unity to
+                // evaluate gradients only for sources that actually enable color curves.
+                bool dynamicAlpha = state.system.colorOverLifetime.enabled || state.system.colorBySpeed.enabled;
                 int available = 0;
                 for (int i = 0; i < count; i++)
-                    if (readBuffer[i].remainingLifetime > 0 && readBuffer[i].GetCurrentColor(state.system).a > 5)
+                    if (readBuffer[i].remainingLifetime > 0 && (dynamicAlpha ? readBuffer[i].GetCurrentColor(state.system).a : readBuffer[i].startColor.a) > 5)
                         eligible[available++] = i;
                 SelectStableSamples(state, available);
                 if (state.count > 0) ActiveFieldCount++;
@@ -178,6 +185,7 @@ namespace SwanJourney
             && !float.IsNaN(value.y) && !float.IsInfinity(value.y) && !float.IsNaN(value.z) && !float.IsInfinity(value.z);
         void HideAll()
         {
+            if (UsesArrows && markerTransforms != null) { DrawArrows(false); nextRefresh=0; return; }
             for (int i = 0; i < ActiveMarkerCount; i++) if (markers[i]) markers[i].enabled = false;
             nextRefresh = 0;
             ActiveMarkerCount = ActiveFieldCount = RepresentedFieldCount = LastSourceParticleCount = 0;

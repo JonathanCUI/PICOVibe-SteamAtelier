@@ -32,7 +32,6 @@ namespace SwanJourney
         public int NativeSharedGhostCount => sharedGhosts.Count;
         public int NativeWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count();
         public int NativeAnimatedWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count(r=>animated.Any(a=>a.renderer==r));
-        public bool ScanActive => scanning;
         public bool GoldActive => completionBadge && completionBadge.gameObject.activeSelf;
         // Per-update work counters, not frame-time or native-rendering measurements.
         public int LastAnimatedVisited { get; private set; }
@@ -61,37 +60,17 @@ namespace SwanJourney
             public bool hasApplied;
             public Color color, emission;
         }
-        sealed class SweepEntry
-        {
-            public Renderer renderer;
-            public Material[] original, effect;
-            public bool effectApplied;
-            public float coordinate;
-            public void ShowEffect(bool show)
-            {
-                if (show == effectApplied || !renderer) return;
-                renderer.sharedMaterials = show ? effect : original;
-                effectApplied = show;
-            }
-        }
         readonly List<Animated> animated = new List<Animated>();
         readonly Dictionary<Material, JourneyNativeMaterial> lookup = new Dictionary<Material, JourneyNativeMaterial>();
         readonly Dictionary<Material, SharedGhost> sharedGhosts = new Dictionary<Material, SharedGhost>();
         readonly HashSet<Renderer> seen = new HashSet<Renderer>();
-        readonly List<SweepEntry> scan = new List<SweepEntry>();
         MaterialPropertyBlock block;
-        JourneySceneArrival arrival;
         StudioAssemblyFinishV9 finish;
         StudioSpatialRefineV19 refinement;
-        StudioWaterImpulseV10 waterImpulses;
         MesaDayNightV13 sky;
         Renderer[] windows;
-        Transform scanRing, waterRing;
-        float discoverUntil, nextDiscover, waveAge = 10;
-        int impactCount;
-        bool scanning, lastMode;
-        Bounds scanBounds;
-        Material rippleInstance;
+        float discoverUntil, nextDiscover;
+        bool lastMode;
 
         void Awake()
         {
@@ -100,13 +79,10 @@ namespace SwanJourney
             DisableReplacedFlameEmitter();
             block = new MaterialPropertyBlock();
             foreach (var m in materials) if (m != null && m.material) lookup[m.material] = m;
-            arrival = Find<JourneySceneArrival>();
             finish = Find<StudioAssemblyFinishV9>();
             refinement = Find<StudioSpatialRefineV19>();
-            waterImpulses = Find<StudioWaterImpulseV10>();
             sky = Find<MesaDayNightV13>();
             windows = refinement ? refinement.passengerWindows : Array.Empty<Renderer>();
-            if (arrival) { arrival.nativeBegin = BeginArrival; arrival.nativeProgress = ArrivalProgress; arrival.nativeCancel = EndArrival; }
             if (finish) { finish.nativeBegin = BeginGold; finish.nativeRestore = EndGold; }
             discoverUntil = Time.unscaledTime + 5;
             Discover();
@@ -121,21 +97,6 @@ namespace SwanJourney
             var previous = deferredEnvironment;
             if (!ReferenceEquals(previous, null))
             {
-                // Restore pending reveal materials before releasing the private
-                // animated copies that those reveal entries may refer to.
-                bool removedScan = false;
-                for (int i = scan.Count - 1; i >= 0; i--)
-                {
-                    var entry = scan[i];
-                    if (entry.renderer && !Under(entry.renderer, previous)) continue;
-                    entry.ShowEffect(false);
-                    scan.RemoveAt(i); removedScan = true;
-                }
-                if (removedScan && scan.Count == 0)
-                {
-                    scanning = false;
-                    if (scanRing) scanRing.gameObject.SetActive(false);
-                }
                 // Only these per-renderer instances belong to the detached root.
                 // Shared exported materials and the global lookup remain registered.
                 for (int i = animated.Count - 1; i >= 0; i--)
@@ -325,68 +286,6 @@ namespace SwanJourney
                 // Native Standard material updates are reliable; custom MPB names are not a shader port.
                 if (hasProperties) { r.SetPropertyBlock(null); LastPropertyBlocksConsumed++; }
             }
-            WaterFeedback();
-        }
-
-        void WaterFeedback()
-        {
-            if (!waterImpulses || !journey.waterSurface || !ringMesh || !rippleMaterial) return;
-            if (!waterRing)
-            {
-                rippleInstance = new Material(rippleMaterial);
-                waterRing = MakeRing("Native water contact ripple", journey.waterSurface, rippleInstance);
-                waterRing.gameObject.SetActive(false);
-            }
-            if (impactCount != waterImpulses.ImpactCount) { impactCount = waterImpulses.ImpactCount; waveAge = 0; }
-            waveAge += Time.deltaTime;
-            bool visible = waveAge < 1.1f && !journey.inSandbox && journey.cutaway && journey.modules[1].installed;
-            if(waterRing.gameObject.activeSelf!=visible)waterRing.gameObject.SetActive(visible);
-            if (!visible) return;
-            waterRing.localPosition = new Vector3(0,.006f,0);
-            waterRing.localRotation = Quaternion.identity;
-            waterRing.localScale = Vector3.one * Mathf.Lerp(.04f,.85f,waveAge/1.1f);
-            var c = rippleMaterial.color; c.a *= Mathf.Sin(Mathf.Clamp01(waveAge/1.1f)*Mathf.PI);
-            rippleInstance.color = c;
-        }
-
-        void BeginArrival()
-        {
-            EndArrival(); EndGold();
-            var roots = journey.inSandbox
-                ? new[] { journey.sandboxRoot, deferredEnvironment ? deferredEnvironment.gameObject : null }
-                : new[] { journey.workshopRoot, journey.previewRoot };
-            bool first = true;
-            foreach (var r in roots.Where(o=>o).SelectMany(o=>o.GetComponentsInChildren<MeshRenderer>()).Distinct())
-            {
-                if (!r.enabled || r.GetComponent<TMPro.TMP_Text>()) continue;
-                var original = r.sharedMaterials;
-                if (original.Length == 0 || original.Any(m => !m || m.renderQueue >= 2500)) continue;
-                var bounds = LocalBounds(r, workbench);
-                if (first) {scanBounds=bounds;first=false;} else scanBounds.Encapsulate(bounds);
-                scan.Add(new SweepEntry {renderer=r,original=original,effect=Enumerable.Repeat(scanMaterial,original.Length).ToArray(),coordinate=bounds.center.y});
-            }
-            scanning = scan.Count > 0;
-            if (scanning && ringMesh)
-            {
-                if(!scanRing) scanRing = MakeRing("Native rising scene scan",workbench,scanMaterial);
-                scanRing.gameObject.SetActive(true);
-                scanRing.localScale = new Vector3(scanBounds.size.x*1.5f,1,scanBounds.size.z*1.5f);
-            }
-            ArrivalProgress(0);
-        }
-
-        void ArrivalProgress(float progress)
-        {
-            if (!scanning) return;
-            float y = Mathf.Lerp(scanBounds.min.y-.02f,scanBounds.max.y+.02f,Mathf.SmoothStep(0,1,progress));
-            foreach (var e in scan) e.ShowEffect(e.coordinate > y);
-            if (scanRing) scanRing.localPosition=new Vector3(scanBounds.center.x,y,scanBounds.center.z);
-        }
-        void EndArrival()
-        {
-            foreach (var e in scan) e.ShowEffect(false);
-            scan.Clear();scanning=false;
-            if(scanRing)scanRing.gameObject.SetActive(false);
         }
 
         void BeginGold(Transform train)
@@ -408,18 +307,7 @@ namespace SwanJourney
         {
             if (GoldActive) completionBadge.gameObject.SetActive(false);
         }
-        Transform MakeRing(string label,Transform parent,Material material)
-        {
-            var go=new GameObject(label,typeof(MeshFilter),typeof(MeshRenderer));go.transform.SetParent(parent,false);
-            go.GetComponent<MeshFilter>().sharedMesh=ringMesh;var r=go.GetComponent<MeshRenderer>();r.sharedMaterial=material;r.shadowCastingMode=ShadowCastingMode.Off;return go.transform;
-        }
-        static Bounds LocalBounds(Renderer r,Transform root)
-        {
-            var mesh=r.GetComponent<MeshFilter>();var b=mesh&&mesh.sharedMesh?mesh.sharedMesh.bounds:new Bounds(Vector3.zero,Vector3.one);
-            var matrix=root.worldToLocalMatrix*r.localToWorldMatrix;var result=new Bounds(matrix.MultiplyPoint3x4(b.center),Vector3.zero);
-            for(int i=0;i<8;i++)result.Encapsulate(matrix.MultiplyPoint3x4(b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1))));return result;
-        }
-        void OnDisable() {EndArrival();EndGold();if(waterRing)waterRing.gameObject.SetActive(false);}
+        void OnDisable() { EndGold(); }
         void ReleaseMaterial(Animated entry)
         {
             if(entry.sharedGhost!=null)
@@ -435,10 +323,8 @@ namespace SwanJourney
         void OnDestroy()
         {
             SetDeferredEnvironment(null);
-            if(arrival){arrival.nativeBegin=null;arrival.nativeProgress=null;arrival.nativeCancel=null;}
             if(finish){finish.nativeBegin=null;finish.nativeProgress=null;finish.nativeRestore=null;}
             foreach(var a in animated)ReleaseMaterial(a);animated.Clear();sharedGhosts.Clear();
-            if(rippleInstance)Destroy(rippleInstance);
         }
     }
 }

@@ -18,4 +18,4 @@ public sealed class StudioWaterImpulseV10:MonoBehaviour {
     void CpuMeasuredLateUpdate(){Shader.SetGlobalFloat(Clock,Time.time);Shader.SetGlobalMatrix("_WaterWorldToLocal",owner?owner.SpatialWorldToLocal:Matrix4x4.identity);Shader.SetGlobalFloat("_WaterWorldScale",owner?owner.SpatialScale:1);}
  void OnDisable(){Clear();}
 }
-public sealed partial class SteamJourney {void ImpactWater(JourneyModule part,float scale=1){var fx=GetComponent<StudioWaterImpulseV10>();if(fx)fx.Impact(part,scale);}}
+public sealed partial class SteamJourney {void ImpactWater(JourneyModule part,float scale=1){if(SwanInputActive)return;var fx=GetComponent<StudioWaterImpulseV10>();if(fx)fx.Impact(part,scale);}}

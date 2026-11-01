@@ -55,12 +55,12 @@ public sealed partial class SteamJourney {
  readonly float[] valveDensity=new float[3],valveVent=new float[3];
  void ValveMist(Renderer r,float a,float b,float density,bool exhaust){
   int index=Array.IndexOf(valveMist,r);float dt=paused?0:Mathf.Min(Time.deltaTime,.05f)*(slow?.25f:1);
-  valveDensity[index]=Mathf.Lerp(valveDensity[index],density,1-Mathf.Exp(-dt*2));valveVent[index]=Mathf.Lerp(valveVent[index],exhaust?1:0,1-Mathf.Exp(-dt*2));
+  valveDensity[index]=Mathf.Lerp(valveDensity[index],density,1-Mathf.Exp(-dt*2));if(!SwanInputActive)valveVent[index]=Mathf.Lerp(valveVent[index],exhaust?1:0,1-Mathf.Exp(-dt*2));
   bool visible=!inSandbox&&cutaway&&modules[4].installed&&b>a;
   if(r.enabled!=visible)r.enabled=visible;
   if(SwanInputActive&&!visible)return;
   r.transform.localPosition=new Vector3((a+b)*.5f,1.08f,1.085f);r.transform.localScale=new Vector3(Mathf.Max(.001f,b-a),.225f,.225f);
-  var block=valveFxBlock??(valveFxBlock=new MaterialPropertyBlock());block.Clear();block.SetFloat("_Density",valveDensity[index]);block.SetFloat("_Front",Mathf.Clamp01(valveDensity[index]/.3f));block.SetFloat("_FlowTime",FlowTime);block.SetFloat("_Direction",index==2?-1:1);block.SetFloat("_Exhaust",valveVent[index]);r.SetPropertyBlock(block);
+  var block=valveFxBlock??(valveFxBlock=new MaterialPropertyBlock());block.Clear();block.SetFloat("_Density",valveDensity[index]);if(!SwanInputActive){block.SetFloat("_Front",Mathf.Clamp01(valveDensity[index]/.3f));block.SetFloat("_FlowTime",FlowTime);block.SetFloat("_Direction",index==2?-1:1);block.SetFloat("_Exhaust",valveVent[index]);}r.SetPropertyBlock(block);
  }
  void Pneumatics(float dt){
   bool supplied=modules[6].installed&&(inSandbox?pressure>1:Delivery>.12f);

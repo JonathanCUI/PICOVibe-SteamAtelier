@@ -47,11 +47,11 @@ namespace SwanJourney.Editor
                 refinement.scenery = refinement.scenery.Where(g => !g || !Inside(g.transform, canyon)).ToArray();
             }
 
-            // These meshes belong to the replaced desktop reveal path. Native
-            // reveal is bound in VisualBridge.Awake and does not read this table.
+            // Swan has no scene-reveal sweep. Keep its disabled controller for
+            // callers that query Active, without desktop shader dependencies.
             var arrival = journey.GetComponent<JourneySceneArrival>();
-            if (!arrival || !visuals || visuals.journey != journey || !visuals.scanMaterial)
-                throw new InvalidOperationException("Native reveal binding must be complete before dropping desktop contour dependencies");
+            if (!arrival || !journey.SwanInputActive || !visuals || visuals.journey != journey)
+                throw new InvalidOperationException("Swan visual binding must exist before dropping desktop contour dependencies");
             report.removedDesktopContourReferences = arrival.contours?.Length ?? 0;
             arrival.contours = Array.Empty<JourneyArrivalEdges>();
             SwanJourneyCanyonInactiveGeometry.Apply(canyon);
@@ -85,6 +85,7 @@ namespace SwanJourney.Editor
                 canyon.SetPositionAndRotation(initialPosition, initialRotation);
                 canyon.localScale = initialScale;
                 SwanJourneyMiniatureGeometry.Apply(payload, presentation.sandboxScale);
+                SwanJourneyPebbleBudget.Apply(payload);
                 SwanJourneyEmptyNodes.Prune(canyon);
                 // This file is loaded only after Drive is requested. Export an
                 // active root: the adapter initializes its activation cache to

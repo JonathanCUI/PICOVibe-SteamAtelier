@@ -48,7 +48,7 @@ public sealed class StudioAssemblyFinishV9:MonoBehaviour {
   float age=p-(.10f+u*.52f);float alpha=Mathf.SmoothStep(0,1,age/.045f)*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.12f,.36f,age)))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.82f,1,p)));
   r.startColor=r.endColor=new Color(.025f,2.5f,4.2f,alpha);r.enabled=alpha>.001f;
  }}
- public void Restore(){if(nativeActive){nativeActive=false;nativeRestore?.Invoke();}if(sparks){sparks.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);Destroy(sparks.gameObject);sparks=null;}seeds.Clear();foreach(var e in originals)if(e.Key)e.Key.sharedMaterials=e.Value;originals.Clear();foreach(var pair in copies.Values)foreach(var m in pair)if(m)Destroy(m);foreach(var r in rings)if(r)Destroy(r.gameObject);rings.Clear();copies.Clear();Shader.SetGlobalVector("_AssemblyGoldRange",new Vector4(0,1,1,0));}
+ public void Restore(){if(nativeActive){nativeActive=false;nativeRestore?.Invoke();}if(sparks){sparks.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);Destroy(sparks.gameObject);sparks=null;}seeds.Clear();foreach(var e in originals)if(e.Key)e.Key.sharedMaterials=e.Value;originals.Clear();foreach(var pair in copies.Values)foreach(var m in pair)if(m)Destroy(m);foreach(var r in rings)if(r)Destroy(r.gameObject);rings.Clear();copies.Clear();if(finishShader)Shader.SetGlobalVector("_AssemblyGoldRange",new Vector4(0,1,1,0));}
  public void Cancel(){Restore();if(sound)sound.Stop();}
  void OnDisable(){Cancel();}void OnDestroy(){Cancel();}
 }

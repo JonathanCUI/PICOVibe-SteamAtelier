@@ -19,7 +19,7 @@ using UnityEngine;using UnityEngine.EventSystems;
    if(!active){if(!swanHiddenCleaned){ClearHiddenSandbox();swanHiddenCleaned=true;SwanHiddenCleanupCount++;}else DarkenBulbs(true);SwanHiddenSkipCount++;return;}
   }
   swanHiddenCleaned=false;
-  Shader.SetGlobalColor("_MesaAmbientSky",RenderSettings.ambientSkyColor);Shader.SetGlobalColor("_MesaAmbientHorizon",RenderSettings.ambientEquatorColor);Shader.SetGlobalColor("_MesaAmbientGround",RenderSettings.ambientGroundColor);
+  if(!journey.SwanInputActive){Shader.SetGlobalColor("_MesaAmbientSky",RenderSettings.ambientSkyColor);Shader.SetGlobalColor("_MesaAmbientHorizon",RenderSettings.ambientEquatorColor);Shader.SetGlobalColor("_MesaAmbientGround",RenderSettings.ambientGroundColor);}
   float pulse=Mathf.Max(0,Mathf.Sin((clock+7)*Mathf.PI*2/39));foreach(var ps in atmosphere.dust){var emission=ps.emission;emission.rateOverTime=active?3.4f*pulse*pulse*pulse:0;if(active&&!ps.isPlaying)ps.Play();if(!active&&ps.isPlaying)ps.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);}
   bool newerClouds=journey.SwanInputActive&&cloudProvider&&cloudProvider.CloudUpdatesReady&&cloudProvider.journey==journey&&cloudProvider.sky==sky;
   for(int k=newerClouds?3:0;k<sky.clouds.Length;k++){float s=k*2.1f;var t=sky.clouds[k];t.localPosition=starts[k]+new Vector3(Mathf.Sin(clock*.028f+s)*.8f,Mathf.Sin(clock*.17f+s)*.13f,Mathf.Cos(clock*.024f+s)*.4f);t.localScale=Vector3.Scale(scales[k],new Vector3(1+Mathf.Sin(clock*.16f+s)*.035f,1+Mathf.Sin(clock*.19f+s)*.045f,1+Mathf.Cos(clock*.14f+s)*.03f));CloudWriteCount++;}
