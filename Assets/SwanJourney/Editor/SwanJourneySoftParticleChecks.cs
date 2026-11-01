@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace SwanJourney.Editor
                 var textures=new HashSet<Texture>();
                 foreach(var material in materials)
                 {
-                    Check(material.shader.name=="Standard"&&material.GetFloat("_Mode")==2
+                    Check(material.shader.name==SwanJourneyUrp.Lit&&material.GetFloat("_Surface")==1
                         && material.GetInt("_SrcBlend")==5&&material.GetInt("_DstBlend")==10
                         && material.GetInt("_ZWrite")==0,"Soft material blends alpha: "+material.name,report);
                     Check(material.mainTexture&&material.GetTexture("_EmissionMap"),"Base color and emission both use masks: "+material.name,report);
@@ -146,7 +146,7 @@ namespace SwanJourney.Editor
                 block.SetFloat("_Opacity",0);renderer.SetPropertyBlock(block);bridge.SendMessage("LateUpdate",SendMessageOptions.RequireReceiver);
                 Check(instance.color.a==0&&instance.GetColor("_EmissionColor").maxColorComponent==0,"Puff lifetime reaches zero alpha and zero emission together",report);
                 block.SetFloat("_Opacity",.5f);renderer.SetPropertyBlock(block);bridge.SendMessage("LateUpdate",SendMessageOptions.RequireReceiver);
-                Check(instance.color.a>0&&instance.GetTexture("_EmissionMap")==mask&&instance.GetFloat("_Mode")==2,"Reused puff retains its mask and transparency",report);
+                Check(instance.color.a>0&&instance.GetTexture("_EmissionMap")==mask&&instance.GetFloat("_Surface")==1,"Reused puff retains its mask and transparency",report);
             }
             finally
             {

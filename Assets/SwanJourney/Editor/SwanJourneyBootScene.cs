@@ -75,7 +75,8 @@ namespace SwanJourney.Editor
         {
             string path=SwanJourneyBuild.Generated+"/"+name+".mat";
             var mat=AssetDatabase.LoadAssetAtPath<Material>(path);
-            if(!mat){mat=new Material(Shader.Find("Unlit/Color"));AssetDatabase.CreateAsset(mat,path);}
+            var shader=SwanJourneyUrp.Require(SwanJourneyUrp.Unlit);
+            if(!mat){mat=new Material(shader);AssetDatabase.CreateAsset(mat,path);}else mat.shader=shader;
             mat.color=color;EditorUtility.SetDirty(mat);return mat;
         }
     }

@@ -63,7 +63,7 @@ namespace SwanJourney.Editor
                 Check(!SwanJourneyEmptyNodeBudget.CanRemove(rendererNode.transform,refs),"Renderable geometry can never be classified as an empty node");
                 var journey=root.AddComponent<SteamJourney>();journey.SwanInputActive=true;journey.modules=Array.Empty<JourneyModule>();journey.finishing=Array.Empty<JourneyModule>();
                 var probe=root.AddComponent<SwanJourneyPerformanceProbe>();probe.journey=journey;probe.content=root.transform;
-                material=new Material(Shader.Find("Standard"));simple=new Material(material);
+                material=new Material(SwanJourneyUrp.Require(SwanJourneyUrp.Lit));simple=new Material(material);
                 renderer.sharedMaterial=material;probe.surfaces=new[]{new SwanJourneyPerformanceProbe.Surface{original=material,simple=simple}};
                 Check(probe.TryApply("surface-simple")&&renderer.sharedMaterial==simple,"Material-only isolation changes the renderer binding");
                 probe.Restore();Check(renderer.sharedMaterial==material&&probe.ActiveProfile=="normal","Ending isolation restores original material identity");

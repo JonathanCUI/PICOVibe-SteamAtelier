@@ -91,7 +91,7 @@ namespace SwanJourney.Editor
             {
                 if (!material || !material.shader) throw new InvalidOperationException("Missing canyon material: " + renderer.name);
                 string shader = material.shader.name;
-                if (shader != "Standard" && shader != "Standard (Specular setup)" && !shader.StartsWith("Unlit/", StringComparison.Ordinal))
+                if (shader != SwanJourneyUrp.Lit && shader != SwanJourneyUrp.Unlit)
                     throw new InvalidOperationException("Unverified canyon shader UV semantics: " + shader);
                 bool secondary = material.HasProperty("_UVSec") && material.GetFloat("_UVSec") > .5f;
                 bool detail = material.HasProperty("_DetailAlbedoMap") && material.GetTexture("_DetailAlbedoMap")

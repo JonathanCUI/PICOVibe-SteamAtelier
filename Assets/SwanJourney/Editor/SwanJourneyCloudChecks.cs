@@ -187,8 +187,8 @@ namespace SwanJourney.Editor
                     journey.trainAnchor = Child("Shared train", journey.workshopRoot.transform).transform;
                     journey.view = Child("View", root.transform).AddComponent<Camera>(); journey.view.enabled = false;
                     mesh = new Mesh { name = "Cloud check triangle", vertices = new[] { Vector3.zero, Vector3.right, Vector3.up }, triangles = new[] { 0, 1, 2 } };
-                    var shader = Shader.Find("Standard");
-                    if (!shader) throw new InvalidOperationException("Cloud fixture requires the editor Standard shader.");
+                    var shader = SwanJourneyUrp.Require(SwanJourneyUrp.Lit);
+                    if (!shader) throw new InvalidOperationException("Cloud fixture requires the editor URP Lit shader.");
                     material = new Material(shader);
                     sky = root.AddComponent<MesaDayNightV13>(); sky.journey = journey;
                     sky.clouds = Enumerable.Range(0, 3).Select(i => Render("Cloud " + i, journey.sandboxRoot.transform).transform).ToArray();

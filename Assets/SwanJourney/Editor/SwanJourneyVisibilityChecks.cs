@@ -23,8 +23,8 @@ namespace SwanJourney.Editor
                 "FPS cannot intercept model or handle input", results);
             var renderers = hud.meshText.GetComponentsInChildren<MeshRenderer>(true);
             Check(renderers.Length == 34 && renderers.All(r => r.sharedMaterial && r.sharedMaterial.shader
-                    && r.sharedMaterial.shader.name == "Unlit/Color"),
-                "All 34 static FPS glyph renderers use the supported Unlit/Color shader", results);
+                    && r.sharedMaterial.shader.name == SwanJourneyUrp.Unlit),
+                "All 34 static FPS glyph renderers use the URP Unlit shader", results);
             var mesh = hud.meshText.GetComponent<MeshFilter>().sharedMesh;
             Check(mesh && mesh.vertexCount > 0 && mesh.isReadable,
                 "FPS fixed label uses a readable saved glyph mesh", results);
@@ -77,6 +77,9 @@ namespace SwanJourney.Editor
             var stagePose = new SavedPose(presentation.transform);
             var handlePose = new SavedPose(presentation.moveHandle);
             var anchorPose = new SavedPose(presentation.workshopMoveHandleAnchor);
+            Check(SwanJourneyPresentation.TryBounds(presentation.moveHandle, presentation.moveHandle, out var authoredGrip)
+                    && authoredGrip.size.x > 0 && authoredGrip.size.y > 0,
+                "Saved grip has a nonempty local surface", results);
             bool mode = presentation.journey.inSandbox;
             try
             {
@@ -92,10 +95,11 @@ namespace SwanJourney.Editor
                     // Re-read outside the preceding boolean to keep definite assignment explicit.
                     SwanJourneyPresentation.TryBounds(presentation.moveHandle, presentation.transform, out handle);
                     SwanJourneyPresentation.TryBounds(presentation.workshopMoveHandleAnchor, presentation.transform, out neighbour);
-                    Check(Mathf.Abs(handle.size.x-.48f)<.001f && Mathf.Abs(handle.size.y-.09f)<.001f
-                            && neighbour.min.z-handle.max.z >= .12f,
-                        "Handle scales naturally and has a dedicated front row at scene scale " + scale, results);
-                    Check(Mathf.Abs(handle.center.y - neighbour.center.y) < .0001f
+                    var anchorCenter = handle.center - authoredGrip.center;
+                    Check(Vector3.Distance(handle.size, authoredGrip.size)<.001f
+                            && neighbour.min.z-anchorCenter.z >= .12f,
+                        "Handle retains its authored size and front anchor at scene scale " + scale, results);
+                    Check(Mathf.Abs(anchorCenter.y - neighbour.center.y) < .0001f
                             && presentation.moveHandle.parent == presentation.transform,
                         "Handle stays in the familiar control row and moves with the common stage at scene scale " + scale, results);
                 }

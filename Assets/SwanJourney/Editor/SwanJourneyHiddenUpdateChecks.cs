@@ -66,8 +66,8 @@ namespace SwanJourney.Editor
             }
             try
             {
-                var shader = Shader.Find("Standard");
-                Check(shader, "fixture uses the supported Standard material");
+                var shader = SwanJourneyUrp.Require(SwanJourneyUrp.Lit);
+                Check(shader, "fixture uses the supported URP Lit material");
                 var source = new Material(shader) { color = Color.white };
                 source.SetColor("_EmissionColor", Color.black); owned.Add(source);
                 var scan = new Material(source); owned.Add(scan);

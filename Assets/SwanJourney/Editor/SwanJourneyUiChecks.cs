@@ -41,7 +41,7 @@ namespace SwanJourney.Editor
                 Check(authoredCards && authoredCards.spatialAnchor && authoredCards.spatialLeaderMaterial,
                     "Part cards retain serialized spatial anchor and native leader material");
                 Check(journey.SwanInputActive && authoredCards.spatialLeaderMaterial.shader
-                    && authoredCards.spatialLeaderMaterial.shader.name == "Standard", "Swan part-card startup has a retained Standard shader");
+                    && authoredCards.spatialLeaderMaterial.shader.name == SwanJourneyUrp.Lit, "Swan part-card startup has a retained URP Lit shader");
                 var previousCanvases = new HashSet<Canvas>(authoredCards.spatialAnchor.GetComponentsInChildren<Canvas>(true));
                 var originalLeaderColor = authoredCards.spatialLeaderMaterial.color;
                 initializationFixture = new GameObject("Temporary actual part-card startup");
@@ -68,7 +68,7 @@ namespace SwanJourney.Editor
                 }
                 Check(hasTitle && hasExplanation, "Actual Start populates both selected title and explanation");
                 var startedLeader = initializationFixture.GetComponentInChildren<LineRenderer>(true);
-                Check(startedLeader && startedLeader.sharedMaterial && startedLeader.sharedMaterial.shader.name == "Standard"
+                Check(startedLeader && startedLeader.sharedMaterial && startedLeader.sharedMaterial.shader.name == SwanJourneyUrp.Lit
                     && startedLeader.sharedMaterial != authoredCards.spatialLeaderMaterial,
                     "Actual Start creates an owned Standard leader clone without URP lookup");
                 Check(authoredCards.spatialLeaderMaterial.color == originalLeaderColor,

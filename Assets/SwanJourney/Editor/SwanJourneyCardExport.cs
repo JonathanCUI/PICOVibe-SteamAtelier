@@ -32,18 +32,12 @@ namespace SwanJourney.Editor
                     material = new Material(ui.panelMaterial) { name = "Swan card " + key };
                     AssetDatabase.CreateAsset(material, path);
                 }
+                material.shader = ui.panelMaterial.shader;
+                material.SetFloat("_Metallic", ui.panelMaterial.GetFloat("_Metallic"));
+                material.SetFloat("_Smoothness", ui.panelMaterial.GetFloat("_Smoothness"));
                 material.color = color;
-                bool transparent = color.a < .999f;
-                material.SetFloat("_Mode", transparent ? 2 : 0);
-                material.SetOverrideTag("RenderType", transparent ? "Transparent" : "Opaque");
-                material.SetInt("_SrcBlend", (int)(transparent ? BlendMode.SrcAlpha : BlendMode.One));
-                material.SetInt("_DstBlend", (int)(transparent ? BlendMode.OneMinusSrcAlpha : BlendMode.Zero));
-                material.SetInt("_ZWrite", transparent ? 0 : 1);
-                material.DisableKeyword("_ALPHATEST_ON");
-                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                SwanJourneyUrp.SetSurface(material, color.a < .999f);
                 material.DisableKeyword("_EMISSION");
-                if (transparent) material.EnableKeyword("_ALPHABLEND_ON"); else material.DisableKeyword("_ALPHABLEND_ON");
-                material.renderQueue = transparent ? (int)RenderQueue.Transparent : -1;
                 EditorUtility.SetDirty(material);
                 materials.Add(key, material);
                 return material;

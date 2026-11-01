@@ -62,9 +62,9 @@ namespace SwanJourney.Editor
                     case JourneyNativeMaterialKind.Beam:color=new Color(1,.84f,.62f,.18f);break;
                     case JourneyNativeMaterialKind.Halo:color=new Color(color.r,color.g,color.b,.55f);break;
                 }
-                var result=new Material(Shader.Find("Standard")){name="Swan V23 "+source.name,color=color};
+                var result=new Material(SwanJourneyUrp.Require(SwanJourneyUrp.Lit)){name="Swan V23 "+source.name,color=color};
                 result.SetFloat("_Metallic",source.HasProperty("_Metallic")?source.GetFloat("_Metallic"):source.HasProperty("_MetallicPower")?source.GetFloat("_MetallicPower"):0);
-                result.SetFloat("_Glossiness",source.HasProperty("_Smoothness")?source.GetFloat("_Smoothness"):source.HasProperty("_Glossiness")?source.GetFloat("_Glossiness"):source.HasProperty("_SmoothnessPower")?source.GetFloat("_SmoothnessPower"):.35f);
+                result.SetFloat("_Smoothness",source.HasProperty("_Smoothness")?source.GetFloat("_Smoothness"):source.HasProperty("_Glossiness")?source.GetFloat("_Glossiness"):source.HasProperty("_SmoothnessPower")?source.GetFloat("_SmoothnessPower"):.35f);
                 string textureProperty=source.HasProperty("_BaseMap")?"_BaseMap":source.HasProperty("_MainTex")?"_MainTex":null;
                 if(textureProperty!=null && source.GetTexture(textureProperty) is Texture2D)
                 {
@@ -73,22 +73,23 @@ namespace SwanJourney.Editor
                 if(source.shader && source.shader.name.Contains("MesaGround"))
                 {
                     result.mainTexture=BakeGround(source,folder+"/Ground_"+number.ToString("0000")+".png");
-                    result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;result.SetFloat("_Glossiness",.1f);
+                    result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;result.SetFloat("_Smoothness",.1f);
                 }
                 bool soft=kind==JourneyNativeMaterialKind.Steam||kind==JourneyNativeMaterialKind.Mist||kind==JourneyNativeMaterialKind.Furnace||kind==JourneyNativeMaterialKind.Beam||kind==JourneyNativeMaterialKind.Halo;
                 if(soft||(kind==JourneyNativeMaterialKind.Particle&&!result.mainTexture))result.mainTexture=alpha;
-                if(kind==JourneyNativeMaterialKind.WaterBody||kind==JourneyNativeMaterialKind.WaterJacket||kind==JourneyNativeMaterialKind.WaterSurface)result.SetFloat("_Glossiness",.88f);
-                CopyTexture(source,result,"_BumpMap","_NORMALMAP");CopyTexture(source,result,"_OcclusionMap",null);CopyTexture(source,result,"_MetallicGlossMap","_METALLICGLOSSMAP");CopyTexture(source,result,"_EmissionMap",null);
+                if(kind==JourneyNativeMaterialKind.WaterBody||kind==JourneyNativeMaterialKind.WaterJacket||kind==JourneyNativeMaterialKind.WaterSurface)result.SetFloat("_Smoothness",.88f);
+                CopyTexture(source,result,"_BumpMap","_NORMALMAP");CopyTexture(source,result,"_OcclusionMap","_OCCLUSIONMAP");CopyTexture(source,result,"_MetallicGlossMap","_METALLICSPECGLOSSMAP");CopyTexture(source,result,"_EmissionMap",null);
                 if(kind==JourneyNativeMaterialKind.Cloud)
                 {
                     result.mainTexture=cloudTint;
                     result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;
-                    result.SetFloat("_Glossiness",0);result.SetFloat("_Metallic",0);
+                    result.SetFloat("_Smoothness",0);result.SetFloat("_Metallic",0);
                 }
                 if(source.shader && source.shader.name.Contains("LayeredRock"))
                 {
                     // The rock shader stores AO in the green channel of its metal mask.
                     result.SetTexture("_OcclusionMap",result.GetTexture("_MetallicGlossMap"));
+                    if(result.GetTexture("_OcclusionMap"))result.EnableKeyword("_OCCLUSIONMAP");
                     result.SetFloat("_OcclusionStrength",1f); // AO contrast is bounded in the exported map.
                     result.SetFloat("_BumpScale",source.GetFloat("_NormalPower"));
                 }
@@ -97,14 +98,14 @@ namespace SwanJourney.Editor
                     var maps=ParticleMaps(sprite);result.mainTexture=maps.surface;result.SetTexture("_EmissionMap",maps.emission);
                     result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;
                     result.SetTextureScale("_EmissionMap",Vector2.one);result.SetTextureOffset("_EmissionMap",Vector2.zero);
-                    result.SetFloat("_Glossiness",0);result.SetFloat("_Metallic",0);
+                    result.SetFloat("_Smoothness",0);result.SetFloat("_Metallic",0);
                 }
                 if(kind==JourneyNativeMaterialKind.Furnace)
                 {
                     result.mainTexture=flameAlpha;result.mainTextureScale=Vector2.one;result.mainTextureOffset=Vector2.zero;
                     // Mask emissive RGB as well as alpha: a bright constant emission over
                     // an otherwise transparent card can reveal its rectangular boundary.
-                    result.SetTexture("_EmissionMap",flameAlpha);result.SetFloat("_Glossiness",0);result.SetFloat("_Metallic",0);
+                    result.SetTexture("_EmissionMap",flameAlpha);result.SetFloat("_Smoothness",0);result.SetFloat("_Metallic",0);
                 }
                 if(source.HasProperty("_BumpScale"))result.SetFloat("_BumpScale",source.GetFloat("_BumpScale"));
                 Color emission=source.HasProperty("_EmissionColor")?source.GetColor("_EmissionColor"):Color.black;
@@ -123,7 +124,7 @@ namespace SwanJourney.Editor
                 bool foliage=source.shader&&(source.shader.name.Contains("VegetationLeaves")||source.shader.name.Contains("Grass")||source.shader.name.Contains("Impostor"));
                 if(!transparent && ((source.HasProperty("_AlphaClip")&&source.GetFloat("_AlphaClip")>.5f)||source.IsKeywordEnabled("_ALPHATEST_ON")||source.GetTag("RenderType",false)=="TransparentCutout"||foliage))
                 {
-                    result.SetFloat("_Mode",1);result.SetFloat("_Cutoff",source.HasProperty("_Cutoff")?source.GetFloat("_Cutoff"):source.HasProperty("_AlphaCutoff")?source.GetFloat("_AlphaCutoff"):.5f);result.EnableKeyword("_ALPHATEST_ON");result.SetOverrideTag("RenderType","TransparentCutout");result.renderQueue=2450;
+                    SwanJourneyUrp.SetSurface(result,false,true);result.SetFloat("_Cutoff",source.HasProperty("_Cutoff")?source.GetFloat("_Cutoff"):source.HasProperty("_AlphaCutoff")?source.GetFloat("_AlphaCutoff"):.5f);
                 }
                 result=Save(result,folder+"/Material_"+(number++).ToString("0000")+".mat");map[source]=result;
                 definitions.Add(new JourneyNativeMaterial{material=result,kind=kind,color=color,opacity=source.HasProperty("_Opacity")?source.GetFloat("_Opacity"):1});return result;
@@ -181,7 +182,7 @@ namespace SwanJourney.Editor
             bridge.materials=definitions.ToArray();
             bridge.scanMaterial=Save(Effect("Native blue reveal",new Color(.10f,.68f,1,.42f),new Color(.05f,.55f,1)*1.4f),folder+"/BlueReveal.mat");
             bridge.goldMaterial=Save(Effect("Native completion gold",new Color(.91f,.64f,.23f,1),new Color(1,.54f,.10f)*.9f,false),folder+"/CompletionGold.mat");
-            bridge.goldMaterial.SetFloat("_Metallic",.78f);bridge.goldMaterial.SetFloat("_Glossiness",.72f);
+            bridge.goldMaterial.SetFloat("_Metallic",.78f);bridge.goldMaterial.SetFloat("_Smoothness",.72f);
             bridge.rippleMaterial=Save(Effect("Native contact ripple",new Color(.38f,.75f,.83f,.42f),new Color(.10f,.31f,.38f)),folder+"/WaterRipple.mat");
             var flowMaps=ParticleMaps(alpha);
             ConfigureFlowParticles(journey,workbench,folder,flowMaps.surface,flowMaps.emission);
@@ -208,7 +209,7 @@ namespace SwanJourney.Editor
                     {
                         Color color=key;color.a=SwanJourneyFlowParticles.AlphaLevels[i];
                         var material=Effect("Native flow "+key.r+"-"+key.g+"-"+key.b+" alpha "+i,color,new Color(color.r,color.g,color.b)*.18f);
-                        material.mainTexture=alpha;material.SetTexture("_EmissionMap",emissionMask);material.SetFloat("_Glossiness",0);
+                        material.mainTexture=alpha;material.SetTexture("_EmissionMap",emissionMask);material.SetFloat("_Smoothness",0);
                         materials[i]=Save(material,folder+"/Flow_"+key.r+"_"+key.g+"_"+key.b+"_"+i+".mat");
                     }
                     palette.Add(key,materials);
@@ -263,14 +264,14 @@ namespace SwanJourney.Editor
         static void CopyTexture(Material from,Material to,string property,string keyword){if(from.HasProperty(property)&&from.GetTexture(property) is Texture2D texture){to.SetTexture(property,texture);if(keyword!=null)to.EnableKeyword(keyword);}}
         static Material Effect(string name,Color color,Color emission,bool transparent=true)
         {
-            var m=new Material(Shader.Find("Standard")){name=name,color=color};m.SetColor("_EmissionColor",emission);
-            // StandardShaderGUI validates keywords from these flags on reimport.
+            var m=new Material(SwanJourneyUrp.Require(SwanJourneyUrp.Lit)){name=name,color=color};m.SetColor("_EmissionColor",emission);
+            // The material inspector validates keywords from these flags on reimport.
             // The default EmissiveIsBlack flag would erase _EMISSION even while a
             // nonblack color and density texture are present (including alpha index 0).
             m.globalIlluminationFlags=MaterialGlobalIlluminationFlags.RealtimeEmissive;
             m.EnableKeyword("_EMISSION");if(transparent)Transparent(m);return m;
         }
-        static void Transparent(Material m){m.SetOverrideTag("RenderType","Transparent");m.SetFloat("_Mode",2);m.SetInt("_SrcBlend",(int)BlendMode.SrcAlpha);m.SetInt("_DstBlend",(int)BlendMode.OneMinusSrcAlpha);m.SetInt("_ZWrite",0);m.DisableKeyword("_ALPHATEST_ON");m.DisableKeyword("_ALPHAPREMULTIPLY_ON");m.EnableKeyword("_ALPHABLEND_ON");m.renderQueue=3000;}
+        static void Transparent(Material m) => SwanJourneyUrp.SetSurface(m,true);
         static T Save<T>(T asset,string path)where T:UnityEngine.Object
         {
             var old=AssetDatabase.LoadAssetAtPath<T>(path);

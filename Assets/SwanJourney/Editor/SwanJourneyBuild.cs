@@ -28,6 +28,7 @@ namespace SwanJourney.Editor
         [MenuItem("Steam Atelier/V23 Swan/Generate")]
         public static void Generate()
         {
+            var savedLayout = SwanJourneyWorkshopLayout.ReadSaved();
             Directory.CreateDirectory(Generated);Directory.CreateDirectory("Assets/SwanJourney/Scenes");Directory.CreateDirectory(Output);
             Configure();
             var scene=EditorSceneManager.OpenScene("Assets/AtelierJourney/Scenes/SteamJourney.unity");
@@ -104,8 +105,7 @@ namespace SwanJourney.Editor
             var hudRoot=new GameObject("Swan V23 view-following FPS");hudRoot.transform.position=new Vector3(-.85f,1.65f,1.15f);
             var hud=hudRoot.AddComponent<SwanFrameRateHud>();hud.editorPreviewCamera=preview;
             hud.viewOffset=new Vector3(-.14f,.10f,.65f);hud.visualScale=1.05f;
-            var fps=SaveMaterial("FpsGlyph",new Color(.65f,1,1),0,0);
-            fps.shader=Shader.Find("Unlit/Color");if(!fps.shader)throw new InvalidOperationException("Swan FPS Unlit/Color shader is missing");
+            var fps=SaveMaterial("FpsGlyph",new Color(.65f,1,1),0,0,true);
             fps.color=new Color(.65f,1,1);fps.DisableKeyword("_EMISSION");EditorUtility.SetDirty(fps);
             hud.meshText=SwanFpsMeshBuilder.Create(Generated,fps);hud.meshText.transform.position=hudRoot.transform.position;
             RenderSettings.skybox=null;RenderSettings.ambientMode=AmbientMode.Trilight;
@@ -133,6 +133,8 @@ namespace SwanJourney.Editor
             SwanJourneyPerformanceProbeBuild.Configure(journey,interaction);
             SwanJourneyEmptyNodeBudget.Apply(journey);
             SwanJourneyBootScene.Generate(journey.font);
+            SwanJourneyUrp.UpgradeAndValidateGenerated();
+            savedLayout?.Apply(presentation, interaction);
             SwanJourneyNodeAlignment.ValidateAndBind(scene,EnvironmentScenePath);
             // The Windows Resources scan passes backslash paths to the SDK's
             // forward-slash-only prefab exporter. A normal AssetDatabase scene
@@ -208,15 +210,19 @@ namespace SwanJourney.Editor
             }
             return count;
         }
-        static Material SaveMaterial(string name,Color color,float metal,float smooth)
+        static Material SaveMaterial(string name,Color color,float metal,float smooth,bool unlit=false)
         {
             string path=Generated+"/"+name+".mat";var mat=AssetDatabase.LoadAssetAtPath<Material>(path);
-            if(!mat){mat=new Material(Shader.Find("Standard"));AssetDatabase.CreateAsset(mat,path);}mat.color=color;mat.SetFloat("_Metallic",metal);mat.SetFloat("_Glossiness",smooth);EditorUtility.SetDirty(mat);return mat;
+            var shader=SwanJourneyUrp.Require(unlit ? SwanJourneyUrp.Unlit : SwanJourneyUrp.Lit);
+            if(!mat){mat=new Material(shader);AssetDatabase.CreateAsset(mat,path);}else mat.shader=shader;
+            mat.color=color;
+            if(!unlit){mat.SetFloat("_Metallic",metal);mat.SetFloat("_Smoothness",smooth);}
+            EditorUtility.SetDirty(mat);return mat;
         }
         static void Configure()
         {
             PlayerSettings.companyName="PICO Vibe";PlayerSettings.productName="蒸汽工坊·V23";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.32";PlayerSettings.Android.bundleVersionCode=32;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.33";PlayerSettings.Android.bundleVersionCode=33;
             SwanJourneyIcon.Configure();
             var runtime=new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
             runtime.FindProperty("m_enableSpatialAdapter").boolValue=true;
@@ -230,7 +236,9 @@ namespace SwanJourney.Editor
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android,false);PlayerSettings.SetGraphicsAPIs(BuildTarget.Android,new[]{GraphicsDeviceType.Vulkan});
             PlayerSettings.colorSpace=ColorSpace.Linear;PlayerSettings.runInBackground=true;PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android,"PICO_MS_SDK");
             var settings=new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);settings.FindProperty("activeInputHandler").intValue=1;settings.ApplyModifiedPropertiesWithoutUndo();
-            GraphicsSettings.defaultRenderPipeline=null;int current=QualitySettings.GetQualityLevel();
+            var pipeline=AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>("Assets/Settings/SwanJourneyURP.asset");
+            if(!pipeline)throw new InvalidOperationException("Missing V23 URP asset");
+            GraphicsSettings.defaultRenderPipeline=pipeline;int current=QualitySettings.GetQualityLevel();
             for(int i=0;i<QualitySettings.names.Length;i++){QualitySettings.SetQualityLevel(i,false);QualitySettings.renderPipeline=null;}QualitySettings.SetQualityLevel(current,false);
             QualitySettings.shadows=UnityEngine.ShadowQuality.Disable;QualitySettings.antiAliasing=4;
             var config=PXR_ProjectSetting.GetProjectConfig();config.isSpatialAdapter=true;config.spatialMesh=true;config.arFoundation=false;config.openMRC=false;EditorUtility.SetDirty(config);

@@ -7,11 +7,8 @@ using UnityEngine;
 
 namespace SwanJourney.Editor
 {
-    // Verified in APK pixels: when metal and AO share one Unity texture,
-    // this exporter writes metallic R into the final ORM's occlusion R (zero
-    // for wood/stone). Give AO its own texture identity. The exporter then
-    // combines AO and metal correctly. Bake selected finishes into the data
-    // channels so conversion to native ORM preserves their response.
+    // Give AO its own texture identity. Metal maps carry both Unity Lit's R/A
+    // and glTF's G/B layout so the editor and the exported native models agree.
     public static class SwanJourneyPbrPacking
     {
         enum Finish { Original, Paint, Steel, Brass, Rock }
@@ -51,19 +48,23 @@ namespace SwanJourney.Editor
                 .Concat(content.GetComponentInChildren<SwanJourneyVisualBridge>(true).materials.Select(m=>m.material)).Where(m=>m).Distinct();
             foreach(var m in materials)
             {
-                if(m.shader.name!="Standard" || !AssetDatabase.GetAssetPath(m).StartsWith(SwanJourneyBuild.Generated+"/NativeVisuals/",StringComparison.Ordinal))continue;
+                if(m.shader.name!=SwanJourneyUrp.Lit || !AssetDatabase.GetAssetPath(m).StartsWith(SwanJourneyBuild.Generated+"/NativeVisuals/",StringComparison.Ordinal))continue;
                 report.materials++;
                 var finish=Surface(m.name);
                 if(m.GetTexture("_MetallicGlossMap") is Texture2D metal)
                 {
                     report.metalMaps++;
-                    if(finish!=Finish.Original)m.SetTexture("_MetallicGlossMap",Pack(metal,false,finish));
+                    // The packed texture already contains the authored metal and finish response.
+                    // The URP exporter multiplies by these scalars when writing glTF.
+                    m.SetFloat("_Metallic",.99f);
+                    m.SetFloat("_Smoothness",1f);
+                    m.SetTexture("_MetallicGlossMap",Pack(metal,false,finish));
                 }
                 else if(finish!=Finish.Original)
                 {
                     var response=Response(finish);
                     m.SetFloat("_Metallic",m.GetFloat("_Metallic")*response.x);
-                    m.SetFloat("_Glossiness",m.GetFloat("_Glossiness")*response.y);
+                    m.SetFloat("_Smoothness",m.GetFloat("_Smoothness")*response.y);
                 }
                 if(m.GetTexture("_OcclusionMap") is Texture2D ao)
                 { m.SetTexture("_OcclusionMap",Pack(ao,true,finish==Finish.Rock?finish:Finish.Original));report.occlusionMaps++; }
@@ -91,7 +92,15 @@ namespace SwanJourney.Editor
                         byte occlusion=finish==Finish.Rock?(byte)(150+(105*c.g+127)/255):c.g;
                         values[i]=new Color32(occlusion,occlusion,occlusion,255);
                     }
-                    else values[i]=new Color32((byte)Mathf.RoundToInt(c.r*response.x),c.g,c.b,(byte)Mathf.RoundToInt(c.a*response.y));
+                    else
+                    {
+                        byte metal=(byte)Mathf.RoundToInt(c.r*response.x);
+                        byte smooth=(byte)Mathf.RoundToInt(c.a*response.y);
+                        // URP Lit samples R/A. The local URP glTF exporter passes G/B through.
+                        // Match the old exporter's linear-to-sRGB conversion of the metal channel.
+                        byte exportedMetal=(byte)Mathf.RoundToInt(255f*Mathf.LinearToGammaSpace(metal/255f));
+                        values[i]=new Color32(metal,(byte)(255-smooth),exportedMetal,smooth);
+                    }
                 }
                 pixels.SetPixels32(values);pixels.Apply();string path=folder+"/"+key+".png";
                 File.WriteAllBytes(path,pixels.EncodeToPNG());UnityEngine.Object.DestroyImmediate(pixels);

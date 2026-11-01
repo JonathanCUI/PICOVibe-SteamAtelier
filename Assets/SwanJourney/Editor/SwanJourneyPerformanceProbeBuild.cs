@@ -19,10 +19,10 @@ namespace SwanJourney.Editor
             var pairs=new List<SwanJourneyPerformanceProbe.Surface>();
             foreach(var original in probe.content.GetComponentsInChildren<Renderer>(true).SelectMany(r=>r.sharedMaterials).Distinct())
             {
-                if(!original||!definitions.Contains(original)||original.renderQueue>=2450||!original.shader||original.shader.name!="Standard")continue;
+                if(!original||!definitions.Contains(original)||original.renderQueue>=2450||!original.shader||original.shader.name!=SwanJourneyUrp.Lit)continue;
                 var simple=new Material(original){name=original.name+" · diagnostic scalar surface"};
                 foreach(var property in simple.GetTexturePropertyNames())simple.SetTexture(property,null);
-                foreach(var keyword in new[]{"_NORMALMAP","_METALLICGLOSSMAP","_PARALLAXMAP","_DETAIL_MULX2","_SPECGLOSSMAP","_OCCLUSIONMAP"})simple.DisableKeyword(keyword);
+                foreach(var keyword in new[]{"_NORMALMAP","_METALLICSPECGLOSSMAP","_PARALLAXMAP","_DETAIL_MULX2","_SPECGLOSSMAP","_OCCLUSIONMAP"})simple.DisableKeyword(keyword);
                 // Keep base color, scalar metallic/smoothness, emission and alpha.
                 // Text/transparent particles and native gesture materials are excluded.
                 AssetDatabase.TryGetGUIDAndLocalFileIdentifier(original,out string guid,out long id);

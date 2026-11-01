@@ -12,7 +12,7 @@ namespace SwanJourney.Editor
             var checks=new List<string>();
             var root=new GameObject("Ghost material lifetime fixture");
             var deferred=new GameObject("Deferred ghost fixture");
-            var shader=Shader.Find("Standard");
+            var shader=SwanJourneyUrp.Require(SwanJourneyUrp.Lit);
             var source=new Material(shader){color=new Color(.8f,.9f,1,.25f),renderQueue=3000};
             var other=new Material(source){color=new Color(.9f,.6f,.2f,.3f)};
             var temporary=new Material(shader);

@@ -37,7 +37,8 @@ def rgba_means(png):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('apk',type=Path);p.add_argument('--out',type=Path,required=True)
-    p.add_argument('--require-canyon-container',action='store_true');p.add_argument('--canyon-prefab',action='store_true');a=p.parse_args()
+    p.add_argument('--require-canyon-container',action='store_true');p.add_argument('--canyon-prefab',action='store_true')
+    p.add_argument('--check-workshop-finishes',action='store_true');a=p.parse_args()
     report={'passed':False,'nativeRenderingValidated':False,'devicePerformanceMeasured':False,'textures':[]}
     with zipfile.ZipFile(a.apk) as z:
         core,binary=glb(z,'SteamJourneySwan'); canyon,_=glb(z,'assets/SpatialAdapterExport/Assets/SwanJourney/Resources/SwanJourneyCanyon.prefab.glb' if a.canyon_prefab else 'SteamJourneyCanyon')
@@ -60,6 +61,14 @@ def main():
         sleepers=[n for n in core['nodes'] if n.get('name')=='Timber sleeper' and 'mesh' in n]
         assert len(sleepers)==26; report['workshopSleeperMeshes']=len(sleepers)
         targets=('Swan V23 0-Sleeper','Swan V23 1-Endgrain','Swan V23 200-Ballast','Swan V23 201-Ballast','Swan V23 202-Ballast','Swan V23 203-Ballast')
+        # Final glTF uses G for roughness and B for metal. These bounds come
+        # from the 0.23.32 package and also exercise the URP export path.
+        finishes = {
+            'Swan V23 Warm brass · V7': ((.88, 1), (.43, .55)),
+            'Swan V23 Machined steel · V7': ((.88, 1), (.45, .59)),
+            'Swan V23 Midnight enamel': ((0, .05), (.63, .79)),
+        } if a.check_workshop_finishes else {}
+        targets += tuple(finishes)
         for name in targets:
             material=next(m for m in core['materials'] if m.get('name')==name)
             for kind,info in [('metal',material['pbrMetallicRoughness']['metallicRoughnessTexture']),('ao',material['occlusionTexture'])]:
@@ -69,6 +78,11 @@ def main():
                 # Inspect the final exporter-generated ORM, not intermediate
                 # Unity PNGs: old package R(AO)=0 despite source AO G~0.93.
                 if kind=='ao': assert means[0]>.35, (name,means)
+                elif name in finishes:
+                    metal, rough = finishes[name]
+                    pbr = material['pbrMetallicRoughness']
+                    assert metal[0] <= means[2]*pbr.get('metallicFactor',1) <= metal[1], (name,means)
+                    assert rough[0] <= means[1]*pbr.get('roughnessFactor',1) <= rough[1], (name,means)
                 else: assert means[2]<.15 and means[1]>.2, (name,means)
                 report['textures'].append({'material':name,'role':kind,'exportedOrmMeans':means,'pngSha256':hashlib.sha256(image).hexdigest()})
     report['passed']=True;a.out.parent.mkdir(parents=True,exist_ok=True);a.out.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')

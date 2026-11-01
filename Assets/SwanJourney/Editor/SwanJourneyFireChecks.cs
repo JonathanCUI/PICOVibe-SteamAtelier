@@ -39,10 +39,10 @@ namespace SwanJourney.Editor
                 Check(mesh.bounds.min.y>=-.501f && mesh.bounds.max.y<=.501f && mesh.bounds.size.x<1 && mesh.bounds.size.z<1,
                     "Flame stays within original unit volume",report);
                 var material=journey.flameVolume.sharedMaterial;
-                Check(material && material.shader.name=="Standard" && bridge.materials.Any(m=>m.material==material&&m.kind==JourneyNativeMaterialKind.Furnace),
+                Check(material && material.shader.name==SwanJourneyUrp.Lit && bridge.materials.Any(m=>m.material==material&&m.kind==JourneyNativeMaterialKind.Furnace),
                     "Flame uses a native-exportable furnace material",report);
-                Check(material.GetFloat("_Mode")==2 && material.GetInt("_ZWrite")==0 && material.renderQueue==3000
-                    && material.IsKeywordEnabled("_ALPHABLEND_ON") && !material.IsKeywordEnabled("_ALPHATEST_ON"),
+                Check(material.GetFloat("_Surface")==1 && material.GetInt("_ZWrite")==0 && material.renderQueue==3000
+                    && material.IsKeywordEnabled("_SURFACE_TYPE_TRANSPARENT") && !material.IsKeywordEnabled("_ALPHATEST_ON"),
                     "Flame blends alpha without opaque depth writes",report);
                 var texture=material.mainTexture;
                 Check(texture && material.GetTexture("_EmissionMap")==texture,"Alpha and emissive RGB share the saved soft flame mask",report);
