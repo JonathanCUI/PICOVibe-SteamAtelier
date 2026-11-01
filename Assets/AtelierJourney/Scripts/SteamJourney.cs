@@ -65,7 +65,14 @@ public sealed partial class SteamJourney : MonoBehaviour {
         audioSource=gameObject.AddComponent<AudioSource>();audioSource.playOnAwake=false;audioSource.volume=.42f;
         if(throttleLever)throttleRest=throttleLever.localRotation;if(brakeLever)brakeRest=brakeLever.localRotation;if(directionLever)directionRest=directionLever.localRotation;
         shoeHome=brakeShoes.Select(t=>t.localPosition).ToArray();
-        LoadProgress();BuildUI();SetMode(false);RefreshPreview();ApplyVisibility();UpdateText();
+        if(!SwanInputActive)LoadProgress();
+        BuildUI();
+        // Each new Swan application session starts at the first assembly step.
+        // Start runs once; headset sleep, focus changes and canyon returns must
+        // not clear the assembly that is in progress during this session.
+        if(SwanInputActive){ResetJourney();Debug.Log("SWAN_JOURNEY_FRESH_SESSION step=1 installed=0");}
+        else{SetMode(false);RefreshPreview();}
+        ApplyVisibility();UpdateText();
         Application.targetFrameRate=72;
     }
     void Update() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Simulation)) CpuMeasuredUpdate(); }
@@ -143,6 +150,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         bool changed=inSandbox!=sandbox;CancelAssembly();bool returning=inSandbox&&!sandbox;held=null;heldControl=null;inSandbox=sandbox;speed=0;throttle=0;brake=0;running=false;paused=false;ResetProcess();
         workshopRoot.SetActive(!sandbox);sandboxRoot.SetActive(sandbox);consoleRoot.SetActive(sandbox);
         trainAnchor.SetParent(sandbox?sandboxRoot.transform:workshopRoot.transform,false);
+        if (SwanInputActive && Application.isPlaying) SwanJourney.SwanJourneyTransformSyncBudget.SetDrivingRoots(trainAnchor, coaches, sandbox);
         lastPosePhase = float.NaN;
         trainAnchor.localScale=Vector3.one*(sandbox?.255f:1);trainAnchor.localPosition=Vector3.zero;trainAnchor.localRotation=Quaternion.identity;
         if(detailMeshes!=null)foreach(var detail in detailMeshes)if(detail.filter)detail.filter.sharedMesh=sandbox?detail.miniature:detail.inspection;
@@ -365,32 +373,33 @@ public sealed partial class SteamJourney : MonoBehaviour {
     void Play(AudioClip clip){if(clip&&audioSource){GetComponent<JourneyBackgroundMusic>()?.Duck(clip.length);audioSource.PlayOneShot(clip);}}
     void Notify(string text){if(noticeText)noticeText.text=text;noticeUntil=Time.unscaledTime+7;}
     void SaveProgress(){if(suppressPersistence)return;var s=new Saved{stage=stage,finishIndex=finishIndex,installed=modules.Select(m=>m.installed).ToArray(),verified=modules.Select(m=>m.verified).ToArray(),finished=finishing.Select(m=>m.installed).ToArray()};PlayerPrefs.SetString(SaveKey,JsonUtility.ToJson(s));PlayerPrefs.Save();}
+    public static bool[] UpgradeFinishedProgress(bool[] finished,int targetCount){
+        if(finished==null)return null;
+        if(finished.Length==13&&(targetCount==11||targetCount==10)){
+            var old=finished;
+            finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};
+        }
+        if(finished.Length==11&&targetCount==10)
+            return finished.Take(9).Append(finished[9]&&finished[10]).ToArray();
+        // The editable desktop source still has two individual lamp steps.
+        if(finished.Length==10&&targetCount==11)return finished.Append(finished[9]).ToArray();
+        return finished;
+    }
     void LoadProgress(){if(PlayerPrefs.HasKey(SaveKey))RestoreSavedProgress(PlayerPrefs.GetString(SaveKey));}
     void RestoreSavedProgress(string json){
-        try {
-            var saved=JsonUtility.FromJson<Saved>(json);
-            if(saved==null||saved.installed==null||saved.verified==null||saved.finished==null||
-                saved.installed.Length!=modules.Length||saved.verified.Length!=modules.Length)return;
-            if(saved.finished.Length==13&&(finishing.Length==11||finishing.Length==10)){
-                var old=saved.finished;
-                saved.finished=new[]{old[0],old[1],old[2],old[3],old[4]&&old[6],old[5]&&old[7],old[8],old[9],old[10],old[11],old[12]};
-                saved.finishIndex=0;
-            }
-            if(finishing.Length==10&&saved.finished.Length==11){
-                bool earned=saved.finished[9]||saved.finished[10];
-                Array.Resize(ref saved.finished,10);saved.finished[9]=earned;
-            }else if(finishing.Length==11&&saved.finished.Length==10){
-                Array.Resize(ref saved.finished,11);saved.finished[10]=saved.finished[9];
-            }
-            if(saved.finished.Length!=finishing.Length)return;
-            finishIndex=Mathf.Clamp(saved.finishIndex,0,finishing.Length-1);
+        try{
+            var s=JsonUtility.FromJson<Saved>(json);
+            if(s==null)return;
+            var finished=UpgradeFinishedProgress(s.finished,finishing.Length);
+            if(s.installed==null||s.verified==null||finished==null||s.installed.Length!=modules.Length||s.verified.Length!=modules.Length||finished.Length!=finishing.Length)return;
+            finishIndex=Mathf.Clamp(s.finishIndex,0,finishing.Length-1);
             for(int i=0;i<modules.Length;i++){
-                modules[i].installed=saved.installed[i];modules[i].verified=saved.verified[i];
-                modules[i].observed=saved.verified[i]?RequiredObservation(i):0;
+                modules[i].installed=s.installed[i];modules[i].verified=s.verified[i];
+                modules[i].observed=s.verified[i]?RequiredObservation(i):0;
             }
-            for(int i=0;i<finishing.Length;i++)finishing[i].installed=saved.finished[i];
-            stage=modules.TakeWhile(part=>part.installed).Count();
-        }catch(ArgumentException){return;}
+            for(int i=0;i<finishing.Length;i++)finishing[i].installed=finished[i];
+            stage=modules.TakeWhile(m=>m.installed).Count();
+        }catch{stage=0;}
     }
     void OnApplicationPause(bool pause){if(pause)SaveProgress();}void OnApplicationQuit(){SaveProgress();}
     void UpdateText(){if(!progress)return;

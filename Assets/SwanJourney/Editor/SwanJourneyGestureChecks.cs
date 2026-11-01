@@ -60,9 +60,9 @@ namespace SwanJourney.Editor
 
             // Leave one preview parked. Re-exploding the installed subset must
             // not pull an already detached object away from its user position.
-            for(int i=0;i<17;i++)Check(journey.InstallCurrent(),"prepare installed subset for explosion takeover");
+            for(int i=0;i<16;i++)Check(journey.InstallCurrent(),"prepare installed subset for explosion takeover");
             var parked=all.First(m=>!m.installed);var parkedPose=parked.preview.transform.position;
-            Check(input.ExplodeAll()&&input.ExplodingCount==17,"partial explode changed the missing-group contract");
+            Check(input.ExplodeAll()&&input.ExplodingCount==16,"partial explode changed the missing-group contract");
             for(int i=0;i<8;i++)input.TickExplosion(1f/90);
             Check(Vector3.Distance(parked.preview.transform.position,parkedPose)<.00001f,"explode moved a previously parked preview");
             var localPoses=all.Select(m=>journey.trainAnchor.InverseTransformPoint(m.preview.transform.position)).ToArray();

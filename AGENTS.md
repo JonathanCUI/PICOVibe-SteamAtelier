@@ -1,5 +1,13 @@
 # Steam Atelier Swan · V23
 
+- 0.23.37 录屏版按用户要求暂时隐藏 FPS。`SwanJourneyBuild.ShowFpsHud=false` 同时停用 HUD 控制根和独立字形根，防止恢复追踪后文字重现；保留原始字形、布局与跟随逻辑。需要恢复时把该构建开关改为 true 后重新生成/打包。不要为此修改旧工坊场景或删除 FPS 资源。
+
+- 0.23.36 按用户要求：操作台沿玩家正面视角与机车中心对齐，预览零件和辅助按钮行同步移动。`SwanJourneyWorkshopLayout` 在生成期间先恢复已有按钮显隐、台面高度/前后距离，再执行 `CentreConsole`，避免重复生成累积偏移。全局搬台把手改为默认长度 0.18 m、直径 0.012 m 的横向黄铜圆杆；同一对象保留 MeshFilter、MeshRenderer、BoxCollider、Hover 和 MoveWorkbench，命中范围 0.21 × 0.04 × 0.05 m，随整个场景缩放。不要再恢复旧矩形把手的局部位移/尺寸。
+- 0.23.36 的 Swan `SteamJourney.Start` 每次新启动调用 `ResetJourney`，不恢复之前装配进度；系统暂停/恢复、同一会话返回工坊保留进度。这是用户明确的新要求，取代旧版“冷启动续存档”行为；桌面源场景与旧存档迁移函数保留。12 套回归通过（含已有全装存档下的真实 Start、第一件预览、暂停恢复与 33 项可见性/布局检查），原生导出和 v2 签名通过。APK 已安装至 Swan，版本/设备哈希核对一致；设备当前休眠，未完成佩戴画面/手势验收。详见 `Docs/Release-0.23.36.json`。
+
+- 0.23.35 在伙伴提交 `7daf779` 上将 Swan 派生场景末尾左右前照灯合为一步，总计 7 原理 + 10 外观 = 17 步。源场景仍为 7 + 11，生成器通过 `SwanJourneyAssemblySteps.MergeHeadlamps` 转换预览、实体和白色安装提示。保留 source / derived 数量差异，禁止把源场景预检误改为 17 步。`SteamJourney.UpgradeFinishedProgress` 兼容旧 11 / 13 外观组存档，两灯均已装好才算新最后一步完成。
+- 0.23.35 的说明、状态和计数按实际组数显示。`SwanJourneyTextCoverage` 生成专用静态 TMP 中文字库 `Generated/WorkshopChinese.asset`，导出前补齐 736 字符，保留 TextMeshPro 字体材质。11 套编辑器回归含配对车灯/存档与全部 17 张说明卡的 270 项检查；APK 图集核对 617 个汉字字形无空白，单张 2048 图集。报告在 `Builds/SwanJourney/text-coverage.json`、`card-checks.json`、`feedback-checks.json`、`Builds/Evidence/v2335-packaged-font.json`。这些检查不等于真机视觉和手势验收。
+
 - 0.23.33 起，V23 编辑、生成、Swan 导出统一使用 URP。Graphics 默认资产为 `Assets/Settings/SwanJourneyURP.asset`，三个质量档继承它。V23 生成器会重设该默认资产，历史 0.5.x 的生成器会清空它。当前 456 个 URP Lit 与 4 个 URP Unlit 材质位于 V23 派生目录。保留 TMP 和原生 SpatialAdapter 输入、命中、HUD 网格路径。下方旧版本的 Standard / Unlit/Color 说明作为历史记录。
 - 迁移前本地 Git 恢复点 `67e63517a5fa35baeb97b8d45c11550a0b1bd9aa`。0.23.33 验证见 `Docs/Release-0.23.33.json`。本地 URP 导出器透传金属贴图的 G/B 通道，请保留 `SwanJourneyPbrPacking` 的 R/A 与 G/B 双布局，包内检查使用 `Inspect-JourneyNative14.py --canyon-prefab --check-workshop-finishes`。编辑器回归和 APK 检查已过，真机观感、手势与帧率仍需在 0.23.33 上实测。
 

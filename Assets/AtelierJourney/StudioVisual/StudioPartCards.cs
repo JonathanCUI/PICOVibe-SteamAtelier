@@ -58,6 +58,10 @@ public sealed class StudioPartCards : MonoBehaviour {
   "转动视角，观察黄铜灯壳的细密拉丝、灯圈反光与玻璃层次。",
   "比较另一侧照灯，观察相同材质在不同入射光方向下的反射变化。"
  };
+ public static string ObservationText(int index,int total){
+  if(total==17&&index==16)return "观察两盏灯的黄铜外壳与玻璃灯面。左右灯成组安装，进入山谷后可开启车灯，查看前方照明。";
+  return Observe[Mathf.Clamp(index,0,Observe.Length-1)];
+ }
  void Start(){Initialize();}
  // Called only while generating the Swan derived scene. Desktop scenes keep
  // their original runtime Build path and are never saved by this method.
@@ -106,8 +110,8 @@ public sealed class StudioPartCards : MonoBehaviour {
   var overlay=GameObject.Find("Journey · State and contextual controls");if(!overlay)return;
   controls=new GameObject("Part introduction controls",typeof(RectTransform));controls.transform.SetParent(overlay.transform,false);var cr=(RectTransform)controls.transform;cr.anchorMin=new Vector2(.025f,.165f);cr.anchorMax=new Vector2(.24f,.207f);cr.offsetMin=cr.offsetMax=Vector2.zero;
   MakeButton("Toggle",0,.40f,"介绍 开",()=>{visible=!visible;UpdateToggle();},out toggleLabel);
-  MakeButton("Previous",.43f,.57f,"‹",()=>Step(-1),out var prev);
-  MakeButton("Next",.86f,1,"›",()=>Step(1),out var next);
+  MakeButton("Previous",.43f,.57f,"<",()=>Step(-1),out var prev);
+  MakeButton("Next",.86f,1,">",()=>Step(1),out var next);
   var textGo=new GameObject("Part count",typeof(RectTransform),typeof(TextMeshProUGUI));textGo.transform.SetParent(controls.transform,false);indexLabel=textGo.GetComponent<TextMeshProUGUI>();indexLabel.font=journey.font;indexLabel.fontSize=16;indexLabel.alignment=TextAlignmentOptions.Center;indexLabel.color=Cyan;indexLabel.raycastTarget=false;var ir=indexLabel.rectTransform;ir.anchorMin=new Vector2(.58f,0);ir.anchorMax=new Vector2(.85f,1);ir.offsetMin=ir.offsetMax=Vector2.zero;
  }
  void Panel(string name,Vector2 position,Vector2 size){
@@ -136,7 +140,7 @@ public sealed class StudioPartCards : MonoBehaviour {
  public void Toggle(){visible=!visible;UpdateToggle();}
  public void Step(int d){visible=true;UpdateToggle();Select((SelectedIndex+d+parts.Length)%parts.Length);}
  void ShowContent(){
-  var m=parts[SelectedIndex];title.text=m.title;body.text=m.explanation;observation.text=Observe[Mathf.Min(SelectedIndex,Observe.Length-1)];
+  var m=parts[SelectedIndex];title.text=m.title;body.text=m.explanation;observation.text=ObservationText(SelectedIndex,parts.Length);
   body.enableAutoSizing=true;body.fontSizeMin=17;body.fontSizeMax=20;title.enableAutoSizing=true;title.fontSizeMin=22;title.fontSizeMax=27;
   if(indexLabel)indexLabel.text=(SelectedIndex+1).ToString("D2")+" / "+parts.Length;last=SelectedIndex;
   foreach(var t in labels)t.ForceMeshUpdate();
@@ -159,7 +163,7 @@ public sealed class StudioPartCards : MonoBehaviour {
    if(!journey.SwanInputActive)lastPointer=Input.mousePosition;UpdateAnchor();
   }
   if(SelectedIndex!=last){ShowContent();UpdateAnchor();}
-  status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / "+parts.Length.ToString("D2")+"     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
+  status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / "+parts.Length+"     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
   if(active)Layout();
  }
  void UpdateAnchor(){

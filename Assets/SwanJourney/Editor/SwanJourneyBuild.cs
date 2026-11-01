@@ -25,6 +25,8 @@ namespace SwanJourney.Editor
         public const string EnvironmentPrefabPath="Assets/SwanJourney/Resources/SwanJourneyCanyon.prefab";
         public const string Generated="Assets/SwanJourney/Generated";
         public const string Output="Builds/SwanJourney";
+        // Recording build: restore this flag to show the existing view-following HUD.
+        public const bool ShowFpsHud=false;
         [MenuItem("Steam Atelier/V23 Swan/Generate")]
         public static void Generate()
         {
@@ -42,7 +44,7 @@ namespace SwanJourney.Editor
             foreach(var root in roots)root.transform.SetParent(content,false);
             content.localScale=Vector3.one*.12f;content.localRotation=Quaternion.Euler(0,180,0);
             journey.SwanInputActive=true;journey.spatialRoot=content;
-            ObservationBuild.PairHeadlamps(journey);
+            SwanJourneyAssemblySteps.MergeHeadlamps(journey);
             SwanJourneyNodeAlignment.NormalizeContent(content);
             SwanJourneyScenePreparation.Prepare(journey,content);
             // The saved Journey owns simulation and all process state. Only the
@@ -86,6 +88,8 @@ namespace SwanJourney.Editor
             presentation.moveHandle=AddMoveHandle(journey,stage.transform,interaction);
             presentation.RefreshFootprint();
             presentation.sandboxMoveHandleAnchor=AddUtility(journey,"车灯 开 / 关",new Vector3(-5.5f,.6f,15.4f),SwanJourneyTargetKind.Control,JourneyAction.Lights,journey.sandboxRoot.transform);
+            savedLayout?.Apply(presentation, interaction);
+            SwanJourneyWorkshopLayout.CentreConsole(presentation);
             int targets=ConfigureTargets(journey);
             var nativeVisuals=SwanJourneyMaterials.Configure(journey,content,Generated);
             foreach(var cards in content.GetComponentsInChildren<StudioPartCards>(true))cards.spatialLeaderMaterial=nativeVisuals.rippleMaterial;
@@ -98,6 +102,7 @@ namespace SwanJourney.Editor
             SwanJourneySoftParticleChecks.Validate(journey);
             var ui=stage.AddComponent<SwanJourneyNativeUi>();ui.content=stage.transform;
             ui.panelMaterial=SaveMaterial("CardPanel",new Color(.022f,.035f,.045f),0,.25f);
+            SwanJourneyTextCoverage.Prepare(journey,content);
             SwanJourneyCardExport.Prepare(ui);
             SwanJourneyMeshAudit.PrepareForExport(content,Generated);
             SwanJourneyLegacyHitBudget.Apply(journey);
@@ -113,6 +118,7 @@ namespace SwanJourney.Editor
             var fps=SaveMaterial("FpsGlyph",new Color(.65f,1,1),0,0,true);
             fps.color=new Color(.65f,1,1);fps.DisableKeyword("_EMISSION");EditorUtility.SetDirty(fps);
             hud.meshText=SwanFpsMeshBuilder.Create(Generated,fps);hud.meshText.transform.position=hudRoot.transform.position;
+            hudRoot.SetActive(ShowFpsHud);hud.meshText.gameObject.SetActive(ShowFpsHud);
             RenderSettings.skybox=null;RenderSettings.ambientMode=AmbientMode.Trilight;
             RenderSettings.ambientSkyColor=new Color(.52f,.58f,.65f);RenderSettings.ambientEquatorColor=new Color(.31f,.33f,.35f);RenderSettings.ambientGroundColor=new Color(.16f,.17f,.18f);
             // The partner's baked lighting asset points back to its entire desktop
@@ -142,7 +148,6 @@ namespace SwanJourney.Editor
             SwanJourneyBootScene.Generate(journey.font);
             SwanJourneyUrp.UpgradeAndValidateGenerated();
             SwanJourneyTextureBudget.ShareIdenticalCopies(Generated);
-            savedLayout?.Apply(presentation, interaction);
             SwanJourneyNodeAlignment.ValidateAndBind(scene,EnvironmentScenePath);
             // The Windows Resources scan passes backslash paths to the SDK's
             // forward-slash-only prefab exporter. A normal AssetDatabase scene
@@ -157,7 +162,7 @@ namespace SwanJourney.Editor
                 sourceGroups=journey.modules.Concat(journey.finishing).Select(m=>m.title).ToArray(),
                 supportNames=presentation.workshopSupports.Concat(presentation.sandboxSupports).Select(t=>t.name).ToArray()};
             File.WriteAllText(Output+"/scene-report.json",JsonUtility.ToJson(report,true));
-            Debug.Log("SWAN_JOURNEY_SCENE_GENERATED package="+PackageId+" modules=18 hoverMeshes="+targets+" renderers="+report.renderers);
+            Debug.Log("SWAN_JOURNEY_SCENE_GENERATED package="+PackageId+" modules="+(journey.modules.Length+journey.finishing.Length)+" hoverMeshes="+targets+" renderers="+report.renderers);
         }
         static Transform AddUtility(SteamJourney journey,string title,Vector3 position,SwanJourneyTargetKind kind,JourneyAction action=JourneyAction.Assemble,Transform parent=null)
         {
@@ -174,14 +179,19 @@ namespace SwanJourney.Editor
             // A shared, metre-sized handle stays available in workshop and sandbox.
             // Presentation places it in front of the current support footprint.
             var root=new GameObject("单手搬台 · 捏住拖动").transform;root.SetParent(stage,false);
-            var plate=GameObject.CreatePrimitive(PrimitiveType.Cube);plate.name="Move whole scene touch surface";plate.transform.SetParent(root,false);
-            plate.transform.localScale=new Vector3(.48f,.09f,.028f);
-            plate.GetComponent<MeshRenderer>().sharedMaterial=SaveMaterial("MoveHandleBrass",new Color(.38f,.25f,.14f),.45f,.3f);
+            var plate=GameObject.CreatePrimitive(PrimitiveType.Cylinder);plate.name="Move whole scene touch surface";plate.transform.SetParent(root,false);
+            // 18 cm long, 1.2 cm thick at the default exhibit scale. Keep the
+            // hit collider, visible mesh and hover on the SAME native entity.
+            plate.transform.localRotation=Quaternion.Euler(0,0,90);
+            plate.transform.localScale=new Vector3(.012f,.09f,.012f);
+            UnityEngine.Object.DestroyImmediate(plate.GetComponent<CapsuleCollider>());
+            plate.AddComponent<BoxCollider>().size=new Vector3(.04f/.012f,.21f/.09f,.05f/.012f);
+            plate.GetComponent<MeshRenderer>().sharedMaterial=SaveMaterial("MoveHandleBrass",new Color(.38f,.25f,.14f),.7f,.45f);
             plate.AddComponent<SpatialAdapterHoverEffect>();plate.AddComponent<SwanJourneyTarget>().kind=SwanJourneyTargetKind.MoveWorkbench;
             var text=new GameObject("Move handle caption").AddComponent<TMPro.TextMeshPro>();text.transform.SetParent(root,false);
-            text.transform.localPosition=new Vector3(0,0,-.016f);text.font=journey.font;text.fontSize=.5f;text.enableAutoSizing=true;
-            text.fontSizeMin=.22f;text.fontSizeMax=.5f;text.text="捏住移动整个场景";text.alignment=TMPro.TextAlignmentOptions.Center;
-            text.color=new Color(1,.94f,.79f);text.rectTransform.sizeDelta=new Vector2(.44f,.075f);
+            text.transform.localPosition=new Vector3(0,-.025f,-.008f);text.font=journey.font;text.fontSize=.32f;text.enableAutoSizing=true;
+            text.fontSizeMin=.18f;text.fontSizeMax=.32f;text.text="捏住拖动";text.alignment=TMPro.TextAlignmentOptions.Center;
+            text.color=new Color(1,.94f,.79f);text.rectTransform.sizeDelta=new Vector2(.2f,.035f);
             text.ForceMeshUpdate(true,true);
             var compact=UnityEngine.Object.Instantiate(text,root,false);
             compact.name="Move handle short caption";compact.text="移动";compact.ForceMeshUpdate(true,true);
@@ -230,7 +240,7 @@ namespace SwanJourney.Editor
         static void Configure()
         {
             PlayerSettings.companyName="PICO Vibe";PlayerSettings.productName="蒸汽工坊·V23";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.33";PlayerSettings.Android.bundleVersionCode=33;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.37";PlayerSettings.Android.bundleVersionCode=37;
             SwanJourneyIcon.Configure();
             var runtime=new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
             runtime.FindProperty("m_enableSpatialAdapter").boolValue=true;

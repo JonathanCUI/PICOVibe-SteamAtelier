@@ -24,8 +24,15 @@ namespace SwanJourney.Editor
                 journeyScene.detailMeshes.Select(d=>d.filter).Distinct().Count()==journeyScene.detailMeshes.Length,
                 "Every retained and merged detail has independent, complete workshop and canyon mesh bindings");
             foreach(var detail in journeyScene.detailMeshes.Where(d=>AssetDatabase.GetAssetPath(d.inspection).Contains("/RigidBatches/")))
-                Check(AssetDatabase.GetAssetPath(detail.miniature).EndsWith("_Miniature.asset"),
-                    "Merged detail retains its authored miniature level: "+detail.filter.name);
+            {
+                string inspectionPath=AssetDatabase.GetAssetPath(detail.inspection);
+                string miniaturePath=inspectionPath.Substring(0,inspectionPath.Length-".asset".Length)+"_Miniature.asset";
+                var authoredMiniature=AssetDatabase.LoadAssetAtPath<Mesh>(miniaturePath);
+                Check(authoredMiniature,"Merged detail has its authored miniature asset: "+detail.filter.name);
+                var expected=SwanJourneyWorkshopMeshBudget.Triangles(authoredMiniature)>SwanJourneyWorkshopMeshBudget.Triangles(detail.inspection)
+                    ? detail.inspection : authoredMiniature;
+                Check(detail.miniature==expected,"Merged detail binds the lower-cost level: "+detail.filter.name);
+            }
             int originalMode=journeyScene.inspectionMode;bool originalCutaway=journeyScene.cutaway;
             for(int mode=0;mode<3;mode++)
             {

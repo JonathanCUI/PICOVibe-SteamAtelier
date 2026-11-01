@@ -106,10 +106,10 @@ namespace SwanJourney.Editor
                 Check(!loader.Environment && !loader.visuals.deferredEnvironment && !loader.Busy,
                     "Saved startup has no attached environment or busy loader", report);
                 Check(journey.modules.Length == 7 && journey.finishing.Length == 10 && Groups(journey).All(m => m != null),
-                    "All seven lesson modules and eleven finishing groups remain in startup", report);
+                    "All seven lesson modules and ten finishing groups remain in startup", report);
                 Check(GroupObjects(Groups(journey)).All(g => g && g.scene == main)
                     && Groups(journey).All(m => m.preview && m.objects != null && m.objects.Length > 0),
-                    "All 18 previews and installed object references belong to startup", report);
+                    "All 17 previews and installed object references belong to startup", report);
                 Check(journey.trainAnchor && journey.trainAnchor.gameObject.scene == main
                     && journey.coaches.Length > 0 && journey.coaches.All(t => t && t.gameObject.scene == main)
                     && journey.consoleRoot && journey.consoleRoot.scene == main

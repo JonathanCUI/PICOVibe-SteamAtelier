@@ -86,6 +86,7 @@ namespace SwanJourney.Editor
                 canyon.localScale = initialScale;
                 SwanJourneyMiniatureGeometry.Apply(payload, presentation.sandboxScale);
                 SwanJourneyPebbleBudget.Apply(payload);
+                SwanJourneyTerrainTileOrigins.Apply(payload);
                 SwanJourneyEmptyNodes.Prune(canyon);
                 // This file is loaded only after Drive is requested. Export an
                 // active root: the adapter initializes its activation cache to

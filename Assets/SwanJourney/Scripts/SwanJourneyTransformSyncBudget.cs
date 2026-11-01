@@ -24,6 +24,20 @@ namespace SwanJourney
         public long SuppressedTotal { get; private set; }
         double nextReport;
         int passes;
+        // The exhibit can stay still while these four branches move along the rails.
+        // Each branch needs its own root dirty flag and fresh activation warmup.
+        public static void SetDrivingRoots(Transform locomotive, Transform[] coaches, bool movingMode)
+        {
+            SetDrivingRoot(locomotive, movingMode);
+            if (coaches != null) foreach (var coach in coaches) SetDrivingRoot(coach, movingMode);
+        }
+        static void SetDrivingRoot(Transform node, bool movingMode)
+        {
+            if (!node) return;
+            var filter = node.GetComponent<SwanJourneyTransformSyncBudget>();
+            if (!filter && movingMode) filter = node.gameObject.AddComponent<SwanJourneyTransformSyncBudget>();
+            if (filter) filter.enabled = movingMode;
+        }
         void OnEnable() { entries=null;root=transform;passes=0; }
         void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.TransformFilter)) CpuMeasuredLateUpdate(); }
         void CpuMeasuredLateUpdate() { FilterNow(); }

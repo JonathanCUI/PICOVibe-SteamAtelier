@@ -1,0 +1,20 @@
+{
+  "version": "0.23.37",
+  "versionCode": 37,
+  "package": "com.picovibe.steamatelier.v23",
+  "change": "Temporarily hide the view-following FPS HUD for recording in both workshop and canyon.",
+  "restore": "Set SwanJourneyBuild.ShowFpsHud=true, regenerate and rebuild.",
+  "regressionSuites": 12,
+  "apkHudControllerInactive": true,
+  "apkHudGlyphRootInactive": true,
+  "v2SignatureVerified": true,
+  "apk": "Builds/SwanJourney/Releases/0.23.37/SteamAtelier-V23-Swan-0.23.37.apk",
+  "apkBytes": 606537139,
+  "sha256": "ed5710f693e5e52f497d97cc6979468305c4a3056ef133301e8e38b03e657e42",
+  "installedVersionVerified": true,
+  "device": "PB3A10MGL9240036B",
+  "launchCommandSucceeded": true,
+  "observedPid": 22572,
+  "nativeVisualInspectionPerformed": false,
+  "evidence": "Builds/Evidence/v2337-hidden-fps-package.json"
+}

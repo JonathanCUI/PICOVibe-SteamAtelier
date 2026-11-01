@@ -129,7 +129,7 @@ namespace SwanJourney.Editor
                 Check(owner.GetComponentsInChildren<LineRenderer>(true).Length == 1,
                     "Actual Start reuses one owned part-card leader");
 
-                foreach (int selection in new[] { 0, 6, 17 })
+                foreach (int selection in Enumerable.Range(0, journey.modules.Length + journey.finishing.Length))
                 {
                     cardsFixture.Select(selection);
                     ui.RefreshNow();
@@ -138,7 +138,13 @@ namespace SwanJourney.Editor
                         "Original title and explanation update after selecting group " + selection);
                     Check(texts.All(t => SwanJourneyNativeUi.HasUploadableMesh(t.mesh)),
                         "Changed card content retains uploadable glyph meshes for group " + selection);
-                    foreach (var text in texts) CompareUguiLayout(text, cardCanvas, selection, Check);
+                    Check(texts.All(t => !t.isTextOverflowing), "Every instruction fits the card for group " + selection);
+                    foreach (var text in texts)
+                        Check(text.text.Where(c => !char.IsControl(c)).All(c => text.font.HasCharacter((int)c)),
+                            "All instruction characters are baked for group " + selection + ": " + text.name);
+                    // Keep the original UGUI comparison samples while checking glyphs and fit on every step.
+                    if (selection == 0 || selection == 6 || selection == journey.modules.Length + journey.finishing.Length - 1)
+                        foreach (var text in texts) CompareUguiLayout(text, cardCanvas, selection, Check);
                 }
 
                 // Compare glyph positions relative to the same anchor as the

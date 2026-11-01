@@ -27,6 +27,11 @@ namespace SwanJourney.Editor
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                var font = AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>(path);
+                if (font && font.material == material && material && material.shader &&
+                    material.shader.name.StartsWith("TextMeshPro/", StringComparison.Ordinal) &&
+                    material.mainTexture == font.atlasTexture)
+                    continue;
                 if (material && material.shader && material.shader.name == "Standard")
                 {
                     upgrader.Upgrade(material, MaterialUpgrader.UpgradeFlags.None);

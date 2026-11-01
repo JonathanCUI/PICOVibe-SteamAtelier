@@ -74,12 +74,35 @@ namespace SwanJourney.Editor
             Check(presentation.moveHandle.GetComponentsInChildren<SwanJourneyTarget>(true)
                     .Any(t => t.kind == SwanJourneyTargetKind.MoveWorkbench && t.GetComponent<Collider>()),
                 "Move handle retains its native MoveWorkbench target and collision surface", results);
+            var journey = presentation.journey;
+            var desk = presentation.workshopSupports[1];
+            float centreX = journey.workshopRoot.transform.InverseTransformPoint(journey.trainAnchor.position).x;
+            Check(Mathf.Abs(desk.localPosition.x - centreX) < .001f
+                    && Mathf.Abs(presentation.workshopMoveHandleAnchor.localPosition.x - centreX) < .001f,
+                "Console and utility row are centred in front of the train", results);
+            var previewPosition = journey.previewRoot.transform.position;
+            var deskPosition = desk.position;
+            SwanJourneyWorkshopLayout.CentreConsole(presentation);
+            Check(Vector3.Distance(previewPosition, journey.previewRoot.transform.position) < .0001f
+                    && Vector3.Distance(deskPosition, desk.position) < .0001f,
+                "Repeated generation does not drift the centred console or preview", results);
+            var grip = presentation.moveHandle.GetComponentsInChildren<SwanJourneyTarget>(true)
+                .Single(t => t.kind == SwanJourneyTargetKind.MoveWorkbench);
+            var hit = grip.GetComponent<BoxCollider>();
+            Check(hit && grip.GetComponent<MeshFilter>() && grip.GetComponent<MeshRenderer>()
+                    && grip.GetComponent<ByteDance.PICO.SpatialAdapter.Component.SpatialAdapterHoverEffect>(),
+                "Slender grip keeps collision, renderer, mesh and native hover on the same entity", results);
+            var hitSize = Vector3.Scale(hit.size, grip.transform.localScale);
+            Check(hitSize.x >= .039f && hitSize.y >= .209f && hitSize.z >= .049f,
+                "Slender rod keeps a 21 by 4 by 5 cm selection volume before scene scaling", results);
             var stagePose = new SavedPose(presentation.transform);
             var handlePose = new SavedPose(presentation.moveHandle);
             var anchorPose = new SavedPose(presentation.workshopMoveHandleAnchor);
             Check(SwanJourneyPresentation.TryBounds(presentation.moveHandle, presentation.moveHandle, out var authoredGrip)
                     && authoredGrip.size.x > 0 && authoredGrip.size.y > 0,
                 "Saved grip has a nonempty local surface", results);
+            Check(Mathf.Abs(authoredGrip.size.x - .18f) < .001f && authoredGrip.size.y <= .0121f,
+                "Visible rod is 18 cm long and 1.2 cm thick, smaller than the previous plate", results);
             bool mode = presentation.journey.inSandbox;
             try
             {

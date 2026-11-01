@@ -21,8 +21,9 @@ public sealed class StudioSpatialConsoleV18 : MonoBehaviour {
     void CpuMeasuredLateUpdate(){
   if(!journey)return;journey.ApplySpatialHud();
   if(!cards)cards=GetComponent<StudioPartCards>();
-  assembled.text=InstalledCount.ToString("00")+" / "+(journey.modules.Length+journey.finishing.Length).ToString("00");
-  selected.text=((cards?cards.SelectedIndex:0)+1).ToString("00")+" / "+(journey.modules.Length+journey.finishing.Length).ToString("00");
+  string total=(journey.modules.Length+journey.finishing.Length).ToString("00");
+  assembled.text=InstalledCount.ToString("00")+" / "+total;
+  selected.text=((cards?cards.SelectedIndex:0)+1).ToString("00")+" / "+total;
   string mode=!journey.cutaway?"实体":journey.inspectionMode==1?"透视":"剖面";
   modeLabel.text="观察 · "+mode;
   introLabel.text="介绍  "+(cards&&cards.visible?"开":"关");
