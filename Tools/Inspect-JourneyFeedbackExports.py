@@ -149,6 +149,16 @@ class Inspector:
         meshes = [i for i in indices if 'mesh' in self.nodes[i]]
         self.check(len(meshes) == 34 and all(self.geometry_present(i) for i in meshes),
                    'All 34 FPS mesh nodes retain nonempty triangle geometry')
+        # 0.23.25/26 passed the nonempty check with broken fixed letters: their
+        # 106 triangles had been reduced to 70. These authored 5x7 strokes must
+        # survive the complete build/export pipeline, including inactive digits.
+        glyph_triangles = [26, 14, 16, 14, 18, 14, 18, 14, 22, 18, 2]
+        for index in meshes:
+            name = self.nodes[index].get('name', '')
+            expected_triangles = 106 if index == root else glyph_triangles[int(name.rsplit(' ', 1)[1])]
+            actual = sum(self.accessors[p['indices']]['count'] // 3 for p in self.primitives(index))
+            self.check(actual == expected_triangles,
+                       f'FPS strokes intact: {name} has {actual}/{expected_triangles} triangles')
         material_ids = set()
         for index in meshes:
             valid = True

@@ -1,0 +1,50 @@
+{
+  "version": "0.23.29",
+  "package": "com.picovibe.steamatelier.v23",
+  "unity": "2022.3.62f2c1",
+  "spatialAdapter": "6.1.0",
+  "built": true,
+  "installed": false,
+  "installBlocker": "Swan USB disconnected; no new request to wake or wear",
+  "apk": "Builds/SwanJourney/Releases/0.23.29/SteamAtelier-V23-Swan-0.23.29.apk",
+  "apkBytes": 633816419,
+  "sha256": "b90fb8302c4182699f79d76547d6e485845440d1cf9a9c2b7925fc62c9f13e9a",
+  "regressionSuites": 10,
+  "baselineChecks": 152,
+  "performanceChecks": 149,
+  "packageChecks": 297,
+  "signatureV2": true,
+  "sceneCounts": [
+    {
+      "mode": 0,
+      "renderersBefore": 1154,
+      "renderersAfter": 841,
+      "enabledTriangles": 897605,
+      "geometryCountPreserved": true
+    },
+    {
+      "mode": 1,
+      "renderersBefore": 980,
+      "renderersAfter": 953,
+      "enabledTriangles": 815012,
+      "geometryCountPreserved": true
+    },
+    {
+      "mode": 2,
+      "renderersBefore": 790,
+      "renderersAfter": 763,
+      "enabledTriangles": 726257,
+      "geometryCountPreserved": true
+    }
+  ],
+  "deviceFps90Achieved": false,
+  "nativePerformanceMeasured": false,
+  "deviceRenderingValidated": false,
+  "sourceSnapshot": "rigid-batching-before.cs",
+  "limits": [
+    "All states preserve enabled triangle count; this is not native GPU workload.",
+    "Largest batch reduction is exterior-shell mode, not structural-cutaway mode.",
+    "No test of real frame rate or revised hover bounds on device yet.",
+    "The old 0.23.28 APK remains archived."
+  ]
+}

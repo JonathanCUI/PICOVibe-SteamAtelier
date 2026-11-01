@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.XR;
+using SwanAtelier;
 
 namespace SwanJourney
 {
@@ -14,7 +14,7 @@ namespace SwanJourney
         bool showing;
         public void Show(bool canyon)
         {
-            showing = true; surface.SetActive(true);
+            showing = true; surface.SetActive(!Application.isPlaying || Application.isEditor);
             workshopTitle.SetActive(!canyon); canyonTitle.SetActive(canyon);
             SetResourceProgress(0); Place();
         }
@@ -36,7 +36,13 @@ namespace SwanJourney
             resourceLabel.SetActive(false); nativeLabel.SetActive(false); failedLabel.SetActive(true); SetBar(0);
         }
         public void Hide() { showing = false; surface.SetActive(false); }
-        void Awake() { Current = this; }
+        void Awake()
+        {
+            Current = this;
+            // Keep the authored TMP hierarchy active for mesh export, then hide
+            // the placeholder before the first player Update until pose is valid.
+            if (!Application.isEditor && surface) surface.SetActive(false);
+        }
         void OnDestroy() { if (Current == this) Current = null; }
         void Update() { if (showing) Place(); }
         void SetBar(float value)
@@ -47,10 +53,19 @@ namespace SwanJourney
         }
         void Place()
         {
-            var device = InputDevices.GetDeviceAtXRNode(XRNode.Head);
-            if (!device.isValid || !device.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 p)
-                || !device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion q)) return;
-            transform.SetPositionAndRotation(p + q * new Vector3(0, -.08f, 1.1f), q);
+            if (!SwanHeadPose.TryRead(out Pose pose))
+            {
+                // Never expose the serialized floor-height placeholder on device.
+                if (Application.isPlaying && !Application.isEditor) surface.SetActive(false);
+                return;
+            }
+            ApplyHeadPose(pose);
+        }
+        public void ApplyHeadPose(Pose pose)
+        {
+            if (!SwanHeadPose.IsValid(pose)) return;
+            transform.SetPositionAndRotation(pose.position + pose.rotation * new Vector3(0, 0, 1.1f), pose.rotation);
+            if (showing && !surface.activeSelf) surface.SetActive(true);
         }
     }
 }

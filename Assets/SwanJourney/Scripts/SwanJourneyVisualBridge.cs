@@ -27,6 +27,8 @@ namespace SwanJourney
         public Mesh softVolume, flameVolume, cloudVolume, beamVolume, waterVolume, jacketVolume, ringMesh;
         public Material scanMaterial, goldMaterial, rippleMaterial;
         public int NativeAnimatedRenderers => animated.Count;
+        public int NativeOwnedMaterialCount => animated.Select(a=>a.instance).Where(m=>m).Distinct().Count();
+        public int NativeSharedGhostCount => sharedGhosts.Count;
         public int NativeWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count();
         public int NativeAnimatedWindowCount => windows == null ? 0 : windows.Where(r=>r).Distinct().Count(r=>animated.Any(a=>a.renderer==r));
         public bool ScanActive => scanning;
@@ -46,6 +48,17 @@ namespace SwanJourney
             public Color originalEmission;
             public Color appliedColor, appliedEmission;
             public bool hasApplied, wasVisible;
+            public SharedGhost sharedGhost;
+        }
+        // Ghost output depends only on its source definition and the journey-wide
+        // SnapReady flag, never on per-renderer blocks. Keep renderers separate
+        // (including transparent sorting) while sharing identical live parameters.
+        sealed class SharedGhost
+        {
+            public Material instance;
+            public int references;
+            public bool hasApplied;
+            public Color color, emission;
         }
         sealed class SweepEntry
         {
@@ -62,6 +75,7 @@ namespace SwanJourney
         }
         readonly List<Animated> animated = new List<Animated>();
         readonly Dictionary<Material, JourneyNativeMaterial> lookup = new Dictionary<Material, JourneyNativeMaterial>();
+        readonly Dictionary<Material, SharedGhost> sharedGhosts = new Dictionary<Material, SharedGhost>();
         readonly HashSet<Renderer> seen = new HashSet<Renderer>();
         readonly List<SweepEntry> scan = new List<SweepEntry>(), gold = new List<SweepEntry>();
         readonly List<GameObject> goldRings = new List<GameObject>();
@@ -138,7 +152,7 @@ namespace SwanJourney
                         if (changed) entry.renderer.sharedMaterials = bound;
                     }
                     seen.Remove(entry.renderer);
-                    if (entry.instance) Destroy(entry.instance);
+                    ReleaseMaterial(entry);
                     animated.RemoveAt(i);
                 }
                 seen.RemoveWhere(renderer => !renderer || Under(renderer, previous));
@@ -174,12 +188,27 @@ namespace SwanJourney
                 seen.Add(r);
                 // Particle color/alpha remains owned by the ParticleSystem, not a per-renderer tint.
                 if (r is ParticleSystemRenderer) continue;
-                var instance = new Material(source) { name = source.name + " · live native" };
-                instance.EnableKeyword("_EMISSION");
+                SharedGhost shared=null;
+                Material instance;
+                if(definition.kind==JourneyNativeMaterialKind.Ghost)
+                {
+                    if(!sharedGhosts.TryGetValue(source,out shared))
+                    {
+                        shared=new SharedGhost{instance=new Material(source){name=source.name+" · shared native ghost"}};
+                        shared.instance.EnableKeyword("_EMISSION");
+                        sharedGhosts.Add(source,shared);
+                    }
+                    shared.references++;instance=shared.instance;
+                }
+                else
+                {
+                    instance = new Material(source) { name = source.name + " · live native" };
+                    instance.EnableKeyword("_EMISSION");
+                }
                 var all = r.sharedMaterials;
                 for (int i = 0; i < all.Length; i++) if (all[i] == source) all[i] = instance;
                 r.sharedMaterials = all;
-                animated.Add(new Animated { renderer = r, definition = definition, instance = instance, originalEmission = source.GetColor("_EmissionColor") });
+                animated.Add(new Animated { renderer = r, definition = definition, instance = instance, originalEmission = source.GetColor("_EmissionColor"),sharedGhost=shared });
                 var filter = r.GetComponent<MeshFilter>();
                 if (!filter) continue;
                 // Export already chose a native mesh for authored renderers before reducing it.
@@ -281,12 +310,16 @@ namespace SwanJourney
                         if (color.a < .99f && journey.SnapReady) color.a = Mathf.Min(1, color.a * 1.25f);
                         break;
                 }
-                if (!a.hasApplied || !a.wasVisible || !a.appliedColor.Equals(color) || !a.appliedEmission.Equals(emission))
+                bool changed=a.sharedGhost!=null
+                    ? !a.sharedGhost.hasApplied||!a.sharedGhost.color.Equals(color)||!a.sharedGhost.emission.Equals(emission)
+                    : !a.hasApplied||!a.wasVisible||!a.appliedColor.Equals(color)||!a.appliedEmission.Equals(emission);
+                if (changed)
                 {
                     a.instance.color = color;
                     a.instance.SetColor("_EmissionColor", emission);
                     a.appliedColor = color; a.appliedEmission = emission;
                     a.hasApplied = true;
+                    if(a.sharedGhost!=null){a.sharedGhost.hasApplied=true;a.sharedGhost.color=color;a.sharedGhost.emission=emission;}
                     LastMaterialWrites += 2;
                 }
                 a.wasVisible = true;
@@ -403,12 +436,25 @@ namespace SwanJourney
             for(int i=0;i<8;i++)result.Encapsulate(matrix.MultiplyPoint3x4(b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1))));return result;
         }
         void OnDisable() {EndArrival();EndGold();if(waterRing)waterRing.gameObject.SetActive(false);}
+        void ReleaseMaterial(Animated entry)
+        {
+            if(entry.sharedGhost!=null)
+            {
+                if(--entry.sharedGhost.references>0)return;
+                sharedGhosts.Remove(entry.definition.material);
+            }
+            if(entry.instance)
+            {
+                if(Application.isPlaying)Destroy(entry.instance);else DestroyImmediate(entry.instance);
+            }
+        }
         void OnDestroy()
         {
             SetDeferredEnvironment(null);
             if(arrival){arrival.nativeBegin=null;arrival.nativeProgress=null;arrival.nativeCancel=null;}
             if(finish){finish.nativeBegin=null;finish.nativeProgress=null;finish.nativeRestore=null;}
-            foreach(var a in animated)if(a.instance)Destroy(a.instance);if(rippleInstance)Destroy(rippleInstance);
+            foreach(var a in animated)ReleaseMaterial(a);animated.Clear();sharedGhosts.Clear();
+            if(rippleInstance)Destroy(rippleInstance);
         }
     }
 }

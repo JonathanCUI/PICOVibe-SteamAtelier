@@ -35,6 +35,7 @@ namespace SwanJourney.Editor
                 Fresh(SwanJourneyDeferredChecks.Run);report.suites.Add("deferred-scene-placement");
                 Fresh(SwanJourneyQuickInstallChecks.Run);report.suites.Add("quick-install-gestures");
                 Fresh(SwanJourneyPerformanceChecks.Run);report.suites.Add("performance-and-loading");
+                Fresh(SwanJourneyBaselineChecks.Run);report.suites.Add("baseline-geometry-and-isolation");
                 report.passed=true;Debug.Log("SWAN_JOURNEY_FEEDBACK_CHECKS_PASS suites="+report.suites.Count+" visibility="+report.visibilityChecks.Count);
             }
             catch(Exception e){report.failure=e.ToString();throw;}

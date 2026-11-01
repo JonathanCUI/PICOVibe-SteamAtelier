@@ -1,0 +1,69 @@
+{
+  "version": "0.23.31",
+  "package": "com.picovibe.steamatelier.v23",
+  "unity": "2022.3.62f2c1",
+  "spatialAdapter": "6.1.0",
+  "built": true,
+  "installed": true,
+  "deviceSerial": "PB3A10MGL9240036B",
+  "launchCommandSent": true,
+  "observedPid": 29742,
+  "lastObservedPowerStateBeforeInstall": "Asleep",
+  "progressPreserved": true,
+  "apk": "Builds/SwanJourney/Releases/0.23.31/SteamAtelier-V23-Swan-0.23.31.apk",
+  "apkBytes": 645188650,
+  "sha256": "60bb1fc6eaf409dc3e19ce3fb8aebfddeed3b405634e060773754d59a8e9befc",
+  "regressionSuites": 10,
+  "baselineChecks": 187,
+  "performanceChecks": 149,
+  "apkChecks": 297,
+  "signatureV2": true,
+  "assemblyVisibilityStatesCompared": 57,
+  "perMaterialTrianglesAndBoundsPreserved": true,
+  "fineCollidersPreservedExactly": 68,
+  "packagedGeometry": {
+    "nodesBefore": 3238,
+    "nodesAfter": 2861,
+    "meshNodesBefore": 2322,
+    "meshNodesAfter": 1884,
+    "primitivesBefore": 2352,
+    "primitivesAfter": 2318,
+    "trianglesBeforeAndAfter": 2271339,
+    "deferredTerrainByteIdentical": true,
+    "scope": "All packaged instances including inactive alternatives; not native draw calls"
+  },
+  "editorInspectionMode1": {
+    "installed0MeshRenderers": [225, 115],
+    "installed4MeshRenderers": [424, 272],
+    "installed5MeshRenderers": [514, 357],
+    "installed7MeshRenderers": [717, 508],
+    "installed18MeshRenderers": [824, 565],
+    "scope": "Before/after active enabled mesh renderers including the next preview; not GPU draw calls"
+  },
+  "previousVersionRuntimeEvidence": {
+    "version": "0.23.30",
+    "source": "Builds/Evidence/session-output-20261101-v2331-assembly-baseline/v2330-runtime.log",
+    "state": "Workshop, inspection 1, static, no verification, not rolling",
+    "installed2Fps": 88.072,
+    "installed3Fps": 88.419,
+    "installed4Fps": 82.066,
+    "installed5Fps": 43.851,
+    "interpretation": "A reproducible stage-related load increase is a lead, not proof of a single CPU/GPU bottleneck. The stage audit shows the increase is primarily installed objects, not the next preview."
+  },
+  "changes": [
+    "Use the earlier workshop's multi-material rigid mesh organization within independently referenced motion, visibility and interaction boundaries.",
+    "Fine collider leaves may merge visual geometry while retaining exact collider instances, mesh shapes, transforms and ancestor ownership.",
+    "Keep the 18 assembly steps, current visible geometry, preview behavior, shell visibility and paired inspection/miniature mesh levels.",
+    "No new model decimation, no SDK edits, no save reset, no Git commit or push."
+  ],
+  "fallback": "User authorizes old 90 FPS model replacement if optimization remains insufficient. This release adopts its grouping strategy; full legacy model substitution has not been performed or validated against V23's 18-stage mechanics.",
+  "nativeRenderingValidated": false,
+  "nativePerformanceMeasured": false,
+  "fps90Achieved": false,
+  "validationLimits": [
+    "Installation and process existence do not prove scene visibility or gesture acceptance.",
+    "Multi-material meshes reduce nodes much more than primitive counts; measured FPS improvement is still required.",
+    "Await actual static/manipulation FPS after assembly stages 5-7 and fully assembled.",
+    "No fresh Perfetto capture or recording; only existing app logs were read."
+  ]
+}

@@ -19,6 +19,13 @@ namespace SwanJourney.Editor
             var report=new Report();
             var main=EditorSceneManager.OpenScene(SwanJourneyBuild.ScenePath);
             var journey=UnityEngine.Object.FindObjectOfType<SteamJourney>(true);
+            var fps=UnityEngine.Object.FindObjectOfType<SwanAtelier.SwanFpsMeshText>(true);
+            Check(fps && fps.variants.Length==33,"FPS keeps all digit variants after scene generation");
+            Check(fps.GetComponent<MeshFilter>().sharedMesh==AssetDatabase.LoadAssetAtPath<Mesh>(SwanJourneyBuild.Generated+"/FpsFixed.asset"),
+                "Fixed FPS letters retain their original stroke mesh, never a decimated surface");
+            for(int i=0;i<33;i++)
+                Check(fps.variants[i] && fps.variants[i].GetComponent<MeshFilter>().sharedMesh==AssetDatabase.LoadAssetAtPath<Mesh>(SwanJourneyBuild.Generated+"/FpsGlyph"+(i%11)+".asset"),
+                    "FPS slot "+(i/11)+" glyph "+(i%11)+" retains its complete original stroke mesh");
             var cpuDiagnostics=UnityEngine.Object.FindObjectOfType<SwanJourneyCpuDiagnostics>(true);
             Check(cpuDiagnostics && cpuDiagnostics.journey==journey && cpuDiagnostics.interaction,
                 "CPU diagnostics bind the same Journey and input owner without changing content");
@@ -135,10 +142,12 @@ namespace SwanJourney.Editor
             var sync=stage.GetComponent<SwanJourneyTransformSyncBudget>();
             Check(sync,"Movable workshop has local transform sync filtering");
             sync.FilterNow();sync.FilterNow();
+            var inherited=stage.GetComponentsInChildren<Transform>(true).Where(t=>t!=stage&&t.gameObject.activeInHierarchy).ToArray();
             var stageScale=stage.localScale;
             stage.localScale*=.9f;
             sync.FilterNow();
-            Check(sync.SuppressedLastFrame>1000 && stage.hasChanged,"Parent-only scaling retains root update while suppressing redundant descendant local TRS");
+            Check(inherited.Length>0 && sync.SuppressedLastFrame==inherited.Length && stage.hasChanged && inherited.All(t=>!t.hasChanged),
+                "Parent-only scaling retains root update and suppresses every unchanged active descendant, independent of scene size");
             var moving=engine.locomotive.transform;var initial=moving.localPosition;
             moving.localPosition+=Vector3.up*.01f;sync.FilterNow();
             Check(moving.hasChanged,"A real local animation is never suppressed");
@@ -198,6 +207,14 @@ namespace SwanJourney.Editor
                         "Loading label fits one horizontal line within 52 x 3.1 cm: "+label.text);
                 }
                 var view=loader.loading;view.Show(true);view.SetResourceProgress(.4f);
+                Check(!SwanAtelier.SwanHeadPose.IsValid(new Pose(Vector3.zero,new Quaternion(0,0,0,0))),"Disconnected zero quaternion cannot position either HUD");
+                Check(!SwanAtelier.SwanHeadPose.IsValid(new Pose(new Vector3(float.NaN,0,0),Quaternion.identity)),"Invalid head coordinates cannot move either HUD");
+                var headPose=new Pose(new Vector3(2,1.7f,-3),Quaternion.Euler(15,70,0));
+                view.ApplyHeadPose(headPose);
+                var viewLocal=Quaternion.Inverse(headPose.rotation)*(view.transform.position-headPose.position);
+                Check(Vector3.Distance(viewLocal,new Vector3(0,0,1.1f))<.0001f && Quaternion.Angle(view.transform.rotation,headPose.rotation)<.01f,"Loading panel stays centered 1.1 metres ahead after translated and rotated head poses");
+                view.ApplyHeadPose(new Pose(Vector3.zero,new Quaternion(0,0,0,0)));
+                Check(Vector3.Distance(view.transform.position,headPose.position+headPose.rotation*new Vector3(0,0,1.1f))<.0001f,"Tracking failure cannot snap loading text to floor origin");
                 Check(view.surface.activeSelf&&view.canyonTitle.activeSelf&&!view.workshopTitle.activeSelf&&view.resourceLabel.activeSelf,"Canyon resource phase displays the correct title and label");
                 Check(Mathf.Abs(view.fill.localScale.x-view.width*.2f)<.00001f,"Resource progress occupies its first half; native import never appears completed");
                 view.PreparingSpace();Check(view.nativeLabel.activeSelf&&!view.resourceLabel.activeSelf&&view.fill.localScale.x<view.width,"Native preparation is a separate phase, not false completion");

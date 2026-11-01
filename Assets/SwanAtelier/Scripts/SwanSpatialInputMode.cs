@@ -1,67 +1,142 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.XR;
+using UnityEngine.XR.Management;
+using ByteDance.PICO.SpatialAdapter;
 
 namespace SwanAtelier
 {
-    // The SDK synchronizer calls Android JNI in Editor Play Mode as well.
-    // Keep the same public synchronization call, scoped to its supported player.
     [DisallowMultipleComponent]
     public sealed class SwanSpatialInputMode : MonoBehaviour
     {
-        Coroutine resumeSync;
-        public static bool Ready {get;private set;}
+        public static bool Ready { get; private set; }
+        Coroutine monitor;
+        bool paused;
+        bool foregroundChanged;
 #if UNITY_ANDROID && !UNITY_EDITOR
-        UnityEngine.XR.Management.XRManagerSettings manager;
+        XRManagerSettings manager;
         bool ownsLoader;
 #endif
-        IEnumerator Start()
+        void OnEnable() { Ready = false; monitor = StartCoroutine(Monitor()); }
+        IEnumerator Monitor()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            Ready=false;
-            // XR Management's public manual-init contract requires Start to finish.
-            // Auto-init ran before the Spatial scene, sometimes while Swan slept;
-            // input then worked but the mesh event callback never delivered data.
+            // Finish Start, then let an opened, focused Stage settle. A camera
+            // object alone also exists while the headset is asleep.
             yield return null;
-            while(!Application.isFocused || ByteDance.PICO.SpatialAdapter.SpatialCamera.Current==null) yield return null;
-            manager=UnityEngine.XR.Management.XRGeneralSettings.Instance.Manager;
-            if(manager.activeLoader==null) {manager.InitializeLoaderSync();ownsLoader=manager.activeLoader!=null;}
-            if(manager.activeLoader==null) {Debug.LogError("SWAN_ATELIER_XR_STAGE_INIT_FAILED");yield break;}
-            manager.StartSubsystems();Sync("stage-ready-start");Ready=true;
-            Debug.Log("SWAN_ATELIER_XR_STAGE_READY owned="+ownsLoader);
+            var tick = new WaitForSecondsRealtime(.25f);
+            double focusedSince = -1, missingSince = -1;
+            bool synced = false, warned = false;
+            int retries = 0, validSamples = 0;
+            while (true)
+            {
+                double now = Time.realtimeSinceStartupAsDouble;
+                var camera = SpatialCamera.Current;
+                if (foregroundChanged)
+                {
+                    foregroundChanged = false;
+                    Ready = false; focusedSince = missingSince = -1;
+                    synced = warned = false; retries = validSamples = 0;
+                }
+                if (paused || !Application.isFocused || !camera || !camera.WindowOpen)
+                {
+                    Ready = false; focusedSince = missingSince = -1;
+                    synced = warned = false; retries = validSamples = 0;
+                    yield return tick; continue;
+                }
+                if (focusedSince < 0) focusedSince = now;
+                if (now - focusedSince < .5) { yield return tick; continue; }
+                if (!manager)
+                {
+                    var settings = XRGeneralSettings.Instance;
+                    if (!settings || !settings.Manager)
+                    {
+                        Debug.LogError("SWAN_ATELIER_XR_STAGE_INIT_FAILED settings-missing");
+                        yield break;
+                    }
+                    manager = settings.Manager;
+                }
+                if (!manager.activeLoader)
+                {
+                    manager.InitializeLoaderSync();
+                    ownsLoader = manager.activeLoader != null;
+                    if (!ownsLoader)
+                    {
+                        Debug.LogError("SWAN_ATELIER_XR_STAGE_INIT_FAILED loader-missing");
+                        yield break;
+                    }
+                    manager.StartSubsystems();
+                }
+                if (!synced)
+                {
+                    Sync("focused-stage"); synced = true; missingSince = now;
+                }
+                var input = manager.activeLoader.GetLoadedSubsystem<XRInputSubsystem>();
+                // Resume a subsystem stopped during a focus transition, using
+                // Unity's public subsystem lifecycle without rebuilding the Stage.
+                if (input != null && !input.running) input.Start();
+                if (input != null && input.running && SwanHeadPose.TryRead(out _))
+                {
+                    if (++validSamples >= 2 && !Ready)
+                    {
+                        Ready = true;
+                        var supported = input.GetSupportedTrackingOriginModes();
+                        if ((supported & TrackingOriginModeFlags.Floor) != 0
+                            && input.GetTrackingOriginMode() != TrackingOriginModeFlags.Floor)
+                            input.TrySetTrackingOriginMode(TrackingOriginModeFlags.Floor);
+                        Debug.Log("SWAN_ATELIER_XR_STAGE_READY tracked=True owned=" + ownsLoader + " retries=" + retries);
+                    }
+                    missingSince = -1;
+                }
+                else
+                {
+                    validSamples = 0;
+                    if (Ready) Debug.LogWarning("SWAN_ATELIER_XR_TRACKING_LOST");
+                    Ready = false;
+                    if (missingSince < 0) missingSince = now;
+                    if (now - missingSince >= 4 && retries < 2 && input != null)
+                    {
+                        retries++;
+                        Debug.LogWarning("SWAN_ATELIER_XR_INPUT_RETRY attempt=" + retries);
+                        input.Stop();
+                        yield return null;
+                        if (!paused && Application.isFocused && camera && camera.WindowOpen)
+                        {
+                            input.Start(); Sync("input-retry");
+                        }
+                        else synced = false;
+                        missingSince = Time.realtimeSinceStartupAsDouble;
+                    }
+                    else if (now - missingSince >= 4 && retries >= 2 && !warned)
+                    {
+                        warned = true;
+                        Debug.LogError("SWAN_ATELIER_XR_TRACKING_UNAVAILABLE retries-exhausted; waiting for tracking or next foreground transition");
+                    }
+                }
+                yield return tick;
+            }
 #else
             yield break;
 #endif
         }
-        void Sync(string reason)
+        static void Sync(string reason)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             ByteDance.PICO.XR.PXR_SpatialAdapterSpatialMode.SyncSpatialAdapterSpatialMode();
-            Debug.Log("SWAN_ATELIER_XR_SPATIAL_MODE_SYNCED reason="+reason);
+            Debug.Log("SWAN_ATELIER_XR_SPATIAL_MODE_SYNCED reason=" + reason);
 #endif
         }
-        void OnApplicationPause(bool paused)
+        void OnApplicationPause(bool value) { paused = value; foregroundChanged = true; if (value) Ready = false; }
+        void OnApplicationFocus(bool value) { foregroundChanged = true; if (!value) Ready = false; }
+        void OnDisable()
         {
-            if(resumeSync!=null){StopCoroutine(resumeSync);resumeSync=null;}
-            if(!paused&&isActiveAndEnabled)resumeSync=StartCoroutine(ResumeMode());
+            Ready = false;
+            if (monitor != null) { StopCoroutine(monitor); monitor = null; }
         }
-        IEnumerator ResumeMode()
-        {
-            // The permission controller temporarily owns a different Stage.
-            // Reapply the public mode binding once our Stage has resumed.
-            yield return null;
-#if UNITY_ANDROID && !UNITY_EDITOR
-            while(!Ready)yield return null;
-#endif
-            Sync("resume");
-            yield return new WaitForSecondsRealtime(.5f);Sync("resume-settled");
-            resumeSync=null;
-        }
-        void OnDisable(){if(resumeSync!=null){StopCoroutine(resumeSync);resumeSync=null;}}
         void OnDestroy()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            Ready=false;
-            if(ownsLoader&&manager!=null){manager.StopSubsystems();manager.DeinitializeLoader();}
+            if (ownsLoader && manager != null) { manager.StopSubsystems(); manager.DeinitializeLoader(); }
 #endif
         }
     }

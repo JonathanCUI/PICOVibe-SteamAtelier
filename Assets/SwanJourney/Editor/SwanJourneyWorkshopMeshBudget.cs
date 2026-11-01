@@ -13,12 +13,16 @@ namespace SwanJourney.Editor
     // alternatives and the complete native marker pool. A shared mesh counts once per placement.
     public static class SwanJourneyWorkshopMeshBudget
     {
-        public const int Limit = 1200000;
+        // This guards accidental duplicate exports, not an FPS target. Preserve
+        // authored visible geometry while the measured node/material bottleneck
+        // is isolated; total packaged triangles include inactive alternatives.
+        public const int Limit = 4000000;
         const string Folder = "Assets/SwanJourney/Generated/WorkshopBudget";
         [Serializable] public class Report
         {
             public long before, after;
             public int instances, derivedMeshes;
+            public int preservedVisibleMeshes;
             public long scanBefore, scanAfter, silhouetteBefore, silhouetteAfter;
         }
         public static long Triangles(Mesh mesh)
@@ -55,7 +59,13 @@ namespace SwanJourney.Editor
                     int count = group.Count();
                     string path = AssetDatabase.GetAssetPath(source);
                     Mesh mesh = source;
-                    if (original > 96 && source.isReadable && source.blendShapeCount == 0 &&
+                    // The FPS is made of tiny disconnected stroke rectangles.
+                    // Surface decimation removes readable strokes despite retaining
+                    // the same bounds. Protect fixed text and every digit variant.
+                    bool hudGlyph = group.Any(f => f.GetComponentInParent<SwanAtelier.SwanFpsMeshText>(true));
+                    bool visibleGeometry = role == Role.Surface || role == Role.Precision;
+                    if (visibleGeometry) report.preservedVisibleMeshes += count;
+                    if (!hudGlyph && !visibleGeometry && original > 96 && source.isReadable && source.blendShapeCount == 0 &&
                         !source.name.ToLowerInvariant().Contains("water") && !path.StartsWith(Folder + "/") &&
                         Enumerable.Range(0, source.subMeshCount).All(i => source.GetTopology(i) == MeshTopology.Triangles))
                     {

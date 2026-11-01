@@ -62,16 +62,12 @@ namespace SwanAtelier
                 }
                 headDevice=InputDevices.GetDeviceAtXRNode(XRNode.Head);
             }
-            Vector3 position=Vector3.zero;Quaternion rotation=Quaternion.identity;
-            bool positionValid=headDevice.isValid&&(headDevice.TryGetFeatureValue(CommonUsages.centerEyePosition,out position)||headDevice.TryGetFeatureValue(CommonUsages.devicePosition,out position));
-            bool rotationValid=headDevice.isValid&&(headDevice.TryGetFeatureValue(CommonUsages.centerEyeRotation,out rotation)||headDevice.TryGetFeatureValue(CommonUsages.deviceRotation,out rotation));
-            bool tracked=!headDevice.TryGetFeatureValue(CommonUsages.isTracked,out bool isTracked)||isTracked;
-            PoseResult=positionValid&&rotationValid&&tracked&&IsFinite(position)&&IsValid(rotation)?0:1;
+            PoseResult=SwanHeadPose.TryRead(out Pose pose)?0:1;
             if(PoseResult!=0) {
                 if(HasTrackedPose)Debug.LogWarning("SWAN_ATELIER_HUD_TRACKING_LOST");
                 HasTrackedPose=false;SetVisualActive(false);return;
             }
-            var pose=new Pose(position,rotation);
+            Vector3 position=pose.position;Quaternion rotation=pose.rotation;
             latestPose=pose;
             if(!HasTrackedPose) {
                 firstPose=pose;
@@ -101,8 +97,6 @@ namespace SwanAtelier
             var tracker = target.GetComponent<SpatialAdapterGameObjectTracker>();
             return tracker ? tracker.uid + ":" + tracker.isValid : "none";
         }
-        static bool IsFinite(Vector3 v) => !float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsNaN(v.z) && !float.IsInfinity(v.x) && !float.IsInfinity(v.y) && !float.IsInfinity(v.z);
-        static bool IsValid(Quaternion q) { float n = Quaternion.Dot(q, q); return n > .5f && n < 1.5f; }
         void WriteLabel()
         {
             if (!meshText) return;

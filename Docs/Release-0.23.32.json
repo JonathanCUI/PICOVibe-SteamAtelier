@@ -1,0 +1,69 @@
+{
+  "version": "0.23.32",
+  "package": "com.picovibe.steamatelier.v23",
+  "built": true,
+  "installed": true,
+  "deviceSerial": "PB3A10MGL9240036B",
+  "launchCommandSent": true,
+  "observedPid": 8953,
+  "progressPreserved": true,
+  "apk": "Builds/SwanJourney/Releases/0.23.32/SteamAtelier-V23-Swan-0.23.32.apk",
+  "apkBytes": 645339554,
+  "sha256": "0c46edabd54f38556c05dfa7b2cf4b93a6cd6338eaa1d3bc405af1bc5b4ea228",
+  "regressionSuites": 10,
+  "baselineChecks": 181,
+  "performanceChecks": 149,
+  "apkChecks": 297,
+  "signatureV2": true,
+  "assemblyVisibilityStatesCompared": 57,
+  "perMaterialTrianglesAndBoundsPreserved": true,
+  "protectedFineColliderRenderers": 158,
+  "editorInspectionMode1": {
+    "installed0MeshRenderers": 176,
+    "installed5MeshRenderers": 418,
+    "installed18MeshRenderers": 626,
+    "scope": "Active enabled Unity mesh renderers including next preview; not native draw calls"
+  },
+  "packagedGeometry": {
+    "nodes": 2854,
+    "meshNodes": 1945,
+    "primitives": 2360,
+    "triangles": 2271339,
+    "perMaterialTrianglesEqualTo030": true,
+    "deferredTerrainByteIdenticalTo030": true
+  },
+  "regressionIsolation": {
+    "031": "User reports roughly 70 FPS but no gaze highlight, no pinch and no system menu gesture. Same APK cold relaunch also failed. Input actions bound, callbacks zero.",
+    "afterStop031": "User confirms system gestures recover when app stops.",
+    "030Control": "Installed with replace+downgrade, no save clearing. User confirms gaze, pinch and system menu all recover. App log records real Pinch, IndirectPinch and Touch callbacks.",
+    "controllerWarning": "The working 030 log also contains 11630 controller tracking provider start failed messages. This warning is not sufficient evidence for the regression cause."
+  },
+  "changes": [
+    "Revert removal of MeshFilter/MeshRenderer from fine collision owners introduced in 031; preserve original renderer/filter/collider composition.",
+    "Retain multi-material rigid batching and the existing native input lifecycle.",
+    "Verify fine collision owners survive generation together, in addition to geometry and assembly checks."
+  ],
+  "nativeAcceptance": {
+    "gazeHighlight": true,
+    "pinchAndTwoHandManipulation": true,
+    "systemMenuGesture": true,
+    "source": "User confirmed: 高光、捏合、系统菜单全部恢复",
+    "scope": "Interaction regression acceptance only; not full-assembly 90 FPS acceptance"
+  },
+  "nativeInputCallbacksObserved": true,
+  "inputEvidence": "v32-runtime.log: real IndirectPinch targets Next introduction and attachment, One-touch mechanical assembly and Move whole scene touch surface; callback windows 789 and 521.",
+  "nativePerformanceMeasured": true,
+  "observedAppFps": {
+    "scope": "Existing app diagnostic windows, not compositor/GPU measurements; workshop with two installed groups only",
+    "staticFiveSecondWindows": [90.046, 90.014, 90.024],
+    "mixedTwoHandFiveSecondWindows": [86.386, 88.773],
+    "twoHandFrames": [388, 212],
+    "lateStageAndFullAssemblyValidated": false
+  },
+  "fps90Achieved": false,
+  "limitations": [
+    "The 030/031 control and successful 032 partial revert isolate the regression to the changed collision/render ownership path; the internal native SDK mechanism is not independently proven.",
+    "Actual user acceptance covers highlight, pinch/two-hand input and system menu; late-stage and full-assembly 90 FPS remain unvalidated.",
+    "No SDK changes, no save reset, no Git commit or push."
+  ]
+}

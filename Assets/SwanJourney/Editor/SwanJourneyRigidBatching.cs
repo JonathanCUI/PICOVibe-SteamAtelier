@@ -9,8 +9,8 @@ using UnityEngine.Rendering;
 
 namespace SwanJourney.Editor
 {
-    // Merge only unreferenced geometry within proven rigid branches. Moving parents, lesson
-    // objects, controls, renderer references and animated materials stay intact.
+    // Merge geometry only within proven rigid branches. Shell visibility and
+    // paired mesh bindings are remapped explicitly; other references stay protected.
     public static class SwanJourneyRigidBatching
     {
         [Serializable] sealed class Batch
@@ -18,20 +18,26 @@ namespace SwanJourney.Editor
             public string parent, material;
             public int sources, vertices;
             public long trianglesBefore, trianglesAfter;
+            public long miniatureTrianglesBefore, miniatureTrianglesAfter;
             public float boundsError;
-            public bool hover;
+            public bool hover, shell, detail;
+            public int materialSlots;
         }
         [Serializable] sealed class Report
         {
             public bool passed, nativePerformanceValidated;
-            public string scope = "Opaque unreferenced leaves within reference/component/activation boundaries; geometry unchanged, compound part hover box";
+            public string scope = "Rigid opaque leaves within reference/component/activation boundaries; multi-material submeshes and both geometry levels preserved; fine collider mesh/filter/renderer ownership remains intact";
             public int candidates, removedRenderers, createdRenderers, removedColliders, liftedLeaves;
+            public int protectedFineColliderRenderers;
             public List<Batch> batches = new List<Batch>();
         }
         public static void Apply(SteamJourney journey, SwanJourneyVisualBridge visuals)
         {
             if (Application.isPlaying || !journey.SwanInputActive) throw new InvalidOperationException("Derived Swan scene required");
             var roots = journey.gameObject.scene.GetRootGameObjects();
+            var shells=new HashSet<Renderer>(journey.shellRenderers??Array.Empty<Renderer>());
+            var details=(journey.detailMeshes??Array.Empty<JourneyDetail>()).Where(d=>d!=null&&d.filter)
+                .GroupBy(d=>d.filter).Where(g=>g.Count()==1).ToDictionary(g=>g.Key,g=>g.First());
             var protectedObjects = new HashSet<UnityEngine.Object>();
             foreach (var c in roots.SelectMany(r => r.GetComponentsInChildren<Component>(true)))
             {
@@ -40,12 +46,19 @@ namespace SwanJourney.Editor
                 {
                     var p = so.GetIterator();
                     while (p.Next(true))
-                        if (p.propertyType == SerializedPropertyType.ObjectReference && p.propertyPath != "m_GameObject" && p.propertyPath != "m_Script" && p.objectReferenceValue)
+                        if (p.propertyType == SerializedPropertyType.ObjectReference && p.propertyPath != "m_GameObject" && p.propertyPath != "m_Script" && p.objectReferenceValue && !Remappable(c,p))
                             protectedObjects.Add(p.objectReferenceValue);
                 }
             }
             var grateShafts = new HashSet<Transform>(journey.rockingBars ?? Array.Empty<Transform>());
             var surfaces = new HashSet<Material>(visuals.materials.Where(m => m.kind == JourneyNativeMaterialKind.Surface).Select(m => m.material));
+            // Unity serialization alone is insufficient for the native hit-test
+            // exporter: do not leave a MeshCollider behind after moving its
+            // visible mesh to another object (0.23.31 failed device input).
+            var fineCollisionOwners=journey.spatialRoot.GetComponentsInChildren<MeshRenderer>(true)
+                .Where(r=>r.GetComponent<MeshCollider>() || (r.GetComponents<Collider>().Length>0&&!r.GetComponent<SpatialAdapterHoverEffect>()))
+                .Select(r=>new {renderer=r,filter=r.GetComponent<MeshFilter>(),colliders=r.GetComponents<Collider>()})
+                .Where(x=>x.filter).ToArray();
             var candidates = journey.spatialRoot.GetComponentsInChildren<MeshRenderer>(true).Where(r => Eligible(r))
                 // Keep the previously generated serial asset names stable when appending moving grate batches.
                 .OrderBy(r => grateShafts.Contains(r.transform.parent) ? 1 : 0).ToArray();
@@ -54,33 +67,57 @@ namespace SwanJourney.Editor
             string folder = SwanJourneyBuild.Generated + "/RigidBatches";
             Directory.CreateDirectory(folder); AssetDatabase.Refresh();
             int serial = 0;
-            foreach (var group in candidates.GroupBy(r => anchors[r].GetInstanceID() + ":" + r.sharedMaterial.GetInstanceID() + ":" + r.gameObject.layer + ":" + r.shadowCastingMode + ":" + r.receiveShadows + ":" + (r.GetComponent<SpatialAdapterHoverEffect>() != null)))
+            // Like the earlier 90 Hz workshop, one rigid owner may carry multiple
+            // material submeshes. Keep independent motion, visibility and hover
+            // boundaries; material identity alone no longer requires another node.
+            foreach (var group in candidates.GroupBy(r => anchors[r].GetInstanceID() + ":" + r.gameObject.layer + ":" + r.shadowCastingMode + ":" + r.receiveShadows + ":" + (r.GetComponent<SpatialAdapterHoverEffect>() != null)+":"+r.enabled+":"+shells.Contains(r)+":"+details.ContainsKey(r.GetComponent<MeshFilter>())))
             {
                 var chunk = new List<MeshRenderer>(); int vertices = 0;
                 foreach (var r in group)
                 {
-                    int cost = r.GetComponent<MeshFilter>().sharedMesh.vertexCount;
+                    var filter=r.GetComponent<MeshFilter>();
+                    int cost = Math.Max(filter.sharedMesh.vertexCount,details.TryGetValue(filter,out var detail)?detail.miniature.vertexCount:0);
                     if (chunk.Count > 0 && vertices + cost > 60000) { Combine(chunk); chunk.Clear(); vertices = 0; }
                     chunk.Add(r); vertices += cost;
                 }
                 Combine(chunk);
             }
+            foreach(var item in fineCollisionOwners)
+                if(!item.renderer||!item.filter||item.renderer.GetComponent<MeshFilter>()!=item.filter||item.colliders.Any(c=>!c||c.gameObject!=item.renderer.gameObject))
+                    throw new InvalidOperationException("A fine collision owner lost its original visible mesh components");
+            report.protectedFineColliderRenderers=fineCollisionOwners.Length;
             report.passed = true;
             File.WriteAllText(SwanJourneyBuild.Output + "/rigid-batching.json", JsonUtility.ToJson(report, true));
             Debug.Log("SWAN_JOURNEY_RIGID_BATCHES candidates=" + report.candidates + " renderers=" + report.removedRenderers + "->" + report.createdRenderers + " geometryPreserved=true nativeBenefit=unmeasured");
 
+            bool Remappable(Component owner,SerializedProperty property)
+            {
+                if(owner!=journey)return false;
+                // These two fields only toggle a common shell state or swap the
+                // two mesh levels. Any additional reference still protects a leaf.
+                if(property.propertyPath.StartsWith("shellRenderers.Array.data[",StringComparison.Ordinal))
+                    return property.objectReferenceValue is Renderer renderer&&shells.Contains(renderer);
+                return property.propertyPath.StartsWith("detailMeshes.Array.data[",StringComparison.Ordinal)&&
+                    property.propertyPath.EndsWith("].filter",StringComparison.Ordinal)&&
+                    property.objectReferenceValue is MeshFilter filter&&details.ContainsKey(filter);
+            }
+
             bool Eligible(MeshRenderer r)
             {
-                if (!r.enabled || !r.gameObject.activeSelf || !r.transform.parent || r.transform.childCount != 0 || r.HasPropertyBlock()) return false;
+                if ((!r.enabled&&!shells.Contains(r)) || !r.gameObject.activeSelf || !r.transform.parent || r.transform.childCount != 0 || r.HasPropertyBlock()) return false;
                 // The canyon has a separate spatial-cell batching and streaming policy.
-                bool underGrateShaft = grateShafts.Contains(r.transform.parent);
                 for (var p = r.transform; p; p = p.parent)
-                    if (p.name.StartsWith("Mesa original canyon", StringComparison.Ordinal) || p.GetComponent<Animator>() || p.GetComponent<Animation>() || (p.GetComponent<JourneyControl>() && (!underGrateShaft || p == r.transform))) return false;
+                    // A control's unreferenced decorative leaves may batch inside
+                    // that control. BatchAnchor stops at its behavior/reference
+                    // boundary, preserving independent lever/button movement.
+                    if (p.name.StartsWith("Mesa original canyon", StringComparison.Ordinal) || p.GetComponent<Animator>() || p.GetComponent<Animation>() || (p == r.transform && p.GetComponent<JourneyControl>())) return false;
                 var f = r.GetComponent<MeshFilter>();
                 if (!f || !f.sharedMesh || !f.sharedMesh.isReadable || f.sharedMesh.subMeshCount != 1 || f.sharedMesh.vertexCount > 20000 || f.sharedMesh.GetTopology(0) != MeshTopology.Triangles) return false;
+                if(details.TryGetValue(f,out var d)&&(!d.inspection||!d.miniature||!d.miniature.isReadable||d.miniature.subMeshCount!=1||d.miniature.vertexCount>20000||d.miniature.GetTopology(0)!=MeshTopology.Triangles))return false;
                 if (r.sharedMaterials.Length != 1 || !surfaces.Contains(r.sharedMaterial) || r.sharedMaterial.renderQueue >= 2500 || r.additionalVertexStreams) return false;
                 if (r.transform.localToWorldMatrix.determinant <= 0) return false;
-                if (r.GetComponents<Collider>().Length > 0 && !r.GetComponent<SpatialAdapterHoverEffect>()) return false;
+                if(r.GetComponent<MeshCollider>())return false;
+                if(r.GetComponents<Collider>().Length>0&&!r.GetComponent<SpatialAdapterHoverEffect>())return false;
                 if (protectedObjects.Contains(r) || protectedObjects.Contains(f) || protectedObjects.Contains(r.transform) || protectedObjects.Contains(r.gameObject)) return false;
                 foreach (var c in r.GetComponents<Component>())
                     if (!c || protectedObjects.Contains(c) || !(c is Transform || c is MeshRenderer || c is MeshFilter || c is BoxCollider || c is SphereCollider || c is CapsuleCollider || c is SpatialAdapterHoverEffect)) return false;
@@ -114,10 +151,10 @@ namespace SwanJourney.Editor
                     triangles += m.GetIndexCount(0) / 3;
                     foreach (var v in m.vertices) { var p = matrix.MultiplyPoint3x4(v); if (!initialized) { bounds = new Bounds(p, Vector3.zero); initialized = true; } else bounds.Encapsulate(p); }
                 }
-                var mesh = new Mesh { name = "Swan rigid detail " + serial, indexFormat = IndexFormat.UInt32 };
-                mesh.CombineMeshes(instances, true, true); mesh.RecalculateBounds();
+                var materials=sources.Select(r=>r.sharedMaterial).Distinct().ToArray();
+                var mesh = CombineByMaterial(instances,sources,materials,"Swan rigid detail " + serial);
                 float error = Mathf.Max((bounds.min - mesh.bounds.min).magnitude, (bounds.max - mesh.bounds.max).magnitude);
-                long after = mesh.GetIndexCount(0) / 3;
+                long after = Triangles(mesh);
                 if (after != triangles || error > .001f) throw new InvalidOperationException("Rigid batch changed geometry");
                 string path = folder + "/Rigid_" + serial.ToString("0000") + ".asset";
                 var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
@@ -126,15 +163,45 @@ namespace SwanJourney.Editor
                 var go = new GameObject("Swan rigid detail batch " + serial++, typeof(MeshFilter), typeof(MeshRenderer));
                 go.transform.SetParent(parent, false); go.layer = first.gameObject.layer;
                 go.GetComponent<MeshFilter>().sharedMesh = mesh;
-                var renderer = go.GetComponent<MeshRenderer>(); renderer.sharedMaterial = first.sharedMaterial;
-                renderer.shadowCastingMode = first.shadowCastingMode; renderer.receiveShadows = first.receiveShadows;
+                var renderer = go.GetComponent<MeshRenderer>(); renderer.sharedMaterials = materials;
+                renderer.shadowCastingMode = first.shadowCastingMode; renderer.receiveShadows = first.receiveShadows;renderer.enabled=first.enabled;
                 bool hover = sources.Any(r => r.GetComponent<SpatialAdapterHoverEffect>());
                 if (hover)
                 {
                     var collider = go.AddComponent<BoxCollider>(); collider.center = bounds.center; collider.size = bounds.size;
                     go.AddComponent<SpatialAdapterHoverEffect>();
                 }
-                report.batches.Add(new Batch { parent = PathOf(parent), material = first.sharedMaterial.name, sources = sources.Count, vertices = mesh.vertexCount, trianglesBefore = triangles, trianglesAfter = after, boundsError = error, hover = hover });
+                bool shell=shells.Contains(first),hasDetail=details.ContainsKey(first.GetComponent<MeshFilter>());
+                long miniBefore=0,miniAfter=0;
+                if(hasDetail)
+                {
+                    var miniInstances=new CombineInstance[sources.Count];
+                    Bounds miniBounds=default;bool miniInitialized=false;
+                    for(int i=0;i<sources.Count;i++)
+                    {
+                        var filter=sources[i].GetComponent<MeshFilter>();var miniature=details[filter].miniature;
+                        var matrix=instances[i].transform;
+                        miniInstances[i]=new CombineInstance{mesh=miniature,subMeshIndex=0,transform=matrix};
+                        miniBefore+=miniature.GetIndexCount(0)/3;
+                        foreach(var v in miniature.vertices){var p=matrix.MultiplyPoint3x4(v);if(!miniInitialized){miniBounds=new Bounds(p,Vector3.zero);miniInitialized=true;}else miniBounds.Encapsulate(p);}
+                    }
+                    var miniMesh=CombineByMaterial(miniInstances,sources,materials,mesh.name+" miniature");
+                    miniAfter=Triangles(miniMesh);
+                    if(miniBefore!=miniAfter||(miniMesh.bounds.min-miniBounds.min).magnitude>.001f||(miniMesh.bounds.max-miniBounds.max).magnitude>.001f)
+                        throw new InvalidOperationException("Rigid miniature batch changed geometry");
+                    string miniPath=folder+"/Rigid_"+(serial-1).ToString("0000")+"_Miniature.asset";
+                    var existingMini=AssetDatabase.LoadAssetAtPath<Mesh>(miniPath);
+                    if(existingMini){EditorUtility.CopySerialized(miniMesh,existingMini);UnityEngine.Object.DestroyImmediate(miniMesh);miniMesh=existingMini;EditorUtility.SetDirty(miniMesh);}
+                    else AssetDatabase.CreateAsset(miniMesh,miniPath);
+                    var oldFilters=new HashSet<MeshFilter>(sources.Select(r=>r.GetComponent<MeshFilter>()));
+                    journey.detailMeshes=journey.detailMeshes.Where(d=>!oldFilters.Contains(d.filter))
+                        .Append(new JourneyDetail{filter=go.GetComponent<MeshFilter>(),inspection=mesh,miniature=miniMesh}).ToArray();
+                }
+                if(shell)
+                {
+                    var oldRenderers=new HashSet<Renderer>(sources);
+                    journey.shellRenderers=journey.shellRenderers.Where(r=>!oldRenderers.Contains(r)).Append(renderer).ToArray();
+                }
                 foreach (var r in sources)
                 {
                     if(r.transform.parent!=parent)report.liftedLeaves++;
@@ -142,13 +209,38 @@ namespace SwanJourney.Editor
                     // components migrate to the sibling compound geometry.
                     foreach (var c in r.GetComponents<Collider>()) { UnityEngine.Object.DestroyImmediate(c); report.removedColliders++; }
                     var h = r.GetComponent<SpatialAdapterHoverEffect>(); if (h) UnityEngine.Object.DestroyImmediate(h);
-                    // Eligibility proved this leaf and all components have no
-                    // serialized references. Remove the now-empty leaf too;
+                    // Known shell/detail references have already been remapped;
+                    // eligibility protects every other serialized reference.
+                    // Remove the now-empty leaf too;
                     // otherwise the adapter still visits it on every frame.
                     UnityEngine.Object.DestroyImmediate(r.gameObject);
                 }
+                report.batches.Add(new Batch { parent = PathOf(parent), material = string.Join(";",materials.Select(m=>m.name)), materialSlots=materials.Length,sources = sources.Count, vertices = mesh.vertexCount, trianglesBefore = triangles, trianglesAfter = after, boundsError = error, hover = hover,shell=shell,detail=hasDetail,miniatureTrianglesBefore=miniBefore,miniatureTrianglesAfter=miniAfter });
                 report.removedRenderers += sources.Count; report.createdRenderers++;
             }
+        }
+        static long Triangles(Mesh mesh)=>Enumerable.Range(0,mesh.subMeshCount).Sum(s=>(long)mesh.GetIndexCount(s)/3);
+        static Mesh CombineByMaterial(CombineInstance[] instances,List<MeshRenderer> sources,Material[] materials,string name)
+        {
+            var temporary=new List<Mesh>();
+            try
+            {
+                var submeshes=new List<CombineInstance>();
+                foreach(var material in materials)
+                {
+                    var selected=instances.Where((_,i)=>sources[i].sharedMaterial==material).ToArray();
+                    var sub=new Mesh{indexFormat=IndexFormat.UInt32};temporary.Add(sub);
+                    sub.CombineMeshes(selected,true,true);
+                    long expected=selected.Sum(x=>(long)x.mesh.GetIndexCount(x.subMeshIndex)/3);
+                    if(Triangles(sub)!=expected)throw new InvalidOperationException("Material batch lost triangles: "+material.name);
+                    submeshes.Add(new CombineInstance{mesh=sub,transform=Matrix4x4.identity});
+                }
+                var mesh=new Mesh{name=name,indexFormat=IndexFormat.UInt32};
+                mesh.CombineMeshes(submeshes.ToArray(),false,false);mesh.RecalculateBounds();
+                if(mesh.subMeshCount!=materials.Length)throw new InvalidOperationException("Material slot order changed");
+                return mesh;
+            }
+            finally{foreach(var mesh in temporary)UnityEngine.Object.DestroyImmediate(mesh);}
         }
         static string PathOf(Transform t) => t.parent ? PathOf(t.parent) + "/" + t.name : t.name;
     }

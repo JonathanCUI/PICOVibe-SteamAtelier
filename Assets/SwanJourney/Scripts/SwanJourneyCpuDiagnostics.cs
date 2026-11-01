@@ -19,6 +19,8 @@ namespace SwanJourney
         bool ownsSession, paused, previousDrive;
         int previousInstalled = -1, previousInspection = -1;
         bool previousVerify, previousRolling;
+        SwanJourneyPerformanceProbe probe;
+        string previousProfile="normal";
         int frames, movingFrames, lateSamples, longFrames;
         double windowStart, lastFrameTime, longestFrameMs, lateTotal;
 
@@ -26,6 +28,7 @@ namespace SwanJourney
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             if (!journey || !journey.SwanInputActive) return;
+            probe=GetComponent<SwanJourneyPerformanceProbe>();
             ownsSession = SwanJourneyCpuTimings.BeginSession(this);
             if (!ownsSession) return;
             try { lateUpdate = ProfilerRecorder.StartNew(ProfilerCategory.Scripts, "LateBehaviourUpdate", 1); }
@@ -45,11 +48,13 @@ namespace SwanJourney
             foreach (var part in journey.modules) if (part.installed) installed++;
             foreach (var part in journey.finishing) if (part.installed) installed++;
             bool rolling = journey.inSandbox && journey.speed > .035f;
+            string profile=probe?probe.ActiveProfile:"normal";
             if (previousDrive != journey.inSandbox || previousInstalled != installed ||
-                previousInspection != journey.inspectionMode || previousVerify != journey.running || previousRolling != rolling)
+                previousInspection != journey.inspectionMode || previousVerify != journey.running || previousRolling != rolling || previousProfile!=profile)
             {
                 previousDrive = journey.inSandbox; previousInstalled = installed; previousInspection = journey.inspectionMode;
                 previousVerify = journey.running; previousRolling = rolling;
+                previousProfile=profile;
                 ResetWindow(); return;
             }
             frames++;
@@ -65,6 +70,7 @@ namespace SwanJourney
             if (elapsed < 5) return;
             line.Clear();
             line.Append("SWAN_JOURNEY_CPU_WINDOW mode=").Append(previousDrive ? "drive" : "workshop")
+                .Append(" profile=").Append(previousProfile)
                 .Append(" installed=").Append(previousInstalled).Append(" verify=").Append(previousVerify)
                 .Append(" inspection=").Append(previousInspection).Append(" rolling=").Append(previousRolling)
                 .Append(" frames=").Append(frames).Append(" twoHandFrames=").Append(movingFrames)

@@ -94,7 +94,17 @@ namespace SwanJourney.Editor
 
             f.SetMode(true); f.Tick();
             Check(f.enhance.CloudWriteCount == 0 && f.atmos.CloudWriteCount == 3,
-                "Enabled initialized V16 is the sole Swan writer for the three shared clouds", checks);
+                "On a due visual tick, initialized V16 is the sole Swan writer for the three shared clouds", checks);
+            // Edit Mode does not advance player frames. Exercise both sides of
+            // the new 30 Hz gate without sleeps or changing the runtime clock.
+            float frameDelta = Mathf.Min(Time.deltaTime, .06f);
+            Set(f.atmos, "visualElapsed", 1f / 30f - .001f - frameDelta);
+            f.Tick(false);
+            Check(f.atmos.CloudWriteCount == 3 && f.enhance.CloudWriteCount == 0,
+                "A sub-interval Swan frame skips cloud writes without activating the V15 fallback", checks);
+            f.Tick();
+            Check(f.atmos.CloudWriteCount == 6 && f.enhance.CloudWriteCount == 0,
+                "The next due Swan visual tick updates all three clouds exactly once", checks);
             Check(!f.smoke.GetComponent<Renderer>().enabled && f.dust.isPlaying && f.plume.isPlaying
                 && f.beam.gameObject.activeSelf && f.halo.gameObject.activeSelf,
                 "Sandbox entry restores particles and lamp visuals while suppressing legacy smoke", checks);
@@ -228,10 +238,17 @@ namespace SwanJourney.Editor
             {
                 journey.inSandbox = sandbox; journey.sandboxRoot.SetActive(sandbox);
             }
-            public void Tick()
+            public void Tick(bool visualUpdateDue = true)
             {
                 Invoke(enhance, "LateUpdate");
-                if (atmos && atmos.isActiveAndEnabled) Invoke(atmos, "LateUpdate");
+                if (atmos && atmos.isActiveAndEnabled)
+                {
+                    // Lifecycle checks advance one scheduled visual update;
+                    // Tick(false) explicitly exercises an intervening frame.
+                    if (visualUpdateDue && journey.SwanInputActive && journey.inSandbox)
+                        Set(atmos, "visualElapsed", 1f / 30f);
+                    Invoke(atmos, "LateUpdate");
+                }
             }
             public void Dispose()
             {

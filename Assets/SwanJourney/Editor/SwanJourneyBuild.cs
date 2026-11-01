@@ -130,6 +130,8 @@ namespace SwanJourney.Editor
                     detail.miniature = detail.inspection;
             }
             File.WriteAllText(Output+"/workshop-mesh-budget.json",JsonUtility.ToJson(meshBudget,true));
+            SwanJourneyPerformanceProbeBuild.Configure(journey,interaction);
+            SwanJourneyEmptyNodeBudget.Apply(journey);
             SwanJourneyBootScene.Generate(journey.font);
             SwanJourneyNodeAlignment.ValidateAndBind(scene,EnvironmentScenePath);
             // The Windows Resources scan passes backslash paths to the SDK's
@@ -214,7 +216,7 @@ namespace SwanJourney.Editor
         static void Configure()
         {
             PlayerSettings.companyName="PICO Vibe";PlayerSettings.productName="蒸汽工坊·V23";
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.25";PlayerSettings.Android.bundleVersionCode=25;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,PackageId);PlayerSettings.bundleVersion="0.23.32";PlayerSettings.Android.bundleVersionCode=32;
             SwanJourneyIcon.Configure();
             var runtime=new SerializedObject(AssetDatabase.LoadMainAssetAtPath("Assets/Settings/SpatialAdapterRuntimeSettings.asset"));
             runtime.FindProperty("m_enableSpatialAdapter").boolValue=true;
@@ -257,9 +259,10 @@ namespace SwanJourney.Editor
         {
             BuildAndroidInternal(true);
         }
-        static void BuildAndroidInternal(bool development)
+        public static void BuildAndroidWithAssemblyBaseline()=>BuildAndroidInternal(true,true);
+        static void BuildAndroidInternal(bool development,bool compareAssembly=false)
         {
-            Generate();SwanJourneyFeedbackChecks.Run();ClearExportCaches();
+            Generate();if(compareAssembly)SwanJourneyAssemblyCostAudit.Compare();SwanJourneyFeedbackChecks.Run();ClearExportCaches();
             // APK incremental packaging can retain gigabytes of freed ZIP gaps
             // after textures shrink. Rebuild only the generated launcher output.
             string launcherBuild=Path.GetFullPath("Library/Bee/Android/Prj/IL2CPP/Gradle/launcher/build");
