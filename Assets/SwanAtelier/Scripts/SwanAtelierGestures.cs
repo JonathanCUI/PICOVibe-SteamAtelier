@@ -9,6 +9,7 @@ namespace SwanAtelier
     public struct SwanGestureSample
     {
         public long id;
+        public double capturedAt;
         public TouchPhase phase;
         public bool pinch;
         public GameObject target;

@@ -21,14 +21,16 @@ namespace SwanJourney.Editor
             public List<string> checks = new List<string>();
             public string failure;
         }
-        public static void Run()
+        public static void Run() => RunScene(SwanJourneyBuild.ScenePath,false);
+        public static void RunXr(string path) => RunScene(path,true);
+        static void RunScene(string path,bool xr)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Edit Mode required");
             var report = new Report();
             SwanJourneyInteraction input = null;
             try
             {
-                EditorSceneManager.OpenScene(SwanJourneyBuild.ScenePath);
+                EditorSceneManager.OpenScene(path);
                 input = UnityEngine.Object.FindObjectOfType<SwanJourneyInteraction>(true);
                 var journey = input.journey;
                 journey.suppressPersistence = true;
@@ -69,13 +71,13 @@ namespace SwanJourney.Editor
                     "Later module cannot bypass required teaching order");
                 Reset(); Park(first); Park(second); Tap(first); Tap(second); Tap(first);
                 Check(!input.QuickReturning, "Pinches on different parts cannot combine");
-                Reset(); Park(first); Tap(first); now += .6; Tap(first);
+                Reset(); Park(first); Tap(first); now += xr ? 1.30 : .6; Tap(first);
                 Check(!input.QuickReturning, "Expired first pinch cannot trigger installation");
                 Reset(); Park(first); Tap(first); Tap(first, canceled:true); Tap(first);
                 Check(!input.QuickReturning && !first.installed, "Canceled gesture clears previous pinch");
                 Reset(); Park(first); Tap(first, handTravel:.12f); Tap(first);
                 Check(!input.QuickReturning && !first.installed, "Real dragging is not counted as a short pinch");
-                Reset(); Park(first); Tap(first, duration:.60); Tap(first);
+                Reset(); Park(first); Tap(first, duration:xr ? .90 : .60); Tap(first);
                 Check(!input.QuickReturning, "Long grab cannot be first half of double pinch");
 
                 Reset(); Park(first); Tap(first);
@@ -115,6 +117,104 @@ namespace SwanJourney.Editor
                 input.TickQuickReturn(.07f); input.ResetSpatialGestures();
                 Check(!input.QuickReturning && !first.installed && first.parked && journey.SwanHeldModule == null,
                     "Pause/reset during flight preserves loose part without installation");
+                if (xr)
+                {
+                    Reset();
+                    Check(input.directXrInput && journey.InstallCurrent() && journey.SwanDetach(first) && first.parked,
+                        "XR test starts with an installed part detached and floating");
+                    first.preview.transform.position+=Vector3.right*15f;
+                    Physics.SyncTransforms();
+                    var focus=UnityEngine.Object.FindObjectOfType<SteamXrFocus>();
+                    Invoke(focus,"Awake");
+                    var bounds=first.preview.GetComponentInChildren<Collider>().bounds;
+                    var origin=bounds.center+Vector3.back*(bounds.extents.z+.25f);
+                    var gazeHit=focus.Pick(new Ray(origin,Vector3.forward));
+                    var target=focus.GestureTarget(gazeHit);
+                    Check(gazeHit.collider && target==first.preview, "Gaze on the floating mesh resolves to its detached part");
+                    bool down=false;
+                    foreach(var gap in new[]{.016f,.030f,.017f,.030f})
+                    {
+                        var thumb=new ByteDance.PICO.XR.HandJointLocation {locationStatus=ByteDance.PICO.XR.HandLocationStatus.PositionValid,
+                            pose=new ByteDance.PICO.XR.Posef(Vector3.back,Quaternion.identity)};
+                        var index=thumb;index.pose=new ByteDance.PICO.XR.Posef(Vector3.back+Vector3.right*gap,Quaternion.identity);
+                        bool tracked=SteamXrTrial.ResolvePinch(default,thumb,index,down,Vector3.zero,out var pinchCentre,out _,out bool pressed);
+                        Check(tracked && down!=pressed,"Realistic single-hand finger gap produces the next pinch edge");
+                        input.QueueXrGesture(new SwanGestureSample {id=102,pinch=true,target=target,hitPosition=gazeHit.point,
+                            handPosition=pinchCentre,phase=pressed?TouchPhase.Began:TouchPhase.Ended});
+                        now+=.12;input.ProcessGestureFrame(now,.011f);down=pressed;
+                    }
+                    Check(input.QuickReturning && !first.installed,"XR same-hand double pinch starts the original socket animation");
+                    Finish(first);
+                    Reset(); Park(first);
+                    var motion=new SteamXrTrial.PartPinchMotion();
+                    bool pinched=false;
+                    var point=first.preview.transform.position;
+                    void Fingers(float separation,double elapsed,bool drain)
+                    {
+                        now+=elapsed;
+                        bool next=motion.Read(separation,pinched,input.WaitingForPartRelease(102),false);
+                        if (next!=pinched)
+                            input.QueueXrGesture(new SwanGestureSample {id=102,pinch=true,capturedAt=now,
+                                phase=next ? TouchPhase.Began : TouchPhase.Ended,target=first.preview,handPosition=point,hitPosition=point});
+                        pinched=next;
+                        if (drain) input.ProcessGestureFrame(now,.011f);
+                    }
+                    Fingers(.012f,.01,true);
+                    Fingers(.015f,.025,true); Fingers(.012f,.025,true);
+                    Check(pinched && !input.QuickReturning,"Small tracking jitter during one held pinch does not split it");
+                    Fingers(.021f,.025,false);
+                    Check(!pinched,"Brief partial opening releases a loose part below the ordinary 28 mm threshold");
+                    Fingers(.020f,.01,false);
+                    Check(!pinched,"Remaining half-open does not manufacture a second press");
+                    Fingers(.012f,.025,true); // Previous release and this press arrive together.
+                    Check(pinched && !input.QuickReturning,"Rapid reclose starts a real second pinch in the same input batch");
+                    Fingers(.022f,.06,true);
+                    Check(!pinched && input.QuickReturning,"Fast same-hand double pinch with a 35 ms gap starts one flight");
+                    Finish(first);
+                    foreach (float closedGap in new[]{.0075f,.018f})
+                    {
+                        Reset(); Park(first); point=first.preview.transform.position;
+                        motion=default; pinched=false;
+                        Fingers(.021f,.05,true); Fingers(closedGap,.04,true);
+                        Fingers(closedGap+.0032f,.025,true);
+                        Check(pinched,"3.2 mm of fingertip jitter does not release the part");
+                        Fingers(closedGap+.0048f,.02,true);
+                        Check(!pinched && !input.QuickReturning,"A 4.8 mm lift releases at both tight and wider starting gaps");
+                        Fingers(closedGap+.0030f,.025,true);
+                        Check(!pinched,"Small recoil after opening is not a second pinch");
+                        Fingers(closedGap+.0008f,.025,true);
+                        Check(pinched && !input.QuickReturning,"A deliberate 4 mm reclose starts the second pinch");
+                        Fingers(closedGap+.0057f,.04,true);
+                        Check(!pinched && input.QuickReturning,"Two small openings finish exactly one double pinch");
+                        Finish(first);
+                    }
+                    var dragMotion=new SteamXrTrial.PartPinchMotion();
+                    dragMotion.Read(.012f,false,false,false);
+                    Check(dragMotion.Read(.021f,true,false,false) && dragMotion.Read(.030f,true,false,true),
+                        "A small finger opening keeps ordinary drags and two-hand manipulation held");
+                    Reset();Park(first);Tap(first);Tap(first,handId:8102);
+                    Check(!input.QuickReturning,"Alternating hands cannot complete a parked part's double pinch");
+                    foreach(bool parked in new[]{false,true})
+                    {
+                        Reset();
+                        if (parked) Park(first);
+                        var before=first.preview.transform.position;
+                        Tap(first,duration:.62,handTravel:.025f);
+                        Check(first.parked==parked && Vector3.Distance(before,first.preview.transform.position)<.001f,
+                            "A relaxed first pinch leaves the tray or floating part in place");
+                        now+=1.15; // Tap includes another 0.10 s after release.
+                        Tap(first,duration:.70,handTravel:.03f);
+                        Check(input.QuickReturning,"Two deliberate pinches with a 1.25 s release gap return the same part");
+                        Finish(first);
+                    }
+                    Reset(); Park(first);
+                    var p=first.preview.transform.position;
+                    Send(102,Target(first),TouchPhase.Began,p,p); input.ProcessGestureFrame(now,.011f);
+                    now+=.10;
+                    Send(102,Target(first),TouchPhase.Moved,p,p+Vector3.right*.09f); input.ProcessGestureFrame(now,.011f);
+                    Check(journey.SwanHeldModule==first,"Purposeful drag starts before the relaxed tap duration expires");
+                    input.ResetSpatialGestures();
+                }
                 report.passed = true;
                 Debug.Log("SWAN_JOURNEY_QUICK_INSTALL_CHECKS_PASS checks=" + report.checks.Count + " nativeGesturesValidated=false");
 
@@ -134,16 +234,16 @@ namespace SwanJourney.Editor
                     journey.RefreshPreview();
                 }
                 void Tap(JourneyModule m, double duration = .08, bool canceled = false,
-                    bool rayDrift = false, bool blankRelease = false, float handTravel = 0)
+                    bool rayDrift = false, bool blankRelease = false, float handTravel = 0,long handId=8101)
                 {
                     Vector3 p = m.preview.transform.position, h = p + Vector3.back * .35f;
                     var target = Target(m);
-                    Send(8101, target, TouchPhase.Began, p, h); input.ProcessGestureFrame(now, .001f);
+                    Send(handId, target, TouchPhase.Began, p, h); input.ProcessGestureFrame(now, .001f);
                     now += duration * .6;
-                    Send(8101, target, TouchPhase.Moved, p + (rayDrift ? Vector3.right * .25f : Vector3.zero), h + Vector3.up * handTravel);
+                    Send(handId, target, TouchPhase.Moved, p + (rayDrift ? Vector3.right * .25f : Vector3.zero), h + Vector3.up * handTravel);
                     input.ProcessGestureFrame(now, .001f);
                     now += duration * .4;
-                    Send(8101, blankRelease ? null : target, canceled ? TouchPhase.Canceled : TouchPhase.Ended,
+                    Send(handId, blankRelease ? null : target, canceled ? TouchPhase.Canceled : TouchPhase.Ended,
                         blankRelease ? Vector3.zero : p, blankRelease ? Vector3.zero : h + Vector3.up * handTravel);
                     input.ProcessGestureFrame(now, .001f); now += .1;
                 }
@@ -164,7 +264,7 @@ namespace SwanJourney.Editor
             {
                 if (input) input.ResetSpatialGestures();
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                EditorSceneManager.OpenScene(SwanJourneyBuild.ScenePath);
+                EditorSceneManager.OpenScene(path);
                 Directory.CreateDirectory(SwanJourneyBuild.Output);
                 File.WriteAllText(SwanJourneyBuild.Output + "/quick-install-checks.json", JsonUtility.ToJson(report, true));
             }

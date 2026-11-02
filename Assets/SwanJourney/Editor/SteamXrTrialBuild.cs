@@ -21,6 +21,12 @@ public static class SteamXrTrialBuild
         xr.InitManagerOnStart = xr.Manager.automaticLoading = xr.Manager.automaticRunning = true;
         EditorUtility.SetDirty(xr);
         EditorUtility.SetDirty(xr.Manager);
+        var pico = PXR_ProjectSetting.GetProjectConfig();
+        pico.handTracking = true;
+        pico.highFrequencyHand = true;
+        pico.eyeTracking = true;
+        pico.handTrackingSupportType = HandTrackingSupport.ControllersAndHands;
+        EditorUtility.SetDirty(pico);
         const string source = "Assets/SwanJourney/Scenes/SteamJourneySwan.unity";
         const string scenePath = "Assets/SwanJourney/Scenes/SteamJourneyXRTrial.unity";
         SwanJourney.Editor.SwanCanyonFoliage.PreparePrefab();
@@ -52,17 +58,34 @@ public static class SteamXrTrialBuild
         camera.clearFlags = CameraClearFlags.SolidColor;
         camera.backgroundColor = Color.clear;
         camera.allowHDR = false;
+        var hud = UnityEngine.Object.FindObjectOfType<SwanAtelier.SwanFrameRateHud>(true);
+        if (!hud || !hud.meshText) throw new InvalidOperationException("XR room is missing its FPS glyphs");
+        hud.xrView = camera;
+        hud.VisualTransform.SetParent(camera.transform, false);
+        hud.VisualTransform.localPosition = hud.viewOffset;
+        hud.VisualTransform.localRotation = Quaternion.identity;
+        hud.VisualTransform.localScale = Vector3.one * hud.visualScale;
+        hud.meshText.gameObject.SetActive(true);
+        hud.gameObject.SetActive(true);
         foreach (var mood in UnityEngine.Object.FindObjectsOfType<StudioWorkshopMood>(true))
             mood.useEnvironmentBackground = true;
         eye.AddComponent<AudioListener>();
-        rig.AddComponent<PXR_Manager>();
+        rig.AddComponent<PXR_Manager>().eyeTracking = true;
         input.directXrInput = true;
         journey.view = camera;
         var trial = rig.AddComponent<SteamXrTrial>();
         trial.view = camera; trial.journey = journey; trial.interaction = input;
+        trial.focus = rig.AddComponent<SteamXrFocus>();
+        trial.focus.journey = journey;
+        trial.focus.highlightShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrGazeHighlight.shader");
+        trial.handMaskShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrPassthroughHand.shader");
+        if (!trial.focus.highlightShader || !trial.handMaskShader) throw new InvalidOperationException("Missing XR interaction shaders");
+        trial.handMasks = new[] { AddHandMask(rig.transform, "HandLeft"), AddHandMask(rig.transform, "HandRight") };
         SwanJourney.Editor.SwanXrValleyCloudArt.Apply(journey,trial);
         SwanJourney.Editor.SwanXrDayNightArt.Apply(journey,input);
+        ValidateHandInteraction(scene);
         if (!EditorSceneManager.SaveScene(scene, scenePath, true)) throw new IOException(scenePath);
+        SwanJourney.Editor.SwanJourneyQuickInstallChecks.RunXr(scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath,true) };
         PlayerSettings.SetApplicationIdentifier(group, "com.picovibe.steamatelier.xrtrial.room");
         PlayerSettings.productName = "Steam Atelier XR Room";
@@ -77,11 +100,10 @@ public static class SteamXrTrialBuild
         var jdk = AndroidExternalToolsSettings.jdkRootPath;
         try
         {
-            AndroidExternalToolsSettings.sdkRootPath = @"D:/work/6000.0.23f1/Editor/Data/PlaybackEngines/AndroidPlayer/SDK";
-            AndroidExternalToolsSettings.ndkRootPath = @"D:/work/2022.3.5f1c1/Editor/Data/PlaybackEngines/AndroidPlayer/NDK";
-            AndroidExternalToolsSettings.jdkRootPath = @"D:/work/2022.3.5f1c1/Editor/Data/PlaybackEngines/AndroidPlayer/OpenJDK";
+            var sdkOverride = Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT");
+            if (!string.IsNullOrEmpty(sdkOverride)) AndroidExternalToolsSettings.sdkRootPath = sdkOverride;
             Directory.CreateDirectory("Builds/XRTrial");
-            var r = BuildPipeline.BuildPlayer(new[]{scenePath},"Builds/XRTrial/SteamAtelierXRRoom-TrackLights.apk",BuildTarget.Android,BuildOptions.None);
+            var r = BuildPipeline.BuildPlayer(new[]{scenePath},"Builds/XRTrial/SteamAtelierXRRoom-HandFocus.apk",BuildTarget.Android,BuildOptions.None);
             if (r.summary.result != BuildResult.Succeeded) throw new Exception("XR build: "+r.summary.result);
         }
         finally
@@ -91,6 +113,55 @@ public static class SteamXrTrialBuild
             AndroidExternalToolsSettings.jdkRootPath = RestoreTool(jdk);
         }
     }
+    static void ValidateHandInteraction(UnityEngine.SceneManagement.Scene scene)
+    {
+        var aim=new HandAimState { aimStatus=HandAimStatus.AimRayValid, aimRayPose=Posef.Identity };
+        // PXR joint records are right-handed. One metre forward is raw Z=-1.
+        var thumb=new HandJointLocation { locationStatus=HandLocationStatus.PositionValid, pose=new Posef(Vector3.back,Quaternion.identity) };
+        var index=thumb;
+        foreach (var gap in new[]{.015f,.025f,.030f,.045f})
+        {
+            index.pose=new Posef(Vector3.back+Vector3.right*gap,Quaternion.identity);
+            bool held=gap>.02f;
+            if (!SteamXrTrial.ResolvePinch(aim,thumb,index,held,Vector3.zero,out var centre,out _,out bool pressed)
+                || pressed!=(gap<.028f) || Vector3.Distance(centre,Vector3.forward+Vector3.right*gap*.5f)>.0001f)
+                throw new InvalidOperationException("XR fingertip pinch/hold/release failed at "+gap);
+            if (!SteamXrTrial.ResolvePinch(aim,thumb,index,held,Vector3.zero,out _,out _,out bool twoHandPressed,true)
+                || twoHandPressed!=(gap<.035f)) throw new InvalidOperationException("XR two-hand hold failed at "+gap);
+        }
+        aim.aimStatus|=HandAimStatus.AimIndexPinching;
+        if (!SteamXrTrial.ResolvePinch(aim,default,default,false,Vector3.zero,out _,out _,out bool sdkPinch) || !sdkPinch
+            || SteamXrTrial.ResolvePinch(default,default,default,false,Vector3.zero,out _,out _,out _))
+            throw new InvalidOperationException("XR aim-only or untracked hand failed");
+        int proxies=0,caps=0;
+        foreach (var c in UnityEngine.Object.FindObjectsOfType<Collider>(true))
+        {
+            if (c.gameObject.scene!=scene) continue;
+            var feedback=c.GetComponentInParent<JourneyButtonFeedback>(true);
+            bool button=feedback && feedback.cap;
+            bool proxy=c.name=="Swan positive-scale hit proxy";
+            if (!button && !proxy) continue;
+            var root=SteamXrFocus.HighlightRoot(c);
+            if (!root || (button && root!=feedback.cap) || !root.GetComponentInChildren<MeshFilter>(true))
+                throw new InvalidOperationException("Missing XR focus surface: "+c.name);
+            if (button) caps++;
+            if (proxy) proxies++;
+        }
+        if (caps==0 || proxies==0) throw new InvalidOperationException("XR focus fixtures missing: caps="+caps+" proxies="+proxies);
+        Debug.Log("XR_HAND_FOCUS_CHECK_PASS independentHands=true pinchHoldRelease=true caps="+caps+" proxies="+proxies);
+    }
+    static SkinnedMeshRenderer AddHandMask(Transform rig, string name)
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.bytedance.pico.xr/Resources/Prefabs/" + name + ".prefab");
+        var hand = UnityEngine.Object.Instantiate(prefab, rig, false);
+        if (!hand.GetComponent<PXR_VstModelPosCheck>()) hand.AddComponent<PXR_VstModelPosCheck>();
+        var skin = hand.GetComponentsInChildren<SkinnedMeshRenderer>(true).Single(r => r.bones.Length >= 20);
+        foreach (var renderer in hand.GetComponentsInChildren<Renderer>(true)) renderer.enabled = false;
+        skin.updateWhenOffscreen = true;
+        skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        return skin;
+    }
+
     static string RestoreTool(string oldPath)
     {
         if (!Directory.Exists(oldPath)) return null;

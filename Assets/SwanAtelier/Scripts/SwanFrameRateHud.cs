@@ -12,6 +12,7 @@ namespace SwanAtelier
     {
         public SwanFpsMeshText meshText;
         public Camera editorPreviewCamera;
+        public Camera xrView;
         public Vector3 viewOffset = new Vector3(-.32f, .25f, 1.1f);
         // Opt-in layout scale; older Swan scenes retain their original glyph size.
         public float visualScale = 1f;
@@ -48,6 +49,14 @@ namespace SwanAtelier
         }
         void TrackView()
         {
+            // In the XR Room scene the glyphs inherit the stereo camera's final render pose.
+            if (xrView) {
+                latestPose = new Pose(xrView.transform.position, xrView.transform.rotation);
+                HasTrackedPose = xrView.isActiveAndEnabled;
+                PoseResult = HasTrackedPose ? 0 : 1;
+                SetVisualActive(HasTrackedPose);
+                return;
+            }
 #if UNITY_ANDROID && !UNITY_EDITOR
             double now=Time.realtimeSinceStartupAsDouble;
             if(now>=nextInputRetry) {

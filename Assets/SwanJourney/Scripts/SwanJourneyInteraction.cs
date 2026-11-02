@@ -25,14 +25,16 @@ namespace SwanJourney
         bool WorkbenchInputBlocked => journey.verificationInputLock || journey.SwanSceneLoading || journey.SwanTransitionActive || journey.CompletionActive;
 
         const double JoinDelay = .28, ShortPinch = .40, DoubleGap = .50;
+        const double XrTapHold = .80, XrTapGap = 1.35;
         const float TapTravel = .025f;
         const float QuickPinchTravel = .04f;
+        const float XrLooseTapTravel = .055f;
         sealed class Contact
         {
             public long id;
             public bool down, pending, blocked, ended, canceled, pinch, ownsRoot;
             public bool wasLoose, grabbing, continuousMoved, useHand, celestialActive, skyAutomatic;
-            public double began;
+            public double began, endedAt;
             public GameObject target;
             public SwanJourneyTargetKind? kind;
             public JourneyModule module;
@@ -55,6 +57,7 @@ namespace SwanJourney
         bool paused, previousSandbox;
         JourneyModule quickTap, returning;
         double quickTapEnded;
+        long quickTapHand;
         Vector3 returnFrom;
         Quaternion returnRotation;
         float returnElapsed;
@@ -137,10 +140,11 @@ namespace SwanJourney
                 Remember(device.deviceId, spatial.primary.ReadValue());
                 Remember(device.deviceId, spatial.secondary.ReadValue());
             }
-            Drain(Time.unscaledTimeAsDouble);
+            double now = directXrInput ? Time.realtimeSinceStartupAsDouble : Time.unscaledTimeAsDouble;
+            Drain(now);
             foreach (var contact in contacts.Values) if (contact.down && !live.Contains(contact.id))
             { contact.down = false; contact.ended = contact.canceled = true; }
-            Resolve(Time.unscaledTimeAsDouble, Time.unscaledDeltaTime);
+            Resolve(now, Time.unscaledDeltaTime);
             TickQuickReturn(Time.unscaledDeltaTime);
             TickExplosion(Time.unscaledDeltaTime);
         }
@@ -185,15 +189,23 @@ namespace SwanJourney
             while (samples.Count > 0)
             {
                 var sample = samples.Dequeue(); contacts.TryGetValue(sample.id, out var contact);
+                double sampledAt = directXrInput && sample.capturedAt > 0 ? sample.capturedAt : now;
                 if (sample.phase == TouchPhase.Began && (contact == null || !contact.down))
                 {
+                    // A render-time release and the next Update's press can share one drain.
+                    if (directXrInput && contact != null && contact.ended)
+                    {
+                        ResolveContact(contact, contact.endedAt);
+                        contacts.Remove(sample.id);
+                        contact = null;
+                    }
                     bool own = OwnsTarget(sample.target);
                     if (!own && !(sample.pinch && !sample.target && ValidHand(sample.handPosition))) continue;
                     contact = new Contact { id = sample.id, down = true, pending = true, pinch = sample.pinch,
-                        target = sample.target, ownsRoot = own, began = now, startHit = sample.hitPosition,
+                        target = sample.target, ownsRoot = own, began = sampledAt, startHit = sample.hitPosition,
                         startHand = sample.handPosition, useHand = sample.pinch && ValidHand(sample.handPosition) };
                     ResolveTarget(contact);
-                    if (contact.module != quickTap) ClearTap();
+                    if (contact.module != quickTap || directXrInput && contact.id!=quickTapHand) ClearTap();
                     contact.wasLoose = contact.module != null && !contact.module.installed;
                     contacts[sample.id] = contact;
                     Debug.Log("SWAN_JOURNEY_INPUT_BEGIN id=" + sample.id + " target=" + (sample.target ? sample.target.name : "no-hit"));
@@ -211,6 +223,7 @@ namespace SwanJourney
                 contact.maxTravel = Mathf.Max(contact.maxTravel, travel);
                 if (sample.phase == TouchPhase.Ended || sample.phase == TouchPhase.Canceled)
                 { contact.down = false; contact.ended = true; contact.canceled = sample.phase == TouchPhase.Canceled; }
+                if (contact.ended) contact.endedAt = sampledAt;
             }
         }
         bool OwnsTarget(GameObject target)
@@ -268,7 +281,7 @@ namespace SwanJourney
                 a = b = null;
                 foreach (var c in contacts.Values) if (c.down && c.pinch)
                 { if (a == null || !a.down) a = c; else if (c != a) { b = c; break; } }
-                if (a != null && b != null && a.down && b.down && (a.ownsRoot || b.ownsRoot))
+                if (a != null && b != null && a.down && b.down && (directXrInput || a.ownsRoot || b.ownsRoot))
                 {
                     Cancel(a); Cancel(b); CancelQuickReturn(); CancelExplosion("two-hand-takeover"); ClearTap();
                     if (manipulation.Begin(a.hand, b.hand))
@@ -279,23 +292,28 @@ namespace SwanJourney
             retired.Clear();
             foreach (var c in contacts.Values)
             {
-                if (!c.blocked)
-                {
-                    bool quickTapCandidate = c.ended && IsQuickTap(c, now);
-                    if (c.pending && quickTapCandidate) c.pending = false;
-                    else if (c.pending && (c.down && (!c.pinch || c.kind == SwanJourneyTargetKind.MoveWorkbench || now - c.began >= JoinDelay) || c.ended && !c.canceled)) Begin(c);
-                    if (!c.pending && !c.canceled && !quickTapCandidate) Move(c);
-                    if (c.ended && !c.blocked)
-                    {
-                        // Do not snap a short tap as a normal grab release:
-                        // the second tap owns the animated installation.
-                        End(c, c.canceled || quickTapCandidate); RegisterTap(c, now);
-                    }
-                }
+                ResolveContact(c, c.ended && c.endedAt > 0 ? c.endedAt : now);
                 if (!c.down) retired.Add(c.id);
             }
             foreach (long id in retired) contacts.Remove(id);
         }
+        void ResolveContact(Contact c, double now)
+        {
+            if (c.blocked) return;
+            bool tap = c.ended && IsQuickTap(c, now);
+            if (c.pending && tap) c.pending = false;
+            else if (c.pending && ShouldBegin(c, now)) Begin(c);
+            if (!c.pending && !c.canceled && !tap) Move(c);
+            if (c.ended && !c.blocked)
+            {
+                End(c, c.canceled || tap);
+                RegisterTap(c, now);
+            }
+        }
+        public bool WaitingForPartRelease(long id) =>
+            contacts.TryGetValue(id, out var c) && c.down && c.pending && !c.blocked && XrLoosePinch(c) && !TwoHandActive;
+        public bool WithinPartTapTravel(long id, Vector3 hand) =>
+            contacts.TryGetValue(id, out var c) && Vector3.Distance(hand, c.startHand) <= XrLooseTapTravel;
         bool OtherOwner(Contact c)
         {
             foreach (var other in contacts.Values)
@@ -415,8 +433,10 @@ namespace SwanJourney
             }
             if (c.grabbing && journey.SwanHeldModule == c.module) journey.MoveGrab(c.objectStart + delta);
         }
-        static bool TryHead(out Vector3 position)
+        bool TryHead(out Vector3 position)
         {
+            if (directXrInput && journey && journey.view)
+            { position=journey.view.transform.position; return true; }
             var head=UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.Head);
             position=default;
             return head.isValid&&head.TryGetFeatureValue(UnityEngine.XR.CommonUsages.devicePosition,out position)
@@ -441,24 +461,45 @@ namespace SwanJourney
             { ExplodeAll(); return; }
             if (c.grabbing && journey.SwanHeldModule == c.module) journey.SwanEndGrab(cancel);
             c.grabbing = false;
-            if (!cancel && c.kind == SwanJourneyTargetKind.Control && !c.continuousMoved && c.maxTravel <= TapTravel)
+            float buttonTravel = directXrInput && !Continuous(c.action) ? .075f : TapTravel;
+            if (!cancel && c.kind == SwanJourneyTargetKind.Control && !c.continuousMoved && c.maxTravel <= buttonTravel)
             {
                 // The authored slide has no stepped click; brake and direction
                 // retain their ordinary button actions for short pinches.
-                if (c.action != JourneyAction.Throttle) journey.SwanAct(c.action);
+                if (c.action != JourneyAction.Throttle)
+                {
+                    bool accepted=journey.SwanAct(c.action);
+                    if (directXrInput) Debug.Log("XR_CONTROL action="+c.action+" accepted="+accepted);
+                }
             }
         }
         void Cancel(Contact c) { End(c, true); c.pending = false; c.blocked = true; ClearTap(); }
         void ClearTap() { quickTap = null; quickTapEnded = double.NegativeInfinity; }
+        bool XrLoosePinch(Contact c) => directXrInput && c.pinch && c.wasLoose;
+        bool ShouldBegin(Contact c, double now)
+        {
+            if (c.ended) return !c.canceled;
+            if (!c.down) return false;
+            // While the fingers stay still, a deliberate pinch is still a tap.
+            // Moving out of the tap radius starts dragging without waiting for the hold timeout.
+            if (XrLoosePinch(c)) return c.maxTravel>XrLooseTapTravel || now-c.began>XrTapHold;
+            return !c.pinch || c.kind==SwanJourneyTargetKind.MoveWorkbench || now-c.began>=JoinDelay;
+        }
         bool IsQuickTap(Contact c, double now) => c.pinch && !c.canceled && !c.blocked && c.wasLoose && c.module != null &&
             !c.module.installed && c.module.preview && c.module.preview.activeInHierarchy &&
-            !journey.SwanInputBlocked && !journey.inSandbox && now - c.began <= ShortPinch && c.maxTravel <= QuickPinchTravel;
+            !journey.SwanInputBlocked && !journey.inSandbox && now - c.began <= (XrLoosePinch(c) ? XrTapHold : ShortPinch) &&
+            c.maxTravel <= (XrLoosePinch(c) ? XrLooseTapTravel : QuickPinchTravel);
         void RegisterTap(Contact c, double now)
         {
-            if (!IsQuickTap(c, now)) { ClearTap(); return; }
-            if (quickTap == c.module && c.began >= quickTapEnded && c.began - quickTapEnded <= DoubleGap)
+            bool eligible=IsQuickTap(c,now);
+            bool sameTap=quickTap==c.module && (!directXrInput || quickTapHand==c.id);
+            double gap=c.began-quickTapEnded;
+            if (XrLoosePinch(c))
+                Debug.LogFormat("XR_PART_TAP hold={0:F2}s gap={1:F2}s travel={2:F3}m eligible={3}",now-c.began,sameTap?gap:-1,c.maxTravel,eligible);
+            if (!eligible) { ClearTap(); return; }
+            if (sameTap && gap>=0 && gap <= (XrLoosePinch(c) ? XrTapGap : DoubleGap))
             { ClearTap(); QuickReturn(c.module); }
-            else { quickTap = c.module; quickTapEnded = now; }
+            else { quickTap = c.module; quickTapHand=c.id; quickTapEnded = now; }
         }
         public bool QuickReturn(JourneyModule module)
         {
