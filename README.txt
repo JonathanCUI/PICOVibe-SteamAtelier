@@ -1,4 +1,9 @@
 蒸汽工坊 · V23 — 伙伴修改基线 0.23.23
+
+PICO 真实房间透视版真机测试（2026-11-02）
+安装包：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/download/xr-room-headset-test-20261102/SteamAtelierXRRoom.apk
+测试说明：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/tag/xr-room-headset-test-20261102
+
 保存日期：2026-10-31
 Git 分支：codex/steam-atelier-v23-swan
 
