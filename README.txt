@@ -3,6 +3,9 @@
 PICO 真实房间透视版 · 山谷车灯与轨面照明测试（2026-11-02）
 安装包：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/download/xr-room-track-lights-20261102/SteamAtelierXRRoom-TrackLights.apk
 测试说明：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/tag/xr-room-track-lights-20261102
+完整 XR 工程：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/tree/2f8dd74a3961bd583ad45f06a762245bc35b6ffb
+源码分支：codex/steam-atelier-xr-track-lights
+已有仓库可执行 git fetch origin，再执行 git worktree add --detach ../SteamAtelier-XR 2f8dd74a3961bd583ad45f06a762245bc35b6ffb，在新目录中执行 git lfs pull。
 
 保存日期：2026-10-31
 Git 分支：codex/steam-atelier-v23-swan
