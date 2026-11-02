@@ -16,6 +16,7 @@ namespace SwanJourney
         public Transform[] workshopSupports,sandboxSupports;
         public Transform moveHandle;
         public Transform workshopMoveHandleAnchor, sandboxMoveHandleAnchor;
+        public Bounds sandboxHandleFootprint;
         // This is authored in stage metres and follows the stage's scale.
         // The indirect pinch target remains accessible at small exhibit sizes.
         public float moveHandleWorldGap = .025f;
@@ -86,7 +87,9 @@ namespace SwanJourney
             {
                 cachedMoveAnchor=anchor;moveBoundsAttempted=true;moveLayoutValid=false;
                 MoveHandleBoundsScans++;
-                moveBoundsValid=TryBounds(anchor,anchor,out cachedMoveAnchorBounds);
+                if(anchor==sandboxMoveHandleAnchor && sandboxHandleFootprint.size.sqrMagnitude>0){
+                    cachedMoveAnchorBounds=sandboxHandleFootprint;moveBoundsValid=true;
+                }else moveBoundsValid=TryBounds(anchor,anchor,out cachedMoveAnchorBounds);
             }
             if(!moveBoundsValid){if(moveHandle.localScale!=scale)moveHandle.localScale=scale;return;}
             var anchorToStage=transform.worldToLocalMatrix*anchor.localToWorldMatrix;

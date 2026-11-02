@@ -1,3 +1,4 @@
+#if PICO_MS_SDK
 using System;
 using System.IO;
 using System.Xml;
@@ -28,3 +29,5 @@ namespace SwanAtelier.Editor
         }
     }
 }
+
+#endif

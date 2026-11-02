@@ -9,6 +9,7 @@ namespace SwanJourney
     {
         public SteamJourney journey;
         public GameObject[] frames;
+        public ParticleSystem rollingPlume;
         public MesaSteamTunnelV17 tunnel;
         public const float Height = 2.45f;
         const float SampleInterval = 1f / 15f;
@@ -25,7 +26,11 @@ namespace SwanJourney
                 lastSandbox = journey.inSandbox;
                 if (!journey.ChimneyConnected) return;
             }
-            if (journey.paused) return;
+            if (journey.paused)
+            {
+                if (rollingPlume && rollingPlume.isPlaying) rollingPlume.Pause(false);
+                return;
+            }
             elapsed += Time.deltaTime;
             if (elapsed < SampleInterval) return;
             float dt = elapsed;
@@ -49,6 +54,14 @@ namespace SwanJourney
             if (size < .08f) { Hide(); return; }
             if (lean != lastLean) { transform.localRotation = tilt; lastLean = lean; }
             if (size != lastSize) { transform.localScale = Vector3.one * size; lastSize = size; }
+            if (rollingPlume)
+            {
+                var main=rollingPlume.main;
+                float rate=journey.slow && !journey.inSandbox ? .25f : 1f;
+                if (main.simulationSpeed!=rate) main.simulationSpeed=rate;
+                if (!rollingPlume.isPlaying) rollingPlume.Play(false);
+                return;
+            }
             phase = Mathf.Repeat(phase + dt * (12f + 3f * speed), frames.Length);
             int next = (int)phase;
             if (next == showing) return;
@@ -83,6 +96,8 @@ namespace SwanJourney
 
         void Hide()
         {
+            if (rollingPlume && !rollingPlume.isStopped)
+                rollingPlume.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);
             if (showing < 0) return;
             frames[showing].SetActive(false);
             showing = -1;

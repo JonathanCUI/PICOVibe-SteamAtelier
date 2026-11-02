@@ -27,6 +27,18 @@ namespace SwanJourney.Editor
             Need(j.spatialRoot.GetComponentsInChildren<SpatialLightingV20>(true).All(v => !v.enabled && !v.tunnelAmbient), "No unused tunnel ambient field dependency");
             Need(flow.sources.All(s => s.alphaMaterials.Length == 0), "Arrow sources carry no unused wisp palettes");
             Need(bridge.completionBadge && j.modules.Length+j.finishing.Length==17, "Completion feedback and paired lamps retained");
+            var root = j.spatialRoot;
+            Need(j.fixedValleyDaylight && !root.GetComponentInChildren<MesaDayNightV13>(true)
+                && !root.GetComponentInChildren<MesaAtmosphereV14>(true) && !root.GetComponentInChildren<MesaEnhanceV15>(true),
+                "Fixed daylight uses no time, storm or headlamp controller");
+            Need(!root.GetComponentsInChildren<ParticleSystem>(true).Any(p => p.name.StartsWith("Intermittent sand drift"))
+                && !root.GetComponentsInChildren<SwanJourneyTarget>(true).Any(t => t.action == JourneyAction.Lights),
+                "Sand drift and headlamp switch removed");
+            var lenses = j.trainAnchor.GetComponentsInChildren<MeshRenderer>(true).Where(r => r.name == "Incandescent bulb").ToArray();
+            var windows = j.GetComponent<StudioSpatialRefineV19>().passengerWindows;
+            Need(lenses.Length == 2 && lenses.Cast<Renderer>().Concat(windows).All(r => r && r.sharedMaterials.All(m =>
+                m && m.HasProperty("_EmissionColor") && m.GetColor("_EmissionColor").maxColorComponent == 0)),
+                "Both headlamps and carriage windows retain ordinary unlit-by-emission surfaces");
             var tunnel = j.GetComponent<MesaSteamTunnelV17>();
             Need(tunnel && tunnel.freeAir, "Smoke collision field retained for CPU queries");
             float clock = Shader.GetGlobalFloat("_JourneyTime"), field = Shader.GetGlobalFloat("_MesaFieldEnabled");

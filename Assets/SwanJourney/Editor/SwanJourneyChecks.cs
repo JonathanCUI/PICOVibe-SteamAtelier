@@ -92,9 +92,13 @@ namespace SwanJourney.Editor
                         ||!journey.inSandbox||journey.SwanTransitionActive||elapsed<=3)return;
                     Check(journey.inSandbox&&!journey.SwanTransitionActive,"Sandbox arrival completes");
                     Check(journey.coaches.Length==3,"Three passenger coaches retained");
+                    var fleet=journey.valleyTrain;
+                    Check(fleet && fleet.Driving && fleet.vehicles.Length==4 && fleet.vehicles.All(t=>t.gameObject.activeInHierarchy)
+                        && fleet.originals.All(t=>!t.gameObject.activeInHierarchy) && journey.sparks==fleet.drivingSparks,
+                        "Only independent driving vehicles are active, with their native effects");
                     Check(journey.GetComponent<SwanJourneyFlowParticles>().ActiveMarkerCount==0,"Process flow hidden outside workshop");
                     var visual=journey.GetComponent<SwanJourneyVisualBridge>();
-                    Check(visual&&visual.NativeWindowCount==30&&visual.NativeAnimatedWindowCount==30,"All 30 passenger windows have native animation bindings");
+                    Check(visual&&visual.NativeWindowCount==30&&visual.NativeAnimatedWindowCount==0,"All 30 passenger windows use static daylight materials");
                     var windowRenderers=journey.GetComponent<StudioSpatialRefineV19>().passengerWindows.Where(r=>r).Distinct().ToArray();
                     Check(journey.coaches.All(c=>windowRenderers.Count(w=>w.transform.IsChildOf(c))==10),"Each coach retains 10 passenger windows");
                     Check(journey.SwanSetControl(JourneyAction.Throttle,.85f),"Continuous spatial throttle accepted");
@@ -102,12 +106,12 @@ namespace SwanJourney.Editor
                 } else if(phase==5&&elapsed>7) {
                     Check(journey.speed>.1f&&Mathf.Abs(journey.routeDistance-routeBefore)>.1f,"Train accelerates and follows route");
                     int direction=journey.direction;journey.SwanSetControl(JourneyAction.Reverse,-direction);Check(journey.direction==direction,"Direction change blocked while moving");
-                    var sky=UnityEngine.Object.FindObjectOfType<MesaDayNightV13>(true);Check(sky,"Day/night system retained");sky.automatic=false;sky.SetTime(.4f);Capture("sandbox-day");sky.SetTime(.9f);
+                    var sky=UnityEngine.Object.FindObjectOfType<MesaDayNightV13>(true);Check(!sky&&journey.fixedValleyDaylight,"Valley uses fixed daylight");Capture("sandbox-day");
                     journey.SwanSetControl(JourneyAction.Throttle,0);journey.SwanSetControl(JourneyAction.Brake,1);Advance();
                 } else if(phase==6&&elapsed>9) {
                     Check(journey.speed<.03f,"Progressive air brake brings train to rest");
                     journey.SwanSetControl(JourneyAction.Reverse,-1);Check(journey.direction==-1,"Reverse selectable at rest");
-                    Capture("sandbox-night");journey.SetMode(false);Advance();
+                    Capture("sandbox-stopped");journey.SetMode(false);Advance();
                 } else if(phase==7) {
                     var loader=UnityEngine.Object.FindObjectOfType<SwanJourneySceneLoader>();
                     if(!loader)throw new Exception("Workshop return has no deferred scene loader");

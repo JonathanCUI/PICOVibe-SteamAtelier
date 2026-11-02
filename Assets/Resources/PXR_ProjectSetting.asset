@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PXR_ProjectSetting
   m_EditorClassIdentifier: 
   useContentProtect: 0
-  handTracking: 0
+  handTracking: 1
   adaptiveHand: 0
   highFrequencyHand: 0
   openMRC: 0
@@ -29,11 +29,11 @@ MonoBehaviour:
   bodyTracking: 0
   adaptiveResolution: 0
   stageMode: 0
-  videoSeeThrough: 0
+  videoSeeThrough: 1
   spatialAnchor: 0
   sceneCapture: 0
   sharedAnchor: 0
-  spatialMesh: 1
+  spatialMesh: 0
   planeDetection: 0
   secureMR: 0
   meshLod: 0
@@ -58,4 +58,4 @@ MonoBehaviour:
   portalInited: 1
   isDataCollectionDisabled: 0
   portalFirstSelected: 0
-  isSpatialAdapter: 1
+  isSpatialAdapter: 0

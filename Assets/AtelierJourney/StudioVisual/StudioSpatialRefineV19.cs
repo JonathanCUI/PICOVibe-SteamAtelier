@@ -9,7 +9,7 @@ public sealed class StudioSpatialRefineV19:MonoBehaviour {
  public readonly int[] CoachSparkCounts=new int[3];
  MaterialPropertyBlock windowBlock;float sparkCredit,cabRange;int sparkContact;bool lastMode;ParticleSystem coachSparks;
  bool swanDisplayHidden,displayTextReady;int textThrottle,textDirection,textLap;bool textBrake,textReturn;
- void Awake(){if(cabLight)cabRange=cabLight.range;if(!sky)sky=FindObjectOfType<MesaDayNightV13>(true);}
+ void Awake(){if(cabLight)cabRange=cabLight.range;if(!sky && (!journey || !journey.ValleyLampsOff))sky=FindObjectOfType<MesaDayNightV13>(true);}
  public void ToggleReturn(){ReturnOpen=!ReturnOpen;}
  public bool TryReturn(){if(!ReturnOpen)return false;ReturnOpen=false;return true;}
  public void DragThrottle(Vector2 pointer){
@@ -34,6 +34,7 @@ public sealed class StudioSpatialRefineV19:MonoBehaviour {
   returnCover.localRotation=Quaternion.Slerp(returnCover.localRotation,Quaternion.Euler(ReturnOpen?-108:0,0,0),1-Mathf.Exp(-Time.unscaledDeltaTime*14));
   if(brakeNeedle)brakeNeedle.localRotation=Quaternion.Euler(0,0,125-Mathf.Clamp01(journey.BrakeCylinderPressure/3.5f)*250);
   UpdateDisplayText(refresh);
+  if(journey.ValleyLampsOff){EmitCoachSparks(Mathf.Min(Time.deltaTime,.05f));return;}
   float night=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.10f,.68f,sky.Daylight));WindowGlow=journey.inSandbox?Mathf.Lerp(.08f,2.6f,night):0;
   if(windowBlock==null)windowBlock=new MaterialPropertyBlock();windowBlock.Clear();windowBlock.SetColor("_EmissionColor",new Color(1,.60f,.25f)*WindowGlow);
   foreach(var r in passengerWindows)if(r)r.SetPropertyBlock(windowBlock);
@@ -46,8 +47,10 @@ public sealed class StudioSpatialRefineV19:MonoBehaviour {
   if(returnCover)returnCover.localRotation=Quaternion.identity;
   if(cabLight){cabLight.enabled=false;cabLight.intensity=0;}
   if(coachSparks)coachSparks.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
-  if(windowBlock==null)windowBlock=new MaterialPropertyBlock();windowBlock.Clear();windowBlock.SetColor("_EmissionColor",Color.black);
-  foreach(var r in passengerWindows)if(r)r.SetPropertyBlock(windowBlock);
+  if(!journey.ValleyLampsOff){
+   if(windowBlock==null)windowBlock=new MaterialPropertyBlock();windowBlock.Clear();windowBlock.SetColor("_EmissionColor",Color.black);
+   foreach(var r in passengerWindows)if(r)r.SetPropertyBlock(windowBlock);
+  }
   if(driveMessage&&driveMessage.text.Length>0)driveMessage.text="";
  }
  void UpdateDisplayText(bool force){

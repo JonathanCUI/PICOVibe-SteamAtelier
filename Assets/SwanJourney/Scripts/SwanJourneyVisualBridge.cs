@@ -143,7 +143,7 @@ namespace SwanJourney
                 if (!source || !lookup.TryGetValue(source, out var definition)) continue;
                 if (r.GetComponent<TMPro.TMP_Text>() || r.GetComponent<TMPro.TMP_SubMesh>() || r.GetComponent<TMPro.TMP_SubMeshUI>()) continue;
                 bool hasParameters = r.HasPropertyBlock();
-                bool isWindow = windows != null && Array.IndexOf(windows, r) >= 0;
+                bool isWindow = !journey.ValleyLampsOff && windows != null && Array.IndexOf(windows, r) >= 0;
                 if (definition.kind == JourneyNativeMaterialKind.Surface && !hasParameters && !isWindow) continue;
                 seen.Add(r);
                 // Particle color/alpha remains owned by the ParticleSystem, not a per-renderer tint.

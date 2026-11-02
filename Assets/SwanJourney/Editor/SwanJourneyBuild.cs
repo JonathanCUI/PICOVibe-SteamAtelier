@@ -124,7 +124,7 @@ namespace SwanJourney.Editor
             // The partner's baked lighting asset points back to its entire desktop
             // scene. SpatialAdapter follows that dependency and exports it again,
             // including obsolete geometry and unsupported desktop shaders. Native
-            // rendering uses the converted PBR materials and dynamic day/night lights.
+            // rendering uses the converted PBR materials and scene lighting.
             Lightmapping.lightingDataAsset=null;
             LightmapSettings.lightmaps=Array.Empty<LightmapData>();
             foreach(var renderer in content.GetComponentsInChildren<Renderer>(true)) {
@@ -145,6 +145,11 @@ namespace SwanJourney.Editor
             SwanJourneyEmptyNodeBudget.Apply(journey);
             SwanJourneyMaterials.ConfigureCompletionBadge(journey, nativeVisuals);
             SwanJourneySmokeBuild.Configure(journey);
+            SwanJourneyValleyShellBuild.Configure(journey);
+            SwanJourneyValleyDaylight.Configure(journey,presentation);
+            SwanJourneyValleyTrainBuild.Configure(journey);
+            SwanJourneyValleyTrainBuild.RetireSourceShell(journey);
+            SwanJourneyValveGroupBuild.Apply(journey);
             SwanJourneyBootScene.Generate(journey.font);
             SwanJourneyUrp.UpgradeAndValidateGenerated();
             SwanJourneyTextureBudget.ShareIdenticalCopies(Generated);
@@ -164,7 +169,7 @@ namespace SwanJourney.Editor
             File.WriteAllText(Output+"/scene-report.json",JsonUtility.ToJson(report,true));
             Debug.Log("SWAN_JOURNEY_SCENE_GENERATED package="+PackageId+" modules="+(journey.modules.Length+journey.finishing.Length)+" hoverMeshes="+targets+" renderers="+report.renderers);
         }
-        static Transform AddUtility(SteamJourney journey,string title,Vector3 position,SwanJourneyTargetKind kind,JourneyAction action=JourneyAction.Assemble,Transform parent=null)
+        internal static Transform AddUtility(SteamJourney journey,string title,Vector3 position,SwanJourneyTargetKind kind,JourneyAction action=JourneyAction.Assemble,Transform parent=null)
         {
             var root=new GameObject(title);root.transform.SetParent(parent?parent:journey.workshopRoot.transform,false);root.transform.localPosition=position;
             var plate=GameObject.CreatePrimitive(PrimitiveType.Cube);plate.name=title+" touch surface";plate.transform.SetParent(root.transform,false);plate.transform.localScale=new Vector3(2.8f,.46f,.13f);

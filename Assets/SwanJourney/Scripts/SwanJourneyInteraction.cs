@@ -48,7 +48,7 @@ namespace SwanJourney
         readonly Queue<SwanGestureSample> samples = new Queue<SwanGestureSample>();
         readonly HashSet<long> live = new HashSet<long>();
         readonly List<long> retired = new List<long>();
-        InputAction primary, secondary;
+        public bool directXrInput; readonly HashSet<long> xrPressed = new HashSet<long>(); public void QueueXrGesture(SwanGestureSample s) { if (Down(s.phase)) xrPressed.Add(s.id); else xrPressed.Remove(s.id); QueueGestureSample(s); } InputAction primary, secondary;
         SwanTwoHandManipulation manipulation;
         SwanTabletopPlacement tabletop;
         long firstHand, secondHand;
@@ -79,7 +79,7 @@ namespace SwanJourney
         }
         void OnEnable()
         {
-            primary = new InputAction("Journey primary", InputActionType.PassThrough, "<SpatialInputDevice>/primary");
+            if (directXrInput) return; primary = new InputAction("Journey primary", InputActionType.PassThrough, "<SpatialInputDevice>/primary");
             secondary = new InputAction("Journey secondary", InputActionType.PassThrough, "<SpatialInputDevice>/secondary");
             primary.performed += Receive; secondary.performed += Receive;
             primary.Enable(); secondary.Enable();
@@ -124,7 +124,7 @@ namespace SwanJourney
     void CpuMeasuredUpdate()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            LogInputHealth();
+            if (!directXrInput) LogInputHealth();
 #endif
             if (!Ready || paused) return;
             if (previousSandbox != journey.inSandbox)
@@ -132,7 +132,7 @@ namespace SwanJourney
                 ResetSpatialGestures(); previousSandbox = journey.inSandbox;
             }
             live.Clear();
-            foreach (var device in InputSystem.devices) if (device is SpatialInputDevice spatial)
+            if (directXrInput) live.UnionWith(xrPressed); else foreach (var device in InputSystem.devices) if (device is SpatialInputDevice spatial)
             {
                 Remember(device.deviceId, spatial.primary.ReadValue());
                 Remember(device.deviceId, spatial.secondary.ReadValue());
@@ -568,7 +568,7 @@ namespace SwanJourney
             Debug.Log("SWAN_JOURNEY_EXPLODE_CANCEL pieces=" + count + " reason=" + reason + " keptCurrentPose=true");
         }
         public void ResetSpatialGestures()
-        {
+        { xrPressed.Clear();
             foreach (var c in contacts.Values) End(c, true);
             contacts.Clear(); samples.Clear(); live.Clear();
             manipulation?.End(); tabletop?.EndManipulation(); CancelQuickReturn(); CancelExplosion("input-reset"); ClearTap();

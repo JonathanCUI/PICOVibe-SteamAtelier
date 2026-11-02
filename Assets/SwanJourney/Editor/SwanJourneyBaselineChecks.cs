@@ -23,6 +23,15 @@ namespace SwanJourney.Editor
             Check(journeyScene.detailMeshes.All(d=>d!=null&&d.filter&&d.inspection&&d.miniature)&&
                 journeyScene.detailMeshes.Select(d=>d.filter).Distinct().Count()==journeyScene.detailMeshes.Length,
                 "Every retained and merged detail has independent, complete workshop and canyon mesh bindings");
+            var valve=journeyScene.valveGroupViews;
+            var valveRoots=journeyScene.modules[4].objects.Select(o=>o.transform).ToArray();
+            Check(valve && valve.surfaces.Length>0 && valve.surfaces.All(v=>v.renderer &&
+                valveRoots.Any(root=>v.renderer.transform.IsChildOf(root)) &&
+                v.renderer.TryGetComponent<MeshFilter>(out var filter) && filter.sharedMesh &&
+                v.renderer.GetComponent<ByteDance.PICO.SpatialAdapter.Component.SpatialAdapterHoverEffect>() &&
+                v.renderer.GetComponents<BoxCollider>().Length>0 &&
+                ByteDance.PICO.SpatialAdapter.ColliderData.GetColliderData(v.renderer.gameObject).Length==v.renderer.GetComponents<BoxCollider>().Length),
+                "Valve assembly keeps the exported mesh, hover and all compound pick shapes on each native hit owner");
             foreach(var detail in journeyScene.detailMeshes.Where(d=>AssetDatabase.GetAssetPath(d.inspection).Contains("/RigidBatches/")))
             {
                 string inspectionPath=AssetDatabase.GetAssetPath(detail.inspection);

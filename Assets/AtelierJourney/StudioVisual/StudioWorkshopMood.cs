@@ -3,6 +3,7 @@ using UnityEngine;using UnityEngine.Rendering;using UnityEngine.Rendering.Univer
 [DefaultExecutionOrder(2500)]
 public sealed class StudioWorkshopMood:MonoBehaviour {
  public SteamJourney journey;public Light key,fill,rim;public Texture workshopReflection,dayReflection;public GameObject workshopRoot;
+ public bool useEnvironmentBackground;
  bool initialized,last;Quaternion keyRotation,fillRotation,rimRotation;DepthOfField depth;
  void Awake(){keyRotation=key.transform.localRotation;fillRotation=fill.transform.localRotation;rimRotation=rim.transform.localRotation;var q=FindObjectOfType<StudioVisualQuality>();if(q&&q.grading)q.grading.profile.TryGet<DepthOfField>(out depth);ApplyImmediate();}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.WorkshopMood)) CpuMeasuredLateUpdate(); }
@@ -20,6 +21,6 @@ public sealed class StudioWorkshopMood:MonoBehaviour {
   RenderSettings.ambientSkyColor=day?new Color(.4f,.45f,.52f):new Color(.569f,.686f,.796f)*.30f;
   RenderSettings.ambientEquatorColor=day?new Color(.27f,.24f,.2f):new Color(.443f,.518f,.608f)*.21f;
   RenderSettings.ambientGroundColor=day?new Color(.14f,.12f,.09f):new Color(.298f,.290f,.282f)*.16f;
-  journey.view.backgroundColor=day?new Color(.46f,.54f,.61f):new Color(.078f,.114f,.145f);
+  journey.view.backgroundColor=useEnvironmentBackground?Color.clear:(day?new Color(.46f,.54f,.61f):new Color(.078f,.114f,.145f));
  }
 }

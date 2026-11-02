@@ -47,7 +47,7 @@ namespace SwanJourney.Editor
             {
                 title = "双前照灯",
                 explanation = "左右前照灯安装在车头两侧，用于照亮前方轨道。拿起这一组灯具，对准两侧安装轮廓，松手即可同时装好。",
-                observation = "两盏前照灯同时就位；完成装配后，可在山谷操作台开启车灯。",
+                observation = "观察车头两侧的灯座，确认两盏前照灯同时就位。",
                 objects = right.objects.Concat(left.objects).Distinct().ToArray(),
                 preview = preview, socket = center, previewCentre = center,
                 previewOffset = right.previewOffset, presentationScale = right.presentationScale,

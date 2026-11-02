@@ -59,7 +59,7 @@ public sealed class StudioPartCards : MonoBehaviour {
   "比较另一侧照灯，观察相同材质在不同入射光方向下的反射变化。"
  };
  public static string ObservationText(int index,int total){
-  if(total==17&&index==16)return "观察两盏灯的黄铜外壳与玻璃灯面。左右灯成组安装，进入山谷后可开启车灯，查看前方照明。";
+  if(total==17&&index==16)return "观察两盏灯的黄铜外壳与玻璃灯面。左右灯成组安装，观察它们在车头两侧的位置。";
   return Observe[Mathf.Clamp(index,0,Observe.Length-1)];
  }
  void Start(){Initialize();}

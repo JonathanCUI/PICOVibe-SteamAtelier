@@ -264,7 +264,25 @@ class Inspector:
 
     def soft_particles(self):
         selected = set()
-        for name in SOFT_NAMES:
+        expected_names = SOFT_NAMES
+        if self.named('Driving move handle layout anchor'):
+            removed = {'Solar soft halo', 'Lunar soft halo', 'Beam 0', 'Beam 1', 'Headlamp soft glow',
+                       'Low drifting desert haze', 'Luminous white steam', 'Warm headlamp star'}
+            expected_names = [name for name in SOFT_NAMES if name.removeprefix('Swan V23 ') not in removed]
+            excluded = ('Intermittent sand drift', 'Depth faded lamp beam', 'Soft headlamp glow',
+                        'Small optical headlamp flare', 'Warm forward lamp', 'Visible warm sun',
+                        'Visible cool moon', 'Solar soft halo', 'Lunar soft halo', '车灯 开 / 关')
+            self.check(not any(n.get('name', '').startswith(excluded) for n in self.nodes),
+                       'Fixed daylight exports no weather emitters, celestial bodies, lamp beams or lamp switch')
+            bulbs = self.named('Incandescent bulb')
+            self.check(len(bulbs) == 2 and all(self.geometry_present(i) for i in bulbs),
+                       'Both physical headlamp bulbs remain in the assembled locomotive')
+            for i in bulbs:
+                for primitive in self.primitives(i):
+                    material = self.materials[primitive['material']]
+                    self.check(not any(material.get('emissiveFactor', (0, 0, 0))),
+                               'Headlamp stays dark in native export: ' + material.get('name', ''))
+        for name in expected_names:
             matches = [i for i, material in enumerate(self.materials) if material.get('name') == name]
             self.check(len(matches) == 1, f'Main-scene soft material exists exactly once: {name}')
             selected.update(matches)

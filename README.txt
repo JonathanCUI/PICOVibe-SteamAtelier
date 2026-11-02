@@ -1,4 +1,10 @@
 蒸汽工坊 · V23 — 伙伴修改基线 0.23.23
+
+PICO 真实房间透视版 · 山谷车灯与轨面照明测试（2026-11-02）
+安装包：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/download/xr-room-track-lights-20261102/SteamAtelierXRRoom-TrackLights.apk
+测试说明：https://github.com/JonathanCUI/PICOVibe-SteamAtelier/releases/tag/xr-room-track-lights-20261102
+当前检出为完整 XR 测试工程，构建说明见 Docs/XR-Room-Track-Lights.md。
+
 保存日期：2026-10-31
 Git 分支：codex/steam-atelier-v23-swan
 

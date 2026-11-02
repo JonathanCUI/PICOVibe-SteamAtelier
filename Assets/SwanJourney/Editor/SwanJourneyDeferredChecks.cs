@@ -113,8 +113,14 @@ namespace SwanJourney.Editor
                 Check(journey.trainAnchor && journey.trainAnchor.gameObject.scene == main
                     && journey.coaches.Length > 0 && journey.coaches.All(t => t && t.gameObject.scene == main)
                     && journey.consoleRoot && journey.consoleRoot.scene == main
-                    && Components<JourneyControl>(main).Length > 0 && Components<MesaDayNightV13>(main).Length > 0,
-                    "Train, coaches, console, controls and celestial logic remain in startup", report);
+                    && Components<JourneyControl>(main).Length > 0 && journey.fixedValleyDaylight && Components<MesaDayNightV13>(main).Length == 0,
+                    "Train, coaches, console, controls and fixed daylight remain in startup", report);
+                var fleet = journey.valleyTrain;
+                Check(fleet && fleet.originals.SequenceEqual(new[]{journey.trainAnchor}.Concat(journey.coaches))
+                    && fleet.vehicles.Length == 4 && fleet.vehicles.Distinct().Count() == 4
+                    && fleet.vehicles.All(t=>t && t.parent==journey.sandboxRoot.transform && !t.gameObject.activeSelf)
+                    && fleet.pose.All(p=>p.source && p.display) && fleet.drivingChimney && fleet.drivingSparks
+                    && !journey.valleyShell, "Independent rolling stock is dormant in the workshop and all motion bindings resolve", report);
                 var enabledScenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
                 Check(Components<SwanJourneyBuildDependencies>(main).Single().canyonPrefab
                     && AssetDatabase.GetDependencies(main.path,true).Contains(SwanJourneyBuild.EnvironmentPrefabPath),

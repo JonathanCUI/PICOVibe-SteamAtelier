@@ -13,14 +13,14 @@ namespace SwanAtelier
         Coroutine monitor;
         bool paused;
         bool foregroundChanged;
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR && PICO_MS_SDK
         XRManagerSettings manager;
         bool ownsLoader;
 #endif
         void OnEnable() { Ready = false; monitor = StartCoroutine(Monitor()); }
         IEnumerator Monitor()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR && PICO_MS_SDK
             // Finish Start, then let an opened, focused Stage settle. A camera
             // object alone also exists while the headset is asleep.
             yield return null;
@@ -121,7 +121,7 @@ namespace SwanAtelier
         }
         static void Sync(string reason)
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR && PICO_MS_SDK
             ByteDance.PICO.XR.PXR_SpatialAdapterSpatialMode.SyncSpatialAdapterSpatialMode();
             Debug.Log("SWAN_ATELIER_XR_SPATIAL_MODE_SYNCED reason=" + reason);
 #endif
@@ -135,7 +135,7 @@ namespace SwanAtelier
         }
         void OnDestroy()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR && PICO_MS_SDK
             if (ownsLoader && manager != null) { manager.StopSubsystems(); manager.DeinitializeLoader(); }
 #endif
         }

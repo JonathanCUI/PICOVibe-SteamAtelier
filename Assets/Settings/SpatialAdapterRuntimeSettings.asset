@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 857c1b3394cd14f1e846fff4c1885d0b, type: 3}
   m_Name: SpatialAdapterRuntimeSettings
   m_EditorClassIdentifier: 
-  m_enableSpatialAdapter: 1
+  m_enableSpatialAdapter: 0
   m_colliderLayerMask:
     serializedVersion: 2
     m_Bits: 33
   m_defaultSpatialCameraConfiguration: {fileID: 11400000, guid: 7bf278742d7ab4f58aa7195695c41f38,
     type: 2}
-  m_autoCreateSpatialCamera: 1
+  m_autoCreateSpatialCamera: 0
   m_disabledFeatures: 0
   m_disableUnlitTonemapping: 0
   m_autoAddUIHoverEffect: 0

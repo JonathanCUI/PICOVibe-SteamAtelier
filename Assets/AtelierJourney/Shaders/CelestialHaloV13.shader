@@ -1,7 +1,7 @@
 Shader "SteamJourney/CelestialHaloV13" {
  Properties { [HDR]_Tint("Color",Color)=(1,.7,.3,.5) }
  SubShader {Tags{"Queue"="Transparent+10" "RenderType"="Transparent" "RenderPipeline"="UniversalPipeline"}Pass{
- Blend SrcAlpha One ZWrite Off Cull Off
+ Blend SrcAlpha One, One OneMinusSrcAlpha ZWrite Off Cull Off
  HLSLPROGRAM
  #pragma vertex vert
  #pragma fragment frag

@@ -55,6 +55,7 @@ public sealed partial class SteamJourney
         if (SwanSceneLoading) return false;
         if (verificationInputLock || SwanTransitionActive && action != JourneyAction.Reset) return false;
         if (AutoAssembling && action != JourneyAction.Reset && action != JourneyAction.Verify && action != JourneyAction.Pause) return false;
+        if (!valleyHeadlamps && ValleyLampsOff && action == JourneyAction.Lights) return false;
         bool lessonToggle = action == JourneyAction.Pause || action == JourneyAction.Slow;
         bool toggle = lessonToggle || action == JourneyAction.Lights;
         // These are the source lesson's process controls; Drive(dt) does not

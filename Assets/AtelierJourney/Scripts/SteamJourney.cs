@@ -23,6 +23,13 @@ public sealed partial class SteamJourney : MonoBehaviour {
     public SwanJourney.SwanJourneyChimneySmoke bakedChimney;
     public JourneyFlow[] flows;
     public JourneyDetail[] detailMeshes;
+    public SwanJourney.SwanJourneyValleyShell valleyShell;
+    public bool fixedValleyDaylight;
+    public bool omitValleyLamps;
+    public SwanJourney.SwanValleyHeadlamps valleyHeadlamps;
+    public bool HeadlampsSelected => lamps;
+    public bool ValleyLampsOff => fixedValleyDaylight || omitValleyLamps;
+    public SwanJourney.SwanJourneyValleyTrain valleyTrain;
     public GameObject[] lessonModels;
     public Transform waterSurface,grate,brakeRod;
     public Renderer leftChamber,rightChamber;
@@ -116,7 +123,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
             case JourneyAction.Brake:brake=brake>.5f?0:1;break;
             case JourneyAction.Reverse:if(speed<.03f)direction=direction>0?-1:1;else Notify("停稳后再换向。");break;
             case JourneyAction.Whistle:Play(whistleSound);break;
-            case JourneyAction.Lights:lamps=!lamps;break;
+            case JourneyAction.Lights:if(valleyHeadlamps || !ValleyLampsOff)lamps=!lamps;break;
             case JourneyAction.View:break;
             case JourneyAction.PreviousPart:SelectFinishing(-1);break;
             case JourneyAction.NextPart:SelectFinishing(1);break;
@@ -145,18 +152,20 @@ public sealed partial class SteamJourney : MonoBehaviour {
     public void SetMode(bool sandbox){
         if(sandbox&&!Complete)return;
         if(SwanInputActive&&SwanModeRequest!=null&&!SwanModeRequest(sandbox))return;
+        if(valleyTrain)valleyTrain.Leave();
+        if(valleyShell)valleyShell.Restore();
         var arrival=GetComponent<JourneySceneArrival>();if(arrival)arrival.Cancel();
         cachedDrivingLightRoot = null;
         bool changed=inSandbox!=sandbox;CancelAssembly();bool returning=inSandbox&&!sandbox;held=null;heldControl=null;inSandbox=sandbox;speed=0;throttle=0;brake=0;running=false;paused=false;ResetProcess();
         workshopRoot.SetActive(!sandbox);sandboxRoot.SetActive(sandbox);consoleRoot.SetActive(sandbox);
         trainAnchor.SetParent(sandbox?sandboxRoot.transform:workshopRoot.transform,false);
-        if (SwanInputActive && Application.isPlaying) SwanJourney.SwanJourneyTransformSyncBudget.SetDrivingRoots(trainAnchor, coaches, sandbox);
+        if (SwanInputActive && Application.isPlaying) SwanJourney.SwanJourneyTransformSyncBudget.SetDrivingRoots(trainAnchor, coaches, sandbox && !valleyTrain);
         lastPosePhase = float.NaN;
         trainAnchor.localScale=Vector3.one*(sandbox?.255f:1);trainAnchor.localPosition=Vector3.zero;trainAnchor.localRotation=Quaternion.identity;
         if(detailMeshes!=null)foreach(var detail in detailMeshes)if(detail.filter)detail.filter.sharedMesh=sandbox?detail.miniature:detail.inspection;
         cameraMode=0;if(!sandbox){trainAnchor.localPosition=Vector3.up*.09f;focus=new Vector3(1.6f,.15f,1.4f);yaw=25;pitch=32;distance=16.2f;}else{pressure=7.8f;reservoirPressure=8;brakePipePressure=auxiliaryPressure=5;BrakeCylinderPressure=0;fire.Clear();smoke.Clear();focus=new Vector3(0,6f,-3f);yaw=12;pitch=30;distance=54;routeDistance=0;PlaceTrain();}
         if(lessonPanel)lessonPanel.SetActive(!sandbox);if(drivePanel)drivePanel.SetActive(sandbox);
-        ApplyVisibility();RefreshPreview();if(sandbox)Notify("向前推汽门出发，拨动制动手柄停车；停稳后可前进或后退。");else if(returning)Notify("已回到装配工坊 · 机车装配进度已保留。");
+        ApplyVisibility();RefreshPreview();if(sandbox && valleyTrain)valleyTrain.Enter();if(sandbox)Notify("向前推汽门出发，拨动制动手柄停车；停稳后可前进或后退。");else if(returning)Notify("已回到装配工坊 · 机车装配进度已保留。");
         ApplyCamera(1f);var impulses=GetComponent<StudioWaterImpulseV10>();if(impulses)impulses.Clear();var mood=FindObjectOfType<StudioWorkshopMood>();if(mood)mood.ApplyImmediate();if(changed&&arrival)arrival.Request();
     }
     void Drive(float dt){
@@ -226,6 +235,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         foreach(var r in shellRenderers)if(r && r.enabled==section)r.enabled=!section;
         if(supportStands!=null)foreach(var stand in supportStands){bool show=!inSandbox&&!modules[5].installed;if(stand.activeSelf!=show)stand.SetActive(show);}
         if(aimRing && socketGhosts==null)aimRing.gameObject.SetActive(!inSandbox&&!Current.installed);UpdateInspection();
+        if(SwanInputActive&&inSandbox&&valleyShell&&!valleyTrain)valleyShell.ApplyDriving();
     }
     void Animate(float dt){
         bool active=inSandbox||running||ResidualEnergy;bool burn=active&&modules[0].installed;
@@ -274,7 +284,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
             if(consoleStatus&&(refresh||drivingTextMoving!=moving))consoleStatus.text=moving?"山谷铁路 · 行驶中":"山谷铁路 · 停车";
             drivingSpeedTenths=speedTenths;drivingPressureTenths=pressureTenths;drivingTextMoving=moving;swanDrivingTextReady=true;
         }
-        UpdateDrivingLights();
+        if(!ValleyLampsOff)UpdateDrivingLights();
     }
     readonly List<Light> drivingLights = new List<Light>();
     Transform cachedDrivingLightRoot;

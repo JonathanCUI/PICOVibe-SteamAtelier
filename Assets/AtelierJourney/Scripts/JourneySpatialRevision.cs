@@ -17,6 +17,7 @@ public sealed partial class SteamJourney {
  public Quaternion SceneRotationToWorld(Quaternion rotation)=>spatialRoot?spatialRoot.rotation*rotation:rotation;
  public int inspectionMode=1; // 0 opaque, 1 ghost/structural edges, 2 open section.
  public JourneyGhostPair[] inspectionGhosts;
+ public SwanJourney.SwanJourneyValveViews valveGroupViews;
  public Renderer[] inspectionBores;
  public Renderer[] valveMist;
  MaterialPropertyBlock valveFxBlock;
@@ -80,6 +81,7 @@ public sealed partial class SteamJourney {
  void UpdateInspection(){
   bool ghost=!inSandbox&&cutaway&&inspectionMode==1;
   if(inspectionGhosts!=null)foreach(var pair in inspectionGhosts){bool show=ghost&&pair.source&&pair.source.gameObject.activeInHierarchy;if(pair.hull && pair.hull.enabled!=show)pair.hull.enabled=show;if(pair.edges && pair.edges.enabled!=show)pair.edges.enabled=show;}
+  if(valveGroupViews)valveGroupViews.Apply(!inSandbox && cutaway,ghost);
   if(inspectionBores!=null)foreach(var r in inspectionBores)if(r && r.enabled==ghost)r.enabled=!ghost;
  }
  public bool DetachModule(JourneyModule m){

@@ -56,7 +56,7 @@ namespace SwanJourney.Editor
             foreach(var target in j.spatialRoot.GetComponentsInChildren<SwanJourneyTarget>(true))
                 if(target.kind==SwanJourneyTargetKind.Module&&target.moduleIndex==last+1)target.moduleIndex=last;
             r.title="左右前照灯";r.explanation="两盏前照灯分别安装在前缓冲梁两侧。拿起灯组，对准车头两侧的灯座后松手。";
-            r.observation="观察左右前照灯是否同时就位，并在驾驶时通过车灯开关控制。";
+            r.observation="观察车头两侧的灯座，确认两盏前照灯同时就位。";
             r.objects=r.objects.Concat(l.objects).Distinct().ToArray();r.preview=group.gameObject;
             r.socket=(r.socket+l.socket)*.5f;r.previewCentre=center;r.installed=r.installed&&l.installed;
             j.finishing=j.finishing.Take(10).ToArray();j.finishIndex=Mathf.Min(j.finishIndex,9);
