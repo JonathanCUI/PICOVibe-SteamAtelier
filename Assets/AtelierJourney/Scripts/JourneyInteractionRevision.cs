@@ -99,7 +99,7 @@ public sealed partial class SteamJourney {
      if(f.preview)f.root.position=trainAnchor.TransformPoint(remaining[i].previewCentre+offset);
      else f.root.localPosition=offset;
     }
-    if(t>=1){landed[i]=true;count++;remaining[i].installed=true;stage=modules.TakeWhile(m=>m.installed).Count();ImpactWater(remaining[i]);foreach(var f in flights)if(f.module==i)f.root.gameObject.SetActive(false);PlayAssemblyLatch();ApplyVisibility();Notify("机械锁定 "+count+" / "+remaining.Length+" · "+remaining[i].title);}
+    if(t>=1){landed[i]=true;count++;MarkInstalled(remaining[i]);stage=modules.TakeWhile(m=>m.installed).Count();ImpactWater(remaining[i]);foreach(var f in flights)if(f.module==i)f.root.gameObject.SetActive(false);PlayAssemblyLatch();ApplyVisibility();Notify("机械锁定 "+count+" / "+remaining.Length+" · "+remaining[i].title);}
    }yield return null;
   }
   foreach(var o in assemblyFlights)if(o)Destroy(o);assemblyFlights.Clear();ApplyVisibility();SaveProgress();

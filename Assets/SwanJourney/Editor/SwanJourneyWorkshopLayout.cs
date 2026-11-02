@@ -13,15 +13,13 @@ namespace SwanJourney.Editor
     {
         static readonly string[] ButtonNames = { "一键拆开", "暂停 / 继续", "慢放 / 常速" };
         readonly bool[] buttonsVisible;
-        readonly bool lessonVisible;
         readonly Vector3 deskPosition, previewPosition;
 
-        SwanJourneyWorkshopLayout(SwanJourneyPresentation table, SwanJourneyInteraction input)
+        SwanJourneyWorkshopLayout(SwanJourneyPresentation table)
         {
             buttonsVisible = ButtonNames.Select(name => Button(table, name).activeSelf).ToArray();
             deskPosition = table.workshopSupports[1].localPosition;
             previewPosition = table.journey.previewRoot.transform.localPosition;
-            lessonVisible = input.moveLesson.activeSelf;
         }
 
         internal static SwanJourneyWorkshopLayout ReadSaved()
@@ -36,7 +34,7 @@ namespace SwanJourney.Editor
                     throw new InvalidOperationException("请先保存火车装配场景，再重新生成 V23。");
                 var table = scene.GetRootGameObjects().SelectMany(root =>
                     root.GetComponentsInChildren<SwanJourneyPresentation>(true)).Single();
-                return new SwanJourneyWorkshopLayout(table, table.GetComponent<SwanJourneyInteraction>());
+                return new SwanJourneyWorkshopLayout(table);
             }
             finally
             {
@@ -44,13 +42,12 @@ namespace SwanJourney.Editor
             }
         }
 
-        internal void Apply(SwanJourneyPresentation table, SwanJourneyInteraction input)
+        internal void Apply(SwanJourneyPresentation table)
         {
             for (int i = 0; i < ButtonNames.Length; i++)
                 Button(table, ButtonNames[i]).SetActive(buttonsVisible[i]);
             table.workshopSupports[1].localPosition = deskPosition;
             table.journey.previewRoot.transform.localPosition = previewPosition;
-            input.moveLesson.SetActive(lessonVisible);
             table.RefreshFootprint();
         }
 

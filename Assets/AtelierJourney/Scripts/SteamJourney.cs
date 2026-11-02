@@ -104,7 +104,18 @@ public sealed partial class SteamJourney : MonoBehaviour {
             case JourneyAction.ReturnPart:Current.parked=false;RefreshPreview();break;
             case JourneyAction.Verify:
                 if(inSandbox)break;if(!modules[0].installed){Notify("先从展示台拿起火箱，装入底盘。");break;}
-                running=!running;paused=false;guideCamera=false;if(running){demoTime=0;Play(igniteSound);Notify("验证已开启 · 已安装的部件将按热量与蒸汽的传递顺序工作。");}else{Notify("验证已关闭 · 停止加热，蒸汽与机构逐渐平息。");}break;
+                running = !running;
+                paused = guideCamera = false;
+                if (running){
+                    demoTime = 0;
+                    if (SwanInputActive){
+                        if (!modules[5].installed && benchStroke >= .99f) benchStroke = 0;
+                        PrimeInstalledMechanisms();
+                    }
+                    Play(igniteSound);
+                    Notify(SwanInputActive ? "验证已开启 · 已装好的机构开始联动。" : "验证已开启 · 已安装的部件将按热量与蒸汽的传递顺序工作。");
+                }else Notify("验证已关闭 · 停止加热，蒸汽与机构逐渐平息。");
+                break;
             case JourneyAction.Next:break; // Installation advances automatically; testing is optional.
             case JourneyAction.Pause:paused=!paused;break;
             case JourneyAction.Slow:slow=!slow;break;
@@ -128,8 +139,13 @@ public sealed partial class SteamJourney : MonoBehaviour {
         }
         UpdateText();
     }
+    void MarkInstalled(JourneyModule module){
+        module.installed = true;
+        if (SwanInputActive && running && !inSandbox && Array.IndexOf(modules, module) >= 0)
+            PrimeInstalledMechanisms();
+    }
     public bool InstallCurrent(){
-        if(inSandbox||AutoAssembling||Current.installed)return false;var installed=Current;installed.installed=true;
+        if(inSandbox||AutoAssembling||Current.installed)return false;var installed=Current;MarkInstalled(installed);
         installed.parked=false;PlayAssemblyLatch();ImpactWater(installed);
         if(Teaching){stage=modules.TakeWhile(m=>m.installed).Count();finishIndex=0;}else if(!Complete){for(int n=1;n<=finishing.Length;n++){int k=(finishIndex+n)%finishing.Length;if(!finishing[k].installed){finishIndex=k;break;}}}
         RefreshPreview();ApplyVisibility();SaveProgress();

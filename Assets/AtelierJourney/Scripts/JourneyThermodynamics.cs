@@ -90,6 +90,24 @@ public sealed partial class SteamJourney {
     MaterialPropertyBlock fxBlock;
     public void ResetProcess(){chamberCharge[0]=chamberCharge[1]=leftMist=rightMist=leftVent=rightVent=0;System.Array.Clear(valveDensity,0,valveDensity.Length);System.Array.Clear(valveVent,0,valveVent.Length);FireLevel=GasLevel=WaterHeat=SteamPressure=Delivery=CylinderPower=WheelPower=ProcessTime=0;motorSettled=brakeApplied=benchStroke=0;FlowTime=0;MotionTime=0;if(fluidFields!=null)foreach(var f in fluidFields)if(f)f.ResetField();if(smoke)smoke.Clear();if(steam)steam.Clear();}
     static float Approach(float value,float target,float dt,float seconds)=>Mathf.MoveTowards(value,target,dt/seconds);
+    const float WorkingBoilerPressure = 8.4f;
+
+    void PrimeInstalledMechanisms(){
+        // Start at operating pressure for the connected assembly. The normal
+        // simulation takes over on the next frame, including brakes and exhaust.
+        FireLevel = GasLevel = modules[0].installed ? 1f : 0f;
+        WaterHeat = SteamPressure = BoilerGasConnected ? FireLevel : 0f;
+        Delivery = ChimneyConnected && modules[3].installed ? SteamPressure : 0f;
+        CylinderPower = modules[4].installed ? Delivery : 0f;
+        WheelPower = modules[5].installed ? CylinderPower : 0f;
+        pressure = SteamPressure * WorkingBoilerPressure;
+        CompressorRate = modules[6].installed && compressorDemand ? Delivery : 0f;
+
+        foreach (var field in fluidFields){
+            if (field && modules[field.stage].installed && FluidStrength(field) > .01f)
+                field.PrimeForVerification();
+        }
+    }
     public void StepProcess(float dt){
         ProcessTime+=dt;
         FireLevel=Approach(FireLevel,running&&modules[0].installed?1:0,dt,2.3f);
@@ -105,7 +123,7 @@ public sealed partial class SteamJourney {
         float drive=modules[5].installed?WheelPower:0;
         float rate=12*drive*(1-brakeApplied); // Five seconds per revolution at full teaching power.
         if(rate>.001f){MotionTime+=dt;engine.phase=Mathf.Repeat(engine.phase-rate*6*dt,360);}
-        pressure=SteamPressure*8.4f;
+        pressure=SteamPressure*WorkingBoilerPressure;
     }
     public bool ProcessReached(int s){switch(s){case 0:return GasLevel>.85f;case 1:return SteamPressure>.75f;case 2:return SteamPressure>.75f;case 3:bool reached=Delivery>.85f;foreach(var f in fluidFields)if(f.stage==3&&!f.Arrived)reached=false;return reached;case 4:return CylinderPower>.85f&&(modules[5].installed||benchStroke>.99f);case 5:return WheelPower>.85f;default:return brakeApplied>.99f;}}
     public string ProcessCaption(){

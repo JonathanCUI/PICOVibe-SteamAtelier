@@ -20,6 +20,13 @@ public sealed partial class JourneyFluidField : MonoBehaviour {
     float[] lengths;float length,spawn,time;int count;uint serial;
     void Init(){if(lengths!=null)return;lengths=new float[points.Length]; tangents=new Vector3[points.Length];rights=new Vector3[points.Length];ups=new Vector3[points.Length];for(int i=1;i<points.Length;i++){length+=Vector3.Distance(points[i-1],points[i]);lengths[i]=length;var t=tangents[i]=(points[i]-points[i-1]).normalized;rights[i]=Vector3.Cross(t,Mathf.Abs(t.y)>.9f?Vector3.forward:Vector3.up).normalized;ups[i]=Vector3.Cross(rights[i],t);}system.Pause();}
     public void ResetField(){arrowAlive=false;arrowDistance=0;arrowSegment=1;count=published=0;spawn=time=TravelFront=0;if(system)system.Clear();}
+    // An already charged pipe can feed its outlet from the first frame. Its
+    // visible arrows still travel at the authored speed and obey valve openings.
+    public void PrimeForVerification(){
+        if (Arrived || !system || points == null || points.Length < 2) return;
+        Init();
+        TravelFront = length;
+    }
     public void Advance(float dt,float strength,bool publish=true){
         if(!system||points==null||points.Length<2||dt<=0)return;
         if(upstream&&!upstream.Arrived)strength=0;
