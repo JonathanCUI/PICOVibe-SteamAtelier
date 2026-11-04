@@ -11,12 +11,13 @@ using TMPro;
 public sealed class StudioPartCards : MonoBehaviour {
  public SteamJourney journey;
  public Transform spatialAnchor;
+ [UnityEngine.Serialization.FormerlySerializedAs("firstSheet")] public SwanJourney.SwanSketchSheet sketchSheet;
  public Material spatialLeaderMaterial;
  public bool IsWorldAnchored=>canvas&&canvas.renderMode==RenderMode.WorldSpace;
  [NonSerialized] public bool visible=true, verificationHidden;
  [NonSerialized] public int verificationSelection=-1;
  public int SelectedIndex {get;private set;}
- public bool CardsVisible=>canvas&&canvas.gameObject.activeSelf;
+ public bool CardsVisible=>(sketchSheet&&sketchSheet.gameObject.activeInHierarchy)||(canvas&&canvas.gameObject.activeSelf);
  public bool TextFits=>labels.All(t=>!t.isTextOverflowing);
  public Rect ScreenRect {get;private set;}
  JourneyModule[] parts; Renderer[][] renderers,previews;
@@ -149,7 +150,7 @@ public sealed class StudioPartCards : MonoBehaviour {
     void CpuMeasuredLateUpdate(){
   if(parts==null)return;
   if(!journey.SwanInputActive&&!journey.verificationInputLock&&Input.GetKeyDown(KeyCode.I)){visible=!visible;UpdateToggle();}
-  bool active=visible&&!verificationHidden&&!journey.inSandbox;canvas.gameObject.SetActive(active);leader.enabled=active;if(controls)controls.SetActive(!spatialAnchor&&!journey.inSandbox);
+  bool active=visible&&!verificationHidden&&!journey.inSandbox;if(controls)controls.SetActive(!spatialAnchor&&!journey.inSandbox);
   int current=Array.IndexOf(parts,journey.Current);if(lastCurrent!=current){if(!journey.AutoAssembling)manual=false;lastCurrent=current;}
   if(verificationSelection>=0)SelectedIndex=Mathf.Clamp(verificationSelection,0,parts.Length-1);
   else if(!journey.AutoAssembling&&!journey.Complete&&!manual&&current>=0)SelectedIndex=current;
@@ -163,8 +164,12 @@ public sealed class StudioPartCards : MonoBehaviour {
    if(!journey.SwanInputActive)lastPointer=Input.mousePosition;UpdateAnchor();
   }
   if(SelectedIndex!=last){ShowContent();UpdateAnchor();}
-  status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / "+parts.Length+"     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
-  if(active)Layout();
+  bool useSheet=sketchSheet && sketchSheet.SetPresentation(SelectedIndex,active);
+  canvas.gameObject.SetActive(active&&!useSheet);leader.enabled=active&&!useSheet;
+  if(active&&!useSheet){
+   status.text="PART  "+(SelectedIndex+1).ToString("D2")+" / "+parts.Length+"     ·     "+(parts[SelectedIndex].installed?"已装配":"待装配");
+   Layout();
+  }
  }
  void UpdateAnchor(){
   var m=parts[SelectedIndex];anchor=journey.trainAnchor.TransformPoint(m.previewCentre);selectedBounds=new Bounds(anchor,Vector3.one*.15f);anchorValid=true;

@@ -60,13 +60,18 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
   swanHiddenCleaned=false;
   if(journey.SwanInputActive){visualElapsed+=dt;if(visualElapsed<1f/30f)return;dt=visualElapsed;visualElapsed=0;}
   int rendered=0;
+  float windTime=CloudTimeOverride>=0?CloudTimeOverride/.40f:Time.time;
   for(int i=0;i<clouds.Length;i++){
    var t=cloudTransforms[i];float seed=i*2.37f;
-   t.localPosition=starts[i]+(FreezeCloudTransforms?Vector3.zero:new Vector3(Mathf.Sin(clock*.025f+seed)*.55f,Mathf.Sin(clock*.14f+seed)*.07f,Mathf.Cos(clock*.023f+seed)*.25f));
    if(journey.SwanInputActive&&!FreezeCloudTransforms){
-    float roll=Mathf.Sin(Evolution*.62f+seed),rise=Mathf.Sin(Evolution*.87f+seed);
-    t.localScale=Vector3.Scale(scales[i],new Vector3(1+.033f*roll,1+.065f*rise,1-.026f*roll));
-   }else t.localScale=scales[i];
+    float wind=windTime*.165f+i*.34f;
+    float roll=Mathf.Sin(windTime*.312f+seed),rise=Mathf.Sin(windTime*.268f+seed);
+    t.localPosition=starts[i]+new Vector3(1.85f*Mathf.Sin(wind),.18f*rise,.52f*Mathf.Cos(wind));
+    t.localScale=Vector3.Scale(scales[i],new Vector3(1+.062f*roll,1+.078f*rise,1-.038f*roll));
+   }else{
+    t.localPosition=starts[i]+(FreezeCloudTransforms?Vector3.zero:new Vector3(Mathf.Sin(clock*.025f+seed)*.55f,Mathf.Sin(clock*.14f+seed)*.07f,Mathf.Cos(clock*.023f+seed)*.25f));
+    t.localScale=scales[i];
+   }
    if(!journey.SwanInputActive){block.Clear();block.SetFloat("_Phase",Evolution+seed);clouds[i].SetPropertyBlock(block);}CloudWriteCount++;
   }
   if(journey.bakedChimney && !valleyTrail)return;
@@ -92,7 +97,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    p.diameter=Mathf.MoveTowards(p.diameter,growth,dt*1.6f);
    if(p.t){p.t.position=journey.ScenePointToWorld(p.position);p.t.localScale=new Vector3(p.diameter*1.05f,p.diameter,p.diameter*.94f);}
    if(tunnel&&tunnel.Air(p.position)<.5f)InvalidCenters++;
-   float fade=Mathf.SmoothStep(0,1,u/.065f)*(1-(valleyTrail?Mathf.SmoothStep(0,1,Mathf.InverseLerp(.62f,1,u)):Mathf.SmoothStep(.62f,1,u)));
+   float fade=Mathf.SmoothStep(0,1,u/.065f)*(1-(valleyTrail?Mathf.SmoothStep(0,1,Mathf.InverseLerp(.34f,1,u)):Mathf.SmoothStep(.62f,1,u)));
    fade*=1-Mathf.Clamp01(p.blocked/.5f);if(p.confined)fade*=.68f;
    if(valleyTrail){WriteTrail(p,fade,ref rendered);continue;}
    block.Clear();if(!journey.SwanInputActive){block.SetFloat("_Seed",p.seed);block.SetFloat("_Phase",p.age*.64f+p.seed);}block.SetFloat("_Opacity",fade*1.18f);p.r.SetPropertyBlock(block);ActivePuffs++;
@@ -124,8 +129,8 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
    }
   }
   if(fade<.007f || diameter<.05f)return;
-  var tint=Color.Lerp(new Color(.50f,.59f,.74f),new Color(.99f,.985f,.97f),sky?sky.Daylight:1);
-  tint.a=.84f*fade;
+  var tint=Color.Lerp(new Color(.49f,.53f,.58f),new Color(.98f,.965f,.94f),sky?sky.Daylight:1);
+  tint.a=.79f*fade;
   trailBuffer[count++]=new ParticleSystem.Particle{position=puff.position,startColor=tint,startSize=diameter,
    rotation=puff.seed*41+puff.age*7,randomSeed=1u+(uint)(puff.seed*1000),startLifetime=1,remainingLifetime=1};
   ActivePuffs++;

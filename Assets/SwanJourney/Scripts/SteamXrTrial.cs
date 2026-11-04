@@ -9,7 +9,7 @@ using UnityEngine.XR.Management;
 using Phase = UnityEngine.InputSystem.TouchPhase;
 
 [DefaultExecutionOrder(-500)]
-public sealed class SteamXrTrial : MonoBehaviour
+public sealed partial class SteamXrTrial : MonoBehaviour
 {
     public Camera view;
     public SteamJourney journey;
@@ -23,7 +23,13 @@ public sealed class SteamXrTrial : MonoBehaviour
     readonly bool[] touchingButton = new bool[2];
     public Mesh[] cloudControlMeshes;
     public Material[] cloudControlMaterials;
-    bool valleyReview,cloudControl,cycleReview,lampReview;
+    public Material originalSolarHalo,originalLunarHalo;
+    public Material[] finishOriginals, finishVariants;
+    public Material[] detailOriginals, detailVariants;
+    bool detailReview;
+    bool valleyFinishReview;
+    public Transform frontGuard;
+    bool valleyReview,cloudControl,cycleReview,lampReview,surfaceReview,celestialReview;
     readonly bool[] held = new bool[2];
     readonly PartPinchMotion[] partPinches = new PartPinchMotion[2];
     readonly HandJointLocations[] joints = new HandJointLocations[2];
@@ -47,7 +53,9 @@ public sealed class SteamXrTrial : MonoBehaviour
         journey.suppressPersistence=true;journey.SwanInputActive=true;
         cycleReview=Requested("valley_daynight_review");
         lampReview=Requested("valley_lamp_review");
-        valleyReview=lampReview || cycleReview || Requested("valley_cloud_review");
+        celestialReview=Requested("xr_celestial_review");
+        valleyFinishReview=Requested("xr_valley_finish_review");
+        valleyReview=valleyFinishReview || celestialReview || lampReview || cycleReview || Requested("valley_cloud_review");
         cloudControl=valleyReview && Requested("valley_cloud_control");
         if(cloudControl)
         {
@@ -81,6 +89,7 @@ public sealed class SteamXrTrial : MonoBehaviour
     }
     void TrackHead()
     {
+        if(detailReview)return; // Keep both material-review exposures at the authored camera pose.
         var head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
         if (head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 p)) view.transform.localPosition = p;
         if (head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion q)) view.transform.localRotation = q;
@@ -295,7 +304,42 @@ public sealed class SteamXrTrial : MonoBehaviour
         PXR_Manager.EnableVideoSeeThrough = true;
         Debug.Log("XR_TRIAL_ROOM requested="+PXR_Manager.EnableVideoSeeThrough+" clear="+view.backgroundColor);
         Application.targetFrameRate=90;
+        var blockArrival=journey.GetComponent<SwanBlockArrival>();
+        if(blockArrival)
+        {
+            FrameTrain();
+            if(Requested("xr_block_review")){yield return ReviewBlocks(blockArrival);yield break;}
+            blockArrival.arrival.manual=false;
+            if(Requested("xr_paper_performance_review"))
+                yield return BlockWindow("workshop-entry",()=>blockArrival.arrival.Active);
+            while(blockArrival.arrival.Active)yield return null;
+        }
         bool artReview=Requested("steam_art_views");
+        if(Requested("xr_geometry_review")){yield return ReviewGeometry();yield break;}
+        if(Requested("xr_completion_review") || Requested("xr_completion_demo"))
+        {yield return ReviewCompletion(Requested("xr_completion_demo"));yield break;}
+        if(Requested("xr_paper_motion_demo")){yield return DemoPaperMotion();yield break;}
+        if(Requested("xr_sketch_drag_demo")){yield return DemoSketchDrag();yield break;}
+        if(Requested("xr_sketch_page_review")){yield return ReviewSketchPage();yield break;}
+        if(Requested("xr_paper_performance_review")){yield return ReviewPaperPerformance();yield break;}
+        surfaceReview=Requested("xr_surface_review");
+        bool exhaustReview=Requested("xr_open_exhaust_review");
+        bool guardReview=Requested("xr_guard_review");
+        detailReview=Requested("xr_detail_review");
+        bool finishReview=guardReview || detailReview || Requested("xr_finish_review");
+        if(surfaceReview || exhaustReview || finishReview || celestialReview || valleyFinishReview || Requested("xr_presentation"))
+        {
+            var hud=FindObjectOfType<SwanFrameRateHud>(true);
+            if(hud){hud.enabled=false;hud.VisualTransform.gameObject.SetActive(false);}
+        }
+        if(exhaustReview){yield return ReviewOpenExhaust();yield break;}
+        if(finishReview){yield return ReviewFinish(guardReview);yield break;}
+        if(surfaceReview)
+        {
+            yield return ReviewWorkshopSurfaces();
+            yield return ReviewValley();
+            yield break;
+        }
         bool handReview=Requested("xr_two_hand_review");
         if (!valleyReview && !artReview && !handReview && !Requested("xr_performance_review"))
         {
@@ -307,6 +351,13 @@ public sealed class SteamXrTrial : MonoBehaviour
         while (installed<total && journey.InstallCurrent()) { installed++; yield return null; }
         for (int i=0;i<600 && journey.CompletionActive;i++) yield return null;
         if (!journey.Complete) { Debug.LogError("XR_TRIAL_INCOMPLETE "+installed+"/"+total); yield break; }
+        if(valleyFinishReview){
+            var desk=journey.GetComponent<StudioSpatialConsoleV18>();
+            var root=desk.rotary.parent.parent;
+            var mid=root.InverseTransformPoint((desk.rotary.position+desk.introLever.position)*.5f);
+            PlaceView(root,mid+new Vector3(.18f,1.4f,1.25f),mid);
+            yield return SurfaceShot("workshop-controls");
+        }
         if(valleyReview){yield return ReviewValley();yield break;}
         journey.inspectionMode=1; journey.cutaway=true; journey.ApplyVisibility();
         FrameTrain();
@@ -350,6 +401,284 @@ public sealed class SteamXrTrial : MonoBehaviour
             FrameTrain();
             Debug.Log("XR_ART_DONE");
         }
+    }
+    IEnumerator DemoSketchDrag()
+    {
+        var cards=journey.GetComponent<StudioPartCards>();
+        var sheet=cards.sketchSheet;
+        var hud=FindObjectOfType<SwanFrameRateHud>(true);
+        if(hud){hud.enabled=false;hud.VisualTransform.gameObject.SetActive(false);}
+        CancelHeld();replay=true;cards.Select(0);
+        yield return new WaitForSecondsRealtime(2);
+        Debug.Log("XR_DRAG_READY");
+        yield return new WaitForSecondsRealtime(4);
+        PlaceView(sheet.transform,new Vector3(.50f,.04f,-2.45f),Vector3.zero);
+        yield return new WaitForSecondsRealtime(2);
+        Vector3 point=sheet.transform.TransformPoint(new Vector3(0,(SwanSketchSheet.SupportHeight-.5f)*1.5f,0));
+        var hit=focus.Pick(new Ray(view.transform.position,(point-view.transform.position).normalized));
+        if(!hit.collider || hit.collider.gameObject!=sheet.gameObject){
+            replay=false;Debug.LogError("XR_DRAG_FAIL pick");yield break;
+        }
+        float width=sheet.transform.TransformVector(Vector3.right).magnitude;
+        Vector3 start=sheet.transform.position,offset=Vector3.zero,peak=Vector3.zero;
+        var cue=new GameObject("Demo pinch cursor").AddComponent<LineRenderer>();
+        cue.sharedMaterial=cards.spatialLeaderMaterial;
+        cue.useWorldSpace=false;cue.loop=true;cue.positionCount=32;
+        cue.startWidth=cue.endWidth=width*.007f;
+        cue.transform.rotation=view.transform.rotation;
+        for(int i=0;i<32;i++){
+            float a=i*Mathf.PI/16;
+            cue.SetPosition(i,new Vector3(Mathf.Cos(a),Mathf.Sin(a))*width*.027f);
+        }
+        cue.enabled=false;
+        yield return new WaitForSecondsRealtime(1);
+        Send(0,Phase.Began,point,hit.collider.gameObject,hit.point);
+        cue.transform.position=point-view.transform.forward*(width*.14f);
+        cue.enabled=true;Debug.Log("XR_DRAG_BEGIN");
+        yield return new WaitForSecondsRealtime(1.3f);
+        Vector3 pullDirection=sheet.transform.InverseTransformVector(view.transform.right).normalized;
+        float[] stopSamples={0,.1f,.2f,.33f,.5f,.72f,.94f,1.3f,1.8f};
+        int stopSample=0;
+        for(float t=0;t<18.7f;){
+            t=Mathf.Min(18.7f,t+Time.unscaledDeltaTime);
+            float x=0,y=0,z=0;
+            if(t<4){x=.58f*Mathf.Sin(2*Mathf.PI*t/4);}
+            else if(t>=6.2f && t<10.7f){
+                float u=(t-6.2f)/4.5f;
+                z=.55f*Mathf.Sin(u*2*Mathf.PI);
+            }else if(t>=10.7f && t<14.2f){
+                y=.36f*Mathf.Sin((t-10.7f)*2*Mathf.PI/3.5f);
+            }else if(t>=14.2f){
+                float u=(t-14.2f)/4.5f;
+                float wave=Mathf.Sin(6*Mathf.PI*u)*Mathf.SmoothStep(0,1,u/.18f);
+                x=.48f*wave-.13f*Mathf.SmoothStep(0,1,u);
+                y=.16f*wave;
+                z=.18f*wave+.29f*Mathf.SmoothStep(0,1,u);
+            }
+            offset=width*(view.transform.right*x+view.transform.up*y-view.transform.forward*z);
+            Send(0,Phase.Moved,point+offset,null,Vector3.zero);
+            cue.transform.position=point+offset-view.transform.forward*(width*.14f);
+            yield return null;
+            var b=sheet.Bend;
+            peak=Vector3.Max(peak,new Vector3(Mathf.Abs(b.x),Mathf.Abs(b.y),Mathf.Abs(b.z)));
+            if(stopSample<stopSamples.Length && t>=4+stopSamples[stopSample] && t<6.2f){
+                Debug.Log($"XR_DRAG_HOLD elapsed={t-4:F2} signedLag={Vector3.Dot(sheet.EdgeBend,pullDirection):F3} travelError={Vector3.Distance(start,sheet.transform.position):F4}");
+                stopSample++;
+            }
+        }
+        Send(0,Phase.Ended,point+offset,null,Vector3.zero);
+        cue.enabled=false;Debug.Log("XR_DRAG_RELEASE");
+        double releasedAt=Time.realtimeSinceStartupAsDouble;
+        var releaseDirection=sheet.transform.InverseTransformVector(.48f*view.transform.right+.16f*view.transform.up-.18f*view.transform.forward).normalized;
+        foreach(float delay in new[]{0f,.1f,.2f,.35f,.5f,.75f,1f,1.4f,2.7f}){
+            while(Time.realtimeSinceStartupAsDouble-releasedAt<delay)yield return null;
+            Debug.Log($"XR_DRAG_SETTLE elapsed={Time.realtimeSinceStartupAsDouble-releasedAt:F2} signedLag={Vector3.Dot(sheet.EdgeBend,releaseDirection):F3}");
+        }
+        float error=Vector3.Distance(start+offset,sheet.transform.position);
+        // Pick it up again, put it in a different place, then turn pages there.
+        var relocated=sheet.transform.position;
+        point=sheet.transform.TransformPoint(new Vector3(0,(SwanSketchSheet.SupportHeight-.5f)*1.5f,0));
+        Send(0,Phase.Began,point,sheet.gameObject,point);cue.enabled=true;
+        yield return new WaitForSecondsRealtime(.5f);
+        Vector3 move=width*(view.transform.right*.82f+view.transform.up*.18f+view.transform.forward*.18f);
+        for(float t=0;t<2.5f;){
+            t=Mathf.Min(2.5f,t+Time.unscaledDeltaTime);
+            var shift=move*Mathf.SmoothStep(0,1,t/2.5f);
+            Send(0,Phase.Moved,point+shift,null,Vector3.zero);
+            cue.transform.position=point+shift-view.transform.forward*(width*.14f);yield return null;
+        }
+        Send(0,Phase.Ended,point+move,null,Vector3.zero);Destroy(cue.gameObject);
+        yield return new WaitForSecondsRealtime(2.5f);
+        var placed=sheet.transform.position;
+        int turns=sheet.TurnsCompleted;
+        foreach(int page in new[]{1,2,1,0}){
+            cards.Select(page);yield return new WaitForSecondsRealtime(2.1f);
+        }
+        bool retained=Vector3.Distance(placed,sheet.transform.position)<.002f;
+        Debug.Log($"XR_DRAG_DONE travelError={error:F4} relocateError={Vector3.Distance(relocated+move,placed):F4} peak={peak:F3} rest={sheet.Bend.magnitude:F4} edgeRest={sheet.EdgeBend.magnitude:F4} retained={retained} turns={sheet.TurnsCompleted-turns}");
+        replay=false;
+    }
+
+    IEnumerator DemoPaperMotion()
+    {
+        var cards=journey.GetComponent<StudioPartCards>();var sheet=cards.sketchSheet;
+        var hud=FindObjectOfType<SwanFrameRateHud>(true);
+        if(hud){hud.enabled=false;hud.VisualTransform.gameObject.SetActive(false);}
+        CancelHeld();replay=true;cards.Select(0);
+        PlaceView(sheet.transform,new Vector3(.16f,.02f,-2.3f),Vector3.zero);
+        yield return new WaitForSecondsRealtime(2);
+        Vector3 placed=sheet.transform.position;
+        int turns=sheet.TurnsCompleted,sounds=sheet.RustlesPlayed;
+        Debug.Log($"XR_MOTION_READY time={Time.realtimeSinceStartupAsDouble:F3}");
+        yield return new WaitForSecondsRealtime(2);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(.40f);
+        bool rolling=sheet.gameObject.activeInHierarchy && sheet.Unrolled>0 && sheet.Unrolled<1 && !sheet.GetComponent<Collider>().enabled;
+        Debug.Log($"XR_MOTION_CLOSE rolling={rolling} amount={sheet.Unrolled:F3}");
+        yield return new WaitForSecondsRealtime(1.2f);
+        bool closed=!sheet.gameObject.activeSelf && !sheet.GetComponent<Collider>().enabled;
+        yield return new WaitForSecondsRealtime(.6f);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(1.8f);
+        foreach(int page in new[]{1,2,1,0}){
+            cards.Select(page);yield return new WaitForSecondsRealtime(2.2f);
+        }
+        PlaceView(sheet.transform,new Vector3(.95f,.08f,-2.35f),Vector3.zero);
+        yield return new WaitForSecondsRealtime(1.4f);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(1.6f);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(1.8f);
+        cards.Select(1);yield return new WaitForSecondsRealtime(2.2f);
+        // Reverse a close in flight, then request close during a page turn.
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(.3f);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(1.4f);
+        cards.Select(0);yield return new WaitForSecondsRealtime(.3f);
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(2.6f);
+        closed&=!sheet.gameObject.activeSelf;
+        journey.Act(JourneyAction.Introduction);yield return new WaitForSecondsRealtime(1.7f);
+        bool retained=Vector3.Distance(placed,sheet.transform.position)<.001f;
+        bool ready=sheet.Unrolled==1 && !sheet.IsTurning && sheet.GetComponent<Collider>().enabled;
+        int turned=sheet.TurnsCompleted-turns,played=sheet.RustlesPlayed-sounds;
+        Debug.Log($"XR_MOTION_CHECK closed={closed} ready={ready} retained={retained} turns={turned} sounds={played} triangles={sheet.GetComponent<MeshFilter>().sharedMesh.triangles.Length/3}");
+        if(!rolling || !closed || !ready || !retained || turned!=6 || played!=turned)Debug.LogError("XR_MOTION_FAIL state or sound");
+        replay=false;Debug.Log("XR_MOTION_DONE");
+    }
+
+    IEnumerator ReviewSketchPage()
+    {
+        var cards=journey.GetComponent<StudioPartCards>();var sheet=cards.sketchSheet;
+        var hud=FindObjectOfType<SwanFrameRateHud>(true);
+        if(hud){hud.enabled=false;hud.VisualTransform.gameObject.SetActive(false);}
+        replay=true;CancelHeld();cards.Select(0);
+        yield return new WaitForSecondsRealtime(4);
+        Debug.Log("XR_PAPER_SHOT workshop");yield return new WaitForSecondsRealtime(5);
+        var start=sheet.transform.position;
+        float width=sheet.transform.TransformVector(Vector3.right).magnitude;
+        PlaceView(sheet.transform,new Vector3(.08f,.025f,-2.35f),Vector3.zero);
+        yield return new WaitForSecondsRealtime(1);
+        var point=sheet.transform.TransformPoint(new Vector3(.26f,-.12f,0));
+        var hit=focus.Pick(new Ray(view.transform.position,(point-view.transform.position).normalized));
+        if(!hit.collider || hit.collider.gameObject!=sheet.gameObject){Debug.LogError("XR_PAPER_FAIL pick");yield break;}
+        Send(0,Phase.Began,point,hit.collider.gameObject,hit.point);
+        yield return new WaitForSecondsRealtime(1);
+        bool flat=sheet.Bend.sqrMagnitude<1e-6f && Vector3.Distance(start,sheet.transform.position)<.001f;
+        // First pull sideways and towards the viewer, then reverse the sideways motion.
+        var side=sheet.transform.right*width;var towards=-sheet.transform.forward*width;
+        float positive=0,negative=0,depth=0;
+        Vector3 travel=Vector3.zero;
+        for(int direction=0;direction<2;direction++)
+        {
+            var from=travel;var to=(direction==0?.75f:-.28f)*side+(direction==0?.35f:.70f)*towards;
+            float elapsed=0;
+            do{
+                elapsed+=Mathf.Min(Time.unscaledDeltaTime,.1f);
+                travel=Vector3.Lerp(from,to,elapsed/1.1f);
+                Send(0,Phase.Moved,point+travel,null,Vector3.zero);
+                yield return null;
+                positive=Mathf.Max(positive,sheet.Bend.x);negative=Mathf.Min(negative,sheet.Bend.x);
+                depth=Mathf.Max(depth,Mathf.Abs(sheet.Bend.z));
+            }while(elapsed<1.1f);
+        }
+        Send(0,Phase.Ended,point+travel,null,Vector3.zero);
+        yield return new WaitForSecondsRealtime(2);
+        float error=Vector3.Distance(start+travel,sheet.transform.position);
+        bool settled=sheet.Bend.sqrMagnitude<1e-6f;
+        Debug.Log("XR_PAPER_SHOT reading");yield return new WaitForSecondsRealtime(5);
+        bool pages=true;
+        var block=new MaterialPropertyBlock();
+        var surface=sheet.GetComponent<MeshRenderer>();
+        int inkId=Shader.PropertyToID("_MainTex");
+        for(int index=1;index<=16;index++){
+            cards.Step(1);
+            double timeout=Time.realtimeSinceStartupAsDouble+5;
+            while((sheet.DisplayedPage!=index || sheet.IsTurning) && Time.realtimeSinceStartupAsDouble<timeout)yield return null;
+            yield return new WaitForSecondsRealtime(.5f);
+            surface.GetPropertyBlock(block);
+            var ink=block.GetTexture(inkId);
+            var ray=new Ray(view.transform.position,(sheet.transform.position-view.transform.position).normalized);
+            bool correct=ink && ink.name=="Step"+(index+1).ToString("D2") && sheet.DisplayedPage==index
+                && cards.SelectedIndex==index && sheet.gameObject.activeInHierarchy && !cards.PreparedSpatialCanvas.gameObject.activeInHierarchy
+                && focus.Pick(ray).collider==sheet.GetComponent<Collider>() && Vector3.Distance(sheet.transform.position,start+travel)<.002f;
+            pages&=correct;
+            Debug.Log($"XR_FOLIO_PAGE {index+1:D2} correct={correct} art={(ink?ink.name:"missing")}");
+            Debug.Log($"XR_PAPER_SHOT page-{index+1:D2}");yield return new WaitForSecondsRealtime(2.8f);
+        }
+        cards.Step(1);yield return new WaitForSecondsRealtime(1.2f);
+        pages&=cards.SelectedIndex==0 && sheet.DisplayedPage==0;
+        // Send navigation requests on consecutive frames, including a wrap back to page one.
+        cards.Step(-1);yield return null;cards.Step(-1);yield return null;cards.Select(0);yield return null;
+        yield return new WaitForSecondsRealtime(2.7f);
+        pages&=sheet.DisplayedPage==0 && cards.SelectedIndex==0;
+        bool restored=sheet.gameObject.activeInHierarchy && !cards.PreparedSpatialCanvas.gameObject.activeInHierarchy && !sheet.originalFrame.activeInHierarchy;
+        cards.Toggle();yield return new WaitForSecondsRealtime(1.6f);bool hidden=!sheet.gameObject.activeInHierarchy;
+        cards.Toggle();yield return new WaitForSecondsRealtime(1.6f);
+        restored&=sheet.gameObject.activeInHierarchy && Vector3.Distance(sheet.transform.position,start+travel)<.002f;
+        var oldSuppress=journey.suppressPersistence;journey.suppressPersistence=true;
+        bool automatic=journey.InstallCurrent();
+        double autoTimeout=Time.realtimeSinceStartupAsDouble+5;
+        while((sheet.DisplayedPage!=1 || sheet.IsTurning) && Time.realtimeSinceStartupAsDouble<autoTimeout)yield return null;
+        automatic&=cards.SelectedIndex==1 && sheet.DisplayedPage==1;
+        journey.ResetJourney();journey.suppressPersistence=oldSuppress;
+        yield return new WaitForSecondsRealtime(1.2f);
+        Debug.Log($"XR_PAPER_CHECK flat={flat} bendPos={positive:F3} bendNeg={negative:F3} depth={depth:F3} placedError={error:F4} settled={settled} pages={pages} auto={automatic} restored={restored} toggle={hidden}");
+        if(!flat || positive<=.005f || negative>=-.005f || depth<=.005f || error>.002f || !settled || !pages || !automatic || !restored || !hidden)
+            Debug.LogError("XR_PAPER_FAIL interaction");
+        replay=false;Debug.Log("XR_PAPER_DONE");
+    }
+    IEnumerator ReviewPaperPerformance()
+    {
+        CancelHeld();replay=true;
+        var cards=journey.GetComponent<StudioPartCards>();var sheet=cards.sketchSheet;
+        yield return new WaitForSecondsRealtime(3);
+        yield return Sample("assembly-start",false);
+        var overviewPosition=transform.position;var overviewRotation=transform.rotation;
+        PlaceView(sheet.transform,new Vector3(.35f,0,-2.45f),Vector3.zero);
+        yield return new WaitForSecondsRealtime(2);
+        yield return Sample("paper-reading",false);
+        Vector3 original=sheet.transform.position;
+        float width=sheet.transform.TransformVector(Vector3.right).magnitude;
+        Vector3 point=sheet.transform.TransformPoint(new Vector3(0,-.15f,0));
+        Send(0,Phase.Began,point,sheet.gameObject,point);yield return null;
+        int selected=-1,turnCount=sheet.TurnsCompleted;
+        yield return Sample("paper-drag-and-turn",false,t=>{
+            Send(0,Phase.Moved,point+width*(view.transform.right*(.42f*Mathf.Sin(t*2.2f))
+                +view.transform.forward*(.25f*Mathf.Sin(t*1.6f))),null,Vector3.zero);
+            int index=Mathf.FloorToInt(t/2.4f)%5;
+            if(index!=selected){cards.Select(index);selected=index;}
+        });
+        Send(0,Phase.Ended,point,null,Vector3.zero);yield return new WaitForSecondsRealtime(2);
+        sheet.transform.position=original;
+        Debug.Log($"XR_AUDIT_PAPER turns={sheet.TurnsCompleted-turnCount} triangles={sheet.GetComponent<MeshFilter>().sharedMesh.triangles.Length/3} renderers={sheet.GetComponents<Renderer>().Length}");
+        transform.SetPositionAndRotation(overviewPosition,overviewRotation);
+        cards.Select(0);
+        for(int i=0;i<7;i++){if(!journey.InstallCurrent()){Debug.LogError("XR_AUDIT_FAIL partial install");yield break;}yield return null;}
+        yield return new WaitForSecondsRealtime(3);
+        yield return Sample("assembly-seven",false);
+        while(!journey.Complete && journey.InstallCurrent())yield return null;
+        while(journey.CompletionActive)yield return null;
+        if(!journey.Complete){Debug.LogError("XR_AUDIT_FAIL incomplete");yield break;}
+        journey.inspectionMode=0;journey.cutaway=false;journey.ApplyVisibility();FrameTrain();
+        yield return new WaitForSecondsRealtime(3);yield return Sample("assembly-complete",false);
+        journey.inspectionMode=1;journey.cutaway=true;journey.ApplyVisibility();
+        yield return new WaitForSecondsRealtime(2);yield return Sample("xray",false);
+        journey.inspectionMode=2;journey.ApplyVisibility();journey.Act(JourneyAction.Verify);
+        double timeout=Time.realtimeSinceStartupAsDouble+75;
+        while(journey.WheelPower<.05f && Time.realtimeSinceStartupAsDouble<timeout)yield return null;
+        yield return Sample("cutaway-hot",false);
+        journey.Act(JourneyAction.Drive);
+        yield return BlockWindow("valley-transition",()=>!journey.inSandbox || journey.SwanSceneLoading || journey.SwanTransitionActive);
+        if(!journey.inSandbox || journey.SwanSceneLoading){Debug.LogError("XR_AUDIT_FAIL valley load");yield break;}
+        var sky=journey.GetComponent<MesaAtmosV16>().cloudTransforms[0].parent;
+        PlaceView(sky,new Vector3(1,20.5f,24),new Vector3(0,7,0));
+        var cycle=journey.GetComponent<MesaDayNightV13>();cycle.automatic=false;cycle.SetTime(.46f);
+        journey.SwanSetControl(JourneyAction.Throttle,0);journey.SwanSetControl(JourneyAction.Brake,1);
+        yield return new WaitForSecondsRealtime(4);yield return Sample("valley-day-parked",false);
+        journey.SwanSetControl(JourneyAction.Brake,0);journey.SwanSetControl(JourneyAction.Throttle,.75f);
+        yield return new WaitForSecondsRealtime(8);float distance=journey.routeDistance;
+        yield return Sample("valley-day-moving",false);
+        Debug.Log($"XR_AUDIT_DRIVE speed={journey.speed:F3} travelled={journey.routeDistance-distance:F3}");
+        cycle.SetTime(.93f);yield return new WaitForSecondsRealtime(6);yield return Sample("valley-night-moving",false);
+        cycle.automatic=true;journey.SetMode(false);
+        yield return BlockWindow("workshop-return",()=>journey.SwanTransitionActive);
+        FrameTrain();yield return new WaitForSecondsRealtime(3);yield return Sample("assembly-return",false);
+        replay=false;Debug.Log("XR_AUDIT_DONE");
     }
     IEnumerator ReviewPanel()
     {
@@ -400,6 +729,185 @@ public sealed class SteamXrTrial : MonoBehaviour
         transform.rotation=Quaternion.LookRotation(at-eye,root.up)*Quaternion.Inverse(view.transform.localRotation);
         transform.position=eye-transform.rotation*view.transform.localPosition;
     }
+    IEnumerator ReviewBlocks(SwanBlockArrival blocks)
+    {
+        var hud=FindObjectOfType<SwanFrameRateHud>(true);
+        if(hud){hud.enabled=false;hud.VisualTransform.gameObject.SetActive(false);}
+        replay=true;detailReview=true;
+        var root=journey.furnaceParticles.transform.parent;
+        float side=root.InverseTransformPoint(view.transform.position).z>=0?1:-1;
+        PlaceView(root,new Vector3(2.6f,7f,12.4f*side),new Vector3(0,.8f,.8f*side));
+        var arrival=blocks.arrival;
+        if(!arrival.Active || blocks.ExhibitGroups<2){Debug.LogError("XR_BLOCK_FAIL startup");yield break;}
+        arrival.manual=false;
+        yield return BlockWindow("workshop-scan",()=>arrival.Active);
+        yield return Sample("workshop-settled",false);
+        yield return BlockProof(arrival,"workshop");
+        if(!journey.InstallCurrent() || arrival.Active || blocks.ExhibitGroups!=0){Debug.LogError("XR_BLOCK_FAIL placement");yield break;}
+        while(!journey.Complete && journey.InstallCurrent())yield return null;
+        while(journey.CompletionActive)yield return null;
+        journey.Act(JourneyAction.Drive);
+        float until=Time.realtimeSinceStartup+100;
+        while(!journey.inSandbox && Time.realtimeSinceStartup<until)yield return null;
+        if(!journey.inSandbox || !arrival.Active){Debug.LogError("XR_BLOCK_FAIL valley entry");yield break;}
+        var sky=journey.GetComponent<MesaAtmosV16>().cloudTransforms[0].parent;
+        PlaceView(sky,new Vector3(1,20.5f,24),new Vector3(0,7,0));
+        yield return BlockWindow("valley-scan",()=>arrival.Active);
+        yield return Sample("valley-settled",false);
+        yield return BlockProof(arrival,"valley");
+        journey.SetMode(false);yield return null;
+        PlaceView(root,new Vector3(2.6f,6.7f,10.3f*side),new Vector3(0,1.25f,0));
+        if(!arrival.Active){Debug.LogError("XR_BLOCK_FAIL workshop return");yield break;}
+        yield return BlockWindow("workshop-return",()=>arrival.Active);
+        yield return Sample("full-train-settled",false);
+        yield return BlockProof(arrival,"full-train");
+        PlaceView(root,new Vector3(1.6f,5.2f,7.1f*side),new Vector3(0,2f,0));
+        yield return SurfaceShot("tank-A");
+        replay=detailReview=false;FrameTrain();Debug.Log("XR_BLOCK_DONE");
+    }
+    IEnumerator BlockWindow(string label,System.Func<bool> active)
+    {
+        var frames=new List<float>(160);double start=Time.realtimeSinceStartupAsDouble,last=start;
+        while(active() && last-start<60)
+        {
+            yield return null;double now=Time.realtimeSinceStartupAsDouble;
+            frames.Add((float)((now-last)*1000));last=now;
+        }
+        if(active() || frames.Count==0){Debug.LogError("XR_BLOCK_FAIL window "+label);yield break;}
+        frames.Sort();Debug.Log($"XR_BLOCK_RESULT {label} fps={frames.Count/(last-start):F2} frames={frames.Count} seconds={last-start:F2} p95ms={frames[(frames.Count-1)*95/100]:F2}");
+    }
+    IEnumerator BlockProof(JourneySceneArrival arrival,string label)
+    {
+        arrival.manual=true;arrival.Request();yield return null;yield return null;
+        arrival.SetProgress(.50f);yield return SurfaceShot(label+"-reveal");
+        arrival.SetProgress(1);arrival.Cancel();arrival.manual=false;
+        yield return SurfaceShot(label+"-whole");
+    }
+    IEnumerator ReviewFinish(bool guardReview)
+    {
+        if(detailReview){CancelHeld();replay=true;}
+        while (!journey.Complete && journey.InstallCurrent()) yield return null;
+        if (!journey.Complete) { Debug.LogError("XR_FINISH_FAIL installation"); yield break; }
+        while (journey.CompletionActive) yield return null;
+        journey.cutaway=false; journey.inspectionMode=0; journey.ApplyVisibility();
+        var loco=guardReview ? frontGuard : journey.engine.locomotive;
+        var variants=detailReview ? detailVariants : finishVariants;
+        var originals=detailReview ? detailOriginals : finishOriginals;
+        var targets=new Dictionary<Renderer,Material[]>();
+        foreach (var r in loco.GetComponentsInChildren<MeshRenderer>(false))
+        {
+            var slots=r.sharedMaterials;
+            if (r.enabled && System.Array.Exists(slots,m=>System.Array.IndexOf(variants,m)>=0))
+                targets.Add(r,slots);
+        }
+        if(targets.Count==0){Debug.LogError("XR_FINISH_FAIL no visible receivers");yield break;}
+        Debug.Log("XR_FINISH_VISIBLE "+targets.Count);
+        var root=journey.furnaceParticles.transform.parent;
+        float side=root.InverseTransformPoint(view.transform.position).z>=0 ? 1 : -1;
+        for(int angle=0;angle<2;angle++)
+        {
+            var eye=angle==0 ? new Vector3(1.6f,5.2f,7.1f*side) : new Vector3(4.3f,4.5f,7.3f*side);
+            var aim=new Vector3(0,2.0f,0);
+            if(guardReview)
+            {
+                aim=new Vector3(3.45f,1.36f,0);
+                eye=aim+(angle==0 ? new Vector3(3.9f,2.7f,3.1f*side) : new Vector3(3.7f,1.3f,1.8f*side));
+            }
+            else if(detailReview && angle==1)
+            {
+                aim=new Vector3(2.8f,2.1f,0);
+                eye=aim+new Vector3(4.8f,1.5f,2.8f*side);
+            }
+            PlaceView(root,eye,aim);
+            foreach(bool after in new[]{false,true})
+            {
+                foreach(var pair in targets)
+                {
+                    var slots=(Material[])pair.Value.Clone();
+                    if(!after) for(int i=0;i<slots.Length;i++)
+                    {
+                        int index=System.Array.IndexOf(variants,slots[i]);
+                        if(index>=0)slots[i]=originals[index];
+                    }
+                    pair.Key.sharedMaterials=slots;
+                }
+                string label=(angle==0?"side":"turn")+(after?"-after":"-before");
+                if(angle==0 && !after) yield return new WaitForSecondsRealtime(14);
+                if(detailReview) yield return new WaitForSecondsRealtime(4);
+                yield return SurfaceShot(label);
+                if(angle==0 || detailReview)yield return Sample(label,false);
+            }
+        }
+        if(detailReview)
+        {
+            yield return ReviewValley();
+            detailReview=false;replay=false;
+        }
+        else Debug.Log("XR_FINISH_DONE");
+    }
+    IEnumerator ReviewWorkshopSurfaces()
+    {
+        for(int i=0;i<9;i++)
+        {
+            if(!journey.InstallCurrent())throw new System.InvalidOperationException("Missing cab assembly step");
+            yield return null;
+        }
+        FrameTrain();yield return SurfaceShot("assembly");
+        while(!journey.Complete && journey.InstallCurrent())yield return null;
+        while(journey.CompletionActive)yield return null;
+        journey.cutaway=true;journey.inspectionMode=1;journey.ApplyVisibility();
+        journey.Act(JourneyAction.Verify);
+        yield return new WaitForSecondsRealtime(4);
+        var loco=journey.furnaceParticles.transform.parent;
+        float side=loco.InverseTransformPoint(view.transform.position).z>=0?1:-1;
+        PlaceView(loco,new Vector3(-.65f,3.5f,4.5f*side),new Vector3(-.3f,2.35f,0));
+        yield return SurfaceShot("boiler");yield return Sample("art-inspection",false);
+    }
+    IEnumerator ReviewOpenExhaust()
+    {
+        var loco=journey.furnaceParticles.transform.parent;
+        var stack=journey.bakedChimney.rollingPlume;
+        var layers=journey.furnaceParticles.GetComponentsInChildren<ParticleSystem>(true);
+        for(int step=0;step<3;step++)
+        {
+            if(!journey.InstallCurrent()){Debug.LogError("XR_EXHAUST_FAIL install");yield break;}
+            if(!journey.running)journey.Act(JourneyAction.Verify);
+            float side=loco.InverseTransformPoint(view.transform.position).z>=0?1:-1;
+            PlaceView(loco,new Vector3(2.6f,5.8f,6.4f*side),new Vector3(.45f,2.7f,0));
+            int smokeMax=0,fireMax=0,vapourMax=0,stackMax=0;
+            float until=Time.realtimeSinceStartup+85,settled=0;
+            while(Time.realtimeSinceStartup<until && settled<2)
+            {
+                int flames=0;foreach(var layer in layers)flames+=layer.particleCount;
+                smokeMax=Mathf.Max(smokeMax,journey.smoke.particleCount);
+                fireMax=Mathf.Max(fireMax,flames);
+                vapourMax=Mathf.Max(vapourMax,journey.steam.particleCount);
+                stackMax=Mathf.Max(stackMax,stack.particleCount);
+                // Wait until combustion has reached every open tube. A cold sample would pass spuriously.
+                bool gasArrived=true;int paths=0;
+                foreach(var field in journey.fluidFields)
+                    if(field && field.kind==JourneyFluidKind.Smoke && field.stage==step){paths++;gasArrived &= field.Arrived;}
+                bool hot=journey.GasLevel>.85f && gasArrived && paths>0;
+                if(step>=1)hot &= journey.WaterHeat>.82f && vapourMax>0;
+                if(step==2)hot &= stackMax>0;
+                settled=hot ? settled+Time.unscaledDeltaTime : 0;
+                yield return null;
+            }
+            Debug.Log($"XR_EXHAUST_STATE step={step+1} legacyMax={smokeMax} fireMax={fireMax} vapourMax={vapourMax} stackMax={stackMax} hotWindow={settled:F2}");
+            if(settled<2 || smokeMax!=0 || fireMax==0 || (step==0 && vapourMax!=0) || (step<2 && stackMax!=0))
+            {Debug.LogError("XR_EXHAUST_FAIL effects");yield break;}
+            yield return SurfaceShot("outlet-"+(step+1));
+        }
+        for(int i=3;i<9;i++)journey.InstallCurrent();
+        FrameTrain();yield return SurfaceShot("cab-outline");
+        Debug.Log("XR_EXHAUST_DONE");
+    }
+    IEnumerator SurfaceShot(string label)
+    {
+        yield return new WaitForSecondsRealtime(valleyFinishReview?4f:1.5f);
+        Debug.Log("XR_SURFACE_SHOT "+label);
+        yield return new WaitForSecondsRealtime(valleyFinishReview?7f:3f);
+    }
     IEnumerator ReviewValley()
     {
         yield return new WaitForSecondsRealtime(3);
@@ -413,6 +921,37 @@ public sealed class SteamXrTrial : MonoBehaviour
         var eye=new Vector3(1,20.5f,24);var aim=new Vector3(0,7,0);
         PlaceView(sky,eye,aim);
         yield return new WaitForSecondsRealtime(4);
+        if(valleyFinishReview){yield return ReviewValleyFinish(sky);yield break;}
+        if(celestialReview){yield return ReviewCelestials(sky);yield break;}
+        if(detailReview)
+        {
+            var cycle=journey.GetComponent<MesaDayNightV13>();
+            cycle.automatic=false;cycle.SetTime(.46f);
+            yield return SurfaceShot("canyon-day");
+            float start=journey.routeDistance;
+            journey.SwanSetControl(JourneyAction.Brake,0);journey.SwanSetControl(JourneyAction.Throttle,.75f);
+            yield return new WaitForSecondsRealtime(6);
+            yield return SurfaceShot("canyon-driving");
+            yield return Sample("detail-valley-moving",false);
+            Debug.Log($"XR_DETAIL_DRIVE speed={journey.speed} distance={journey.routeDistance-start}");
+            cycle.automatic=true;
+            if(Mathf.Abs(journey.routeDistance-start)<.01f)Debug.LogError("XR_FINISH_FAIL valley stationary");
+            else Debug.Log("XR_FINISH_DONE");
+            yield break;
+        }
+        if(surfaceReview)
+        {
+            var daylight=journey.GetComponent<MesaDayNightV13>();daylight.automatic=false;
+            daylight.SetTime(.46f);yield return SurfaceShot("day");
+            journey.SwanSetControl(JourneyAction.Brake,0);journey.SwanSetControl(JourneyAction.Throttle,.75f);
+            yield return new WaitForSecondsRealtime(8);yield return Sample("art-valley-day",false);
+            daylight.SetTime(.93f);
+            var smoke=journey.GetComponent<MesaAtmosV16>();
+            float end=Time.realtimeSinceStartup+35;
+            while((smoke.TrailReach()<5 || sky.InverseTransformPoint(journey.valleyHeadlamps.transform.position).z<2) && Time.realtimeSinceStartup<end)yield return null;
+            yield return SurfaceShot("night");yield return Sample("art-valley-night",false);
+            daylight.automatic=true;Debug.Log("XR_SURFACE_DONE");yield break;
+        }
         if(cycleReview){yield return ReviewCycle(sky,eye,aim);yield break;}
         if(lampReview){yield return ReviewHeadlamps(sky,eye,aim);yield break;}
         Debug.Log("XR_CLOUD_STATE control="+cloudControl+" shader="+clouds[1].GetComponent<Renderer>().sharedMaterial.shader.name+
@@ -442,18 +981,19 @@ public sealed class SteamXrTrial : MonoBehaviour
         var daylight=journey.GetComponent<MesaDayNightV13>();var lights=journey.valleyHeadlamps;
         var atmosphere=journey.GetComponent<MesaAtmosV16>();
         var panel=journey.sandboxRoot.GetComponentsInChildren<SwanJourneyTarget>(true);
-        var button=System.Array.Find(panel,t=>t.action==JourneyAction.Lights && t.useActionOverride && t.GetComponent<Collider>());
-        if(!button || !button.gameObject.activeInHierarchy){Debug.LogError("XR_LAMP_FAIL missing switch");yield break;}
-        daylight.automatic=false;daylight.SetTime(.93f);
-        if(journey.HeadlampsSelected)journey.SwanAct(button.action);
+        if(System.Array.Exists(panel,t=>t.action==JourneyAction.Lights && t.useActionOverride) ||
+            System.Array.Exists(journey.GetComponentsInParent<SwanJourneyPresentation>(true),p=>p.moveHandle)){
+            Debug.LogError("XR_LAMP_FAIL retired control");yield break;}
+        daylight.automatic=false;daylight.SetTime(.46f);
+        while(lights.Lit)yield return null;
         var left=lights.lenses[0].transform.parent;var right=lights.lenses[1].transform.parent;
         var centre=(left.position+right.position)*.5f;float scale=Mathf.Abs(left.lossyScale.z);
         var cameraPoint=centre+(left.forward*10f+left.right*2.2f+left.up*1.8f)*scale;
         PlaceView(skyRoot,skyRoot.InverseTransformPoint(cameraPoint),skyRoot.InverseTransformPoint(centre+left.forward*.8f*scale));
         yield return new WaitForSecondsRealtime(1);Debug.Log("XR_LAMP_SHOT lamps-off visible="+lights.Lit);
         yield return new WaitForSecondsRealtime(3);
-        bool toggled=journey.SwanAct(button.action);
-        yield return new WaitForSecondsRealtime(.6f);Debug.Log("XR_LAMP_SHOT lamps-on visible="+lights.Lit+" action="+toggled+" scale="+scale+" range="+lights.spots[0].range);
+        yield return CheckLampFade(daylight,lights,true);
+        Debug.Log("XR_LAMP_SHOT lamps-on visible="+lights.Lit+" scale="+scale+" range="+lights.spots[0].range);
         yield return new WaitForSecondsRealtime(3);
         cameraPoint=centre+(left.forward*25+left.right*3+left.up*3.5f)*scale;
         PlaceView(skyRoot,skyRoot.InverseTransformPoint(cameraPoint),skyRoot.InverseTransformPoint(centre));
@@ -465,10 +1005,10 @@ public sealed class SteamXrTrial : MonoBehaviour
         cameraPoint=centre+(forward*6.6f+left.right*12f+up*7.2f)*scale;
         var trackAim=centre+(forward*4.6f-up*.9f)*scale;
         PlaceView(skyRoot,skyRoot.InverseTransformPoint(cameraPoint),skyRoot.InverseTransformPoint(trackAim));
-        journey.SwanAct(button.action);
+        yield return CheckLampFade(daylight,lights,false);
         yield return new WaitForSecondsRealtime(1.4f);Debug.Log("XR_LAMP_SHOT track-off");
         yield return new WaitForSecondsRealtime(3);
-        journey.SwanAct(button.action);
+        yield return CheckLampFade(daylight,lights,true);
         foreach(var beam in lights.beams)beam.enabled=false;
         yield return new WaitForSecondsRealtime(1.4f);
         Debug.Log("XR_LAMP_SHOT track-lit range="+lights.spots[0].range+" intensity="+lights.spots[0].intensity);
@@ -478,10 +1018,10 @@ public sealed class SteamXrTrial : MonoBehaviour
         yield return new WaitForSecondsRealtime(3);
         PlaceView(skyRoot,eye,aim);journey.SwanSetControl(JourneyAction.Brake,0);journey.SwanSetControl(JourneyAction.Throttle,.75f);
         yield return new WaitForSecondsRealtime(8);
-        journey.SwanAct(button.action);yield return new WaitForSecondsRealtime(.6f);float start=journey.routeDistance;
+        yield return CheckLampFade(daylight,lights,false);float start=journey.routeDistance;
         yield return Sample("valley-lamps-off",false);
         Debug.Log("XR_LAMP_MOTION off lit="+lights.Lit+" speed="+journey.speed+" delta="+(journey.routeDistance-start)+" puffs="+atmosphere.ActivePuffs);
-        journey.SwanAct(button.action);yield return new WaitForSecondsRealtime(.6f);start=journey.routeDistance;
+        yield return CheckLampFade(daylight,lights,true);start=journey.routeDistance;
         yield return Sample("valley-lamps-on",false);
         Debug.Log("XR_LAMP_MOTION on lit="+lights.Lit+" speed="+journey.speed+" delta="+(journey.routeDistance-start)+" puffs="+atmosphere.ActivePuffs+" invalid="+atmosphere.InvalidCenters);
         daylight.SetTime(.46f);
@@ -512,6 +1052,98 @@ public sealed class SteamXrTrial : MonoBehaviour
         daylight.SetTime(.46f);PlaceView(skyRoot,eye,aim);
         daylight.automatic=true;Debug.Log("XR_LAMP_DONE");
     }
+    IEnumerator CheckLampFade(MesaDayNightV13 sky,SwanValleyHeadlamps lamps,bool night)
+    {
+        sky.SetTime(night?.93f:.46f);
+        float targetValue=night?1:0,previous=lamps.Brightness;
+        int intermediate=0;float until=Time.realtimeSinceStartup+40;
+        while(lamps.Brightness!=targetValue && Time.realtimeSinceStartup<until)
+        {
+            yield return null;
+            float value=lamps.Brightness;
+            if((night && value<previous) || (!night && value>previous) || Mathf.Abs(value-previous)>.045f){
+                Debug.LogError("XR_LAMP_FAIL discontinuous fade");yield break;}
+            if(value>0 && value<1 && value!=previous)intermediate++;
+            previous=value;
+        }
+        if(intermediate<2 || lamps.Lit!=night || lamps.Brightness!=targetValue)Debug.LogError("XR_LAMP_FAIL incomplete fade");
+        else Debug.Log($"XR_LAMP_FADE night={night} intermediate={intermediate} end={lamps.Brightness}");
+    }
+    IEnumerator ReviewValleyFinish(Transform root)
+    {
+        var sky=journey.GetComponent<MesaDayNightV13>();sky.automatic=false;sky.SetTime(.40f);
+        var panel=journey.GetComponent<StudioSpatialRefineV19>();
+        PlaceView(panel.face,new Vector3(-3.2f,3.8f,4.9f),new Vector3(-.5f,.50f,0));
+        yield return SurfaceShot("driving-closed");panel.ToggleReturn();
+        yield return SurfaceShot("driving-open");panel.ToggleReturn();
+        var p0=sky.clouds[0].localPosition;
+        var mid=Vector3.Lerp(new Vector3(0,7,0),root.InverseTransformPoint(sky.sun.position),.47f);
+        PlaceView(root,new Vector3(1,23,40),mid);
+        yield return SurfaceShot("wind-day-a");
+        yield return SurfaceShot("wind-day-b");
+        Debug.Log("XR_FINISH_WIND travel="+Vector3.Distance(p0,sky.clouds[0].localPosition));
+        var coach=journey.valleyTrain.vehicles[2];
+        var panes=System.Array.Find(coach.GetComponentsInChildren<MeshRenderer>(),r=>r.sharedMaterial.shader.name=="SwanJourney/XR Coach Window");
+        var center=panes.bounds.center;float size=panes.bounds.extents.magnitude;
+        foreach(int side in new[]{1,-1}){
+            var cameraAt=center+(coach.forward*side*2.65f+coach.up*.85f)*size;
+            PlaceView(root,root.InverseTransformPoint(cameraAt),root.InverseTransformPoint(center));
+            sky.SetTime(.40f);yield return SurfaceShot("windows-day-"+side);
+            sky.SetTime(.90f);yield return SurfaceShot("windows-night-"+side);
+        }
+        PlaceView(root,new Vector3(1,23,40),new Vector3(0,7,0));
+        journey.SwanSetControl(JourneyAction.Brake,0);journey.SwanSetControl(JourneyAction.Throttle,.75f);
+        yield return Sample("valley-finish-night-moving",false);
+        journey.SetMode(false);
+        yield return new WaitForSecondsRealtime(5);Debug.Log("XR_VALLEY_FINISH_DONE");
+        sky.automatic=true;
+    }
+
+    IEnumerator ReviewCelestials(Transform root)
+    {
+        var sky=journey.GetComponent<MesaDayNightV13>();
+        var sun=sky.sun.GetComponent<Renderer>();var moon=sky.moon.GetComponent<Renderer>();
+        var solar=sky.sunHalo.GetComponent<Renderer>();var lunar=sky.moonHalo.GetComponent<Renderer>();
+        var opticalSun=solar.sharedMaterial;var opticalMoon=lunar.sharedMaterial;
+        bool automatic=sky.automatic;float entry=sky.timeOfDay;
+        sky.automatic=false;
+        try
+        {
+            foreach(var phase in new[]{.90f,.40f,.262f})
+            {
+                string label=phase<.3f?"dawn":phase<.5f?"day":"night";
+                sky.SetTime(phase);
+                var subject=phase<.5f?sky.sun:sky.moon;
+                var aim=Vector3.Lerp(new Vector3(0,7,0),root.InverseTransformPoint(subject.position),.47f);
+                PlaceView(root,new Vector3(1,23,40),aim);
+                for(int take=0;take<4;take++)
+                {
+                    // ABBA keeps the viewpoint and time identical and counterbalances warmup.
+                    bool optical=take==1 || take==2;
+                    sky.useOpticalCards=optical;
+                    sun.forceRenderingOff=moon.forceRenderingOff=optical;
+                    solar.sharedMaterial=optical?opticalSun:originalSolarHalo;
+                    lunar.sharedMaterial=optical?opticalMoon:originalLunarHalo;
+                    sky.SetTime(phase);
+                    yield return new WaitForSecondsRealtime(1);
+                    string name=label+"-"+(optical?"optics":"original")+"-"+take;
+                    var uv=view.WorldToViewportPoint(subject.position);
+                    var activeBody=phase<.5f?sun:moon;var activeHalo=phase<.5f?solar:lunar;
+                    int surfaces=(activeBody.isVisible && !activeBody.forceRenderingOff?1:0)+(activeHalo.isVisible?1:0);
+                    Debug.Log($"XR_CELESTIAL {name} centre={uv:F2} alpha={view.backgroundColor.a} surfaces={surfaces} shader={activeHalo.sharedMaterial.shader.name}");
+                    yield return Sample(name,false);
+                }
+            }
+        }
+        finally
+        {
+            solar.sharedMaterial=opticalSun;lunar.sharedMaterial=opticalMoon;
+            sun.forceRenderingOff=moon.forceRenderingOff=sky.useOpticalCards=true;
+            sky.SetTime(entry);sky.automatic=automatic;
+        }
+        Debug.Log("XR_CELESTIAL_DONE");
+    }
+
     IEnumerator ReviewCycle(Transform skyRoot,Vector3 eye,Vector3 aim)
     {
         var sky=journey.GetComponent<MesaDayNightV13>();
@@ -581,7 +1213,7 @@ public sealed class SteamXrTrial : MonoBehaviour
             " vapour="+journey.steam.particleCount+" chimney="+(plume?plume.particleCount:0));
         yield return new WaitForSecondsRealtime(4);
     }
-    IEnumerator Sample(string label,bool move)
+    IEnumerator Sample(string label,bool move,System.Action<float> update=null)
     {
         SubsystemManager.GetInstances(displays);
         var d=displays.Find(x=>x.running);
@@ -598,6 +1230,7 @@ public sealed class SteamXrTrial : MonoBehaviour
         float minScale=interaction.SceneScale, maxScale=minScale;
         while (Time.realtimeSinceStartupAsDouble-start<12)
         {
+            update?.Invoke((float)(last-start));
             if(move)
             {
                 float wave=.025f*Mathf.Sin((float)(last-start)*1.4f);

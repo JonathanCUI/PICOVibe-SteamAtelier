@@ -30,7 +30,7 @@ Shader "SwanJourney/XR Valley Cloud"
             {
                 V o;UNITY_SETUP_INSTANCE_ID(i);UNITY_TRANSFER_INSTANCE_ID(i,o);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.pos=TransformObjectToHClip(i.p.xyz);o.objectPos=i.p.xyz;
-                o.drift=sin(_Time.y*half2(.26,.33)+_Seed+half2(0,1.4))*.032;
+                o.drift=sin(_Time.y*half2(.32,.24)+_Seed+half2(0,1.4))*half2(.11,.065);
                 return o;
             }
             half4 frag(V i):SV_Target
@@ -47,15 +47,15 @@ Shader "SwanJourney/XR Valley Cloud"
                 float dt=rayLength/steps;
                 float3 delta=ray*dt,uv=eye+ray*(nearT+.5*dt)+.5;
                 half4 sum=0;
-                half3 shade=lerp(half3(.24,.30,.39),half3(.13,.20,.33),_SwanSkyNight);
-                half3 bright=lerp(half3(1.03,1.01,.96),half3(.59,.72,.91),_SwanSkyNight);
+                half3 shade=lerp(half3(.24,.30,.39),half3(.029,.042,.065),_SwanSkyNight);
+                half3 bright=lerp(half3(1.03,1.01,.96),half3(.24,.29,.37),_SwanSkyNight);
                 [loop] for(int j=0;j<steps;j++,uv+=delta)
                 {
                     float3 q=uv;
                     q.xz+=i.drift*(uv.y-.35);
                     half2 v=SAMPLE_TEXTURE3D_LOD(_Cloud,sampler_Cloud,q,0).rg;
                     half opacity=1-exp2(-27.412*v.r*dt);
-                    half3 cloud=lerp(shade,bright,v.g);
+                    half3 cloud=lerp(shade,bright,v.g*lerp(1.h,v.g,_SwanSkyNight*.68h));
                     half weight=(1-sum.a)*opacity;
                     sum.rgb+=cloud*weight;sum.a+=weight;
                     if(sum.a>.985h) break;

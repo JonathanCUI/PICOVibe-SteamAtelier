@@ -3,11 +3,12 @@ using System;using System.Linq;using System.Collections.Generic;using UnityEngin
 public sealed class StudioAssemblyFinishV9:MonoBehaviour {
  public float Duration=2.1f;public Material pulseLineMaterial;public int RingCount=>rings.Count;public Shader finishShader;public Material sparkleMaterial;public int SparkCount{get;private set;}public Vector3 SweepAxis{get;private set;}public AudioClip servo,seat,pawl,sweep;
  public Action<Transform> nativeBegin;public Action<float> nativeProgress;public Action nativeRestore;bool nativeActive;
+ public float nativeSweepPitch=1.4f,nativeSweepGain=.65f;
  public bool Active=>nativeActive||originals.Count>0;public float Progress{get;private set;}public int SoundEvents{get;private set;}
  readonly Dictionary<Renderer,Material[]> originals=new Dictionary<Renderer,Material[]>();
  readonly Dictionary<Material,Material[]> copies=new Dictionary<Material,Material[]>();AudioSource sound;Vector4 range;ParticleSystem sparks;readonly List<Vector3> seeds=new List<Vector3>();int emitted;readonly List<LineRenderer> rings=new List<LineRenderer>();
  public void Sound(int kind,float gain=1,float pitch=1){if(!sound){sound=gameObject.AddComponent<AudioSource>();sound.playOnAwake=false;sound.spatialBlend=0;sound.volume=.55f;}var clip=kind==0?servo:kind==1?seat:kind==2?pawl:sweep;if(!clip)return;sound.pitch=pitch;sound.PlayOneShot(clip,gain);SoundEvents++;}
- public void Begin(Transform train){Restore();if(nativeBegin!=null){nativeActive=true;nativeBegin(train);Sound(3,.65f,1.4f);return;}if(!finishShader)return;Bounds bounds=new Bounds();bool first=true;
+ public void Begin(Transform train){Restore();if(nativeBegin!=null){nativeActive=true;nativeBegin(train);Sound(3,nativeSweepGain,nativeSweepPitch);return;}if(!finishShader)return;Bounds bounds=new Bounds();bool first=true;
   foreach(var r in train.GetComponentsInChildren<MeshRenderer>()){
    var mats=r.sharedMaterials;if(!r.enabled||mats.Length==0||mats.Any(m=>!m||!(m.shader.name=="Universal Render Pipeline/Lit"||m.shader.name=="SteamJourney/StudioMechanical")||m.GetFloat("_Surface")>.5f))continue;
    if(first){bounds=r.bounds;first=false;}else bounds.Encapsulate(r.bounds);originals[r]=mats;

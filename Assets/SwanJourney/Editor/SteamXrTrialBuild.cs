@@ -12,7 +12,10 @@ using SwanJourney;
 
 public static class SteamXrTrialBuild
 {
-    public static void Build()
+    public static void Build()=>BuildRoom("SteamAtelierXRRoom-SketchPage01.apk");
+    public static void BuildSketchDragDemo()=>BuildRoom("SteamAtelierXRRoom-WorkshopSketchbook.apk");
+    public static void BuildCompletionFeedback()=>BuildRoom("SteamAtelierXRRoom-CompletionCelebration.apk");
+    static void BuildRoom(string apkName)
     {
         const BuildTargetGroup group = BuildTargetGroup.Android;
         var xr = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(group);
@@ -29,11 +32,32 @@ public static class SteamXrTrialBuild
         EditorUtility.SetDirty(pico);
         const string source = "Assets/SwanJourney/Scenes/SteamJourneySwan.unity";
         const string scenePath = "Assets/SwanJourney/Scenes/SteamJourneyXRTrial.unity";
+        if(!AssetDatabase.IsValidFolder("Assets/SwanJourney/Branding/XrSurfaceArt"))
+            AssetDatabase.CreateFolder("Assets/SwanJourney/Branding","XrSurfaceArt");
         SwanJourney.Editor.SwanCanyonFoliage.PreparePrefab();
         var scene = EditorSceneManager.OpenScene(source);
         var journey = UnityEngine.Object.FindObjectOfType<SteamJourney>(true);
+        var scan=journey.gameObject.AddComponent<SwanBlockArrival>();
+        scan.journey=journey;scan.arrival=journey.GetComponent<JourneySceneArrival>();
+        scan.arrival.enabled=true;scan.arrival.duration=1.8f;
+        scan.workshopConsole=journey.previewStand.parent;
+        scan.sliceShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrBlockArrival.shader");
+        scan.scanCue=journey.gameObject.AddComponent<AudioSource>();
+        scan.scanCue.playOnAwake=false;scan.scanCue.volume=.42f;
+        scan.scanCue.clip=AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/AtelierJourney/FlatTrayV22/Audio/zhuanchang.mp3");
+        if(!scan.scanCue.clip)throw new InvalidOperationException("Missing zhuanchang scan cue");
+        if(!scan.sliceShader)throw new InvalidOperationException("Missing XR block reveal shader");
+        scan.loader=UnityEngine.Object.FindObjectOfType<SwanJourneySceneLoader>(true);
+        scan.loader.holdForArrival=true;
         SwanJourney.Editor.SwanXrBoilerArt.Apply(journey);
+        SwanJourney.Editor.SwanXrWorkshopSurfaces.Apply(journey);
+        SwanJourney.Editor.SwanXrConsoleFinish.Apply(journey);
+        SwanJourney.Editor.SwanXrSketchSheetBuild.Apply(journey.GetComponent<StudioPartCards>());
         var input = UnityEngine.Object.FindObjectOfType<SwanJourneyInteraction>(true);
+        var layout = UnityEngine.Object.FindObjectOfType<SwanJourneyPresentation>(true);
+        layout.moveHandle.gameObject.SetActive(false);
+        layout.moveHandle = null;
+        input.moveLesson = input.moveCaption = null;
         foreach (var c in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>(true))
         {
             if (!c || c.gameObject.scene != scene) continue;
@@ -75,6 +99,8 @@ public static class SteamXrTrialBuild
         journey.view = camera;
         var trial = rig.AddComponent<SteamXrTrial>();
         trial.view = camera; trial.journey = journey; trial.interaction = input;
+        SwanJourney.Editor.SwanXrLocomotiveFinish.Apply(journey,trial);
+        SwanJourney.Editor.SwanSurfaceRepair.Apply(journey);
         trial.focus = rig.AddComponent<SteamXrFocus>();
         trial.focus.journey = journey;
         trial.focus.highlightShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrGazeHighlight.shader");
@@ -83,6 +109,12 @@ public static class SteamXrTrialBuild
         trial.handMasks = new[] { AddHandMask(rig.transform, "HandLeft"), AddHandMask(rig.transform, "HandRight") };
         SwanJourney.Editor.SwanXrValleyCloudArt.Apply(journey,trial);
         SwanJourney.Editor.SwanXrDayNightArt.Apply(journey,input);
+        var celebration=journey.gameObject.AddComponent<SwanAssemblyCelebration>();
+        celebration.journey=journey;celebration.frontReference=trial.frontGuard;
+        celebration.scanShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrCompletionScan.shader");
+        celebration.paperShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrCelebrationPaper.shader");
+        if(!celebration.scanShader || !celebration.paperShader)throw new InvalidOperationException("Missing completion shaders");
+        ApplyCompletionAudio(journey);
         ValidateHandInteraction(scene);
         if (!EditorSceneManager.SaveScene(scene, scenePath, true)) throw new IOException(scenePath);
         SwanJourney.Editor.SwanJourneyQuickInstallChecks.RunXr(scenePath);
@@ -102,8 +134,12 @@ public static class SteamXrTrialBuild
         {
             var sdkOverride = Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT");
             if (!string.IsNullOrEmpty(sdkOverride)) AndroidExternalToolsSettings.sdkRootPath = sdkOverride;
+            var ndkOverride=Environment.GetEnvironmentVariable("ANDROID_NDK_ROOT");
+            if(!string.IsNullOrEmpty(ndkOverride))AndroidExternalToolsSettings.ndkRootPath=ndkOverride;
+            var jdkOverride=Environment.GetEnvironmentVariable("JAVA_HOME");
+            if(!string.IsNullOrEmpty(jdkOverride))AndroidExternalToolsSettings.jdkRootPath=jdkOverride;
             Directory.CreateDirectory("Builds/XRTrial");
-            var r = BuildPipeline.BuildPlayer(new[]{scenePath},"Builds/XRTrial/SteamAtelierXRRoom-HandFocus.apk",BuildTarget.Android,BuildOptions.None);
+            var r = BuildPipeline.BuildPlayer(new[]{scenePath},Path.Combine("Builds/XRTrial",apkName),BuildTarget.Android,BuildOptions.None);
             if (r.summary.result != BuildResult.Succeeded) throw new Exception("XR build: "+r.summary.result);
         }
         finally
@@ -112,6 +148,23 @@ public static class SteamXrTrialBuild
             AndroidExternalToolsSettings.ndkRootPath = RestoreTool(ndk);
             AndroidExternalToolsSettings.jdkRootPath = RestoreTool(jdk);
         }
+    }
+    static void ApplyCompletionAudio(SteamJourney journey)
+    {
+        const string path="Assets/SwanJourney/Branding/Completion/universfield-level-up-08-402152.mp3";
+        var importer=AssetImporter.GetAtPath(path) as AudioImporter;
+        if(!importer)throw new InvalidOperationException("Missing assembly completion sound");
+        var settings=importer.defaultSampleSettings;
+        settings.loadType=AudioClipLoadType.DecompressOnLoad;
+        settings.compressionFormat=AudioCompressionFormat.Vorbis;settings.quality=1;
+        settings.sampleRateSetting=AudioSampleRateSetting.PreserveSampleRate;
+        settings.preloadAudioData=true;
+        importer.defaultSampleSettings=settings;importer.forceToMono=false;importer.SaveAndReimport();
+        var finish=journey.GetComponent<StudioAssemblyFinishV9>();
+        finish.sweep=AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+        finish.nativeSweepPitch=1;finish.nativeSweepGain=1;
+        if(!finish.sweep)throw new InvalidOperationException("Completion sound import failed");
+        Debug.Log($"XR_COMPLETION_AUDIO clip={finish.sweep.name} length={finish.sweep.length:F3} pitch={finish.nativeSweepPitch} load={finish.sweep.loadType}");
     }
     static void ValidateHandInteraction(UnityEngine.SceneManagement.Scene scene)
     {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace SwanJourney
 {
-    public enum SwanJourneyTargetKind { Module, Control, Sun, Moon, MoveWorkbench, ExplodeAll }
+    public enum SwanJourneyTargetKind { Module, Control, Sun, Moon, MoveWorkbench, ExplodeAll, SketchSheet }
 
     // Put a target on a visible mesh (with its native hover effect and collider),
     // or on its semantic parent. The bridge can also infer existing Journey data.

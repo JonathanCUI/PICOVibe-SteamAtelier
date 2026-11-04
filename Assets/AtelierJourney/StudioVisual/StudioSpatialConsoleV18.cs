@@ -32,7 +32,10 @@ public sealed class StudioSpatialConsoleV18 : MonoBehaviour {
   if(guard)guard.localRotation=Quaternion.Slerp(guard.localRotation,Quaternion.Euler(GuardOpen?-112:0,0,0),1-Mathf.Exp(-Time.unscaledDeltaTime*12));
   resetLabel.text=GuardOpen?"按下重置":"掀盖重置";
   if(message)message.text=journey.SpatialMessage;
-  if(guideFurniture)guideFurniture.SetActive(cards&&cards.visible&&!cards.verificationHidden&&!journey.inSandbox);
+  // The paper owns its closing animation. Keep its parent alive until the roll
+  // has finished; the legacy framed tutorial still follows the switch directly.
+  if(guideFurniture)guideFurniture.SetActive(cards&&!journey.inSandbox&&
+   ((cards.visible&&!cards.verificationHidden)||(cards.sketchSheet&&cards.sketchSheet.KeepGuideVisible)));
  }
 }
 

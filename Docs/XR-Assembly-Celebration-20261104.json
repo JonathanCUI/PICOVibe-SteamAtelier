@@ -1,0 +1,278 @@
+{
+  "recorded_at": "2026-11-04T18:20:11",
+  "feature": "B completion celebration: bright gold rim and front-to-cab surface scan with bright teal, coral, lavender and champagne curled paper",
+  "project": "H:\\Codex\\SteamAtelierSwan-XRTrial",
+  "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-CompletionCelebration.apk",
+  "apk_bytes": 241072689,
+  "apk_sha256": "b72a048f099fef9bdc05e700412f4569119e04d598797777ef83fd9c354635f0",
+  "duration_seconds": 4,
+  "scan_restore_seconds": 2.05,
+  "ribbons": 14,
+  "short_paper_strips": 24,
+  "paper_triangles": 808,
+  "extra_renderers": 1,
+  "runtime": "Cached single-pass replacements for active opaque URP surfaces; one combined shader-animated paper mesh. No realtime lights, cloth physics, particle collisions, extra full-locomotive pass, or idle effect Update.",
+  "checks": {
+    "performance-enabled-v5-r2": [
+      "clean=True reset=True automatic=True valley=True materialStable=True triangles=808 pieces=38 idleClean=True"
+    ],
+    "performance-disabled-v5-r2": [
+      "clean=True reset=True automatic=True valley=True materialStable=True triangles=808 pieces=38 idleClean=True"
+    ]
+  },
+  "performance": {
+    "performance-enabled-v5-r2": [
+      {
+        "window": "before-final-part",
+        "fps": 59.84,
+        "frames": 360,
+        "p95_ms": 17.04,
+        "p99_ms": 18.58,
+        "max_ms": 32.82,
+        "focused": true
+      },
+      {
+        "window": "first-completion",
+        "fps": 59.8,
+        "frames": 249,
+        "p95_ms": 17.01,
+        "p99_ms": 17.81,
+        "max_ms": 31.33,
+        "focused": true
+      },
+      {
+        "window": "after-completion",
+        "fps": 59.98,
+        "frames": 360,
+        "p95_ms": 16.95,
+        "p99_ms": 17.29,
+        "max_ms": 17.67,
+        "focused": true
+      },
+      {
+        "window": "control-0",
+        "fps": 60.02,
+        "frames": 241,
+        "p95_ms": 16.89,
+        "p99_ms": 17.24,
+        "max_ms": 17.96,
+        "focused": true
+      },
+      {
+        "window": "celebration-0",
+        "fps": 59.75,
+        "frames": 239,
+        "p95_ms": 17.11,
+        "p99_ms": 18.82,
+        "max_ms": 31.97,
+        "focused": true
+      },
+      {
+        "window": "control-1",
+        "fps": 60.03,
+        "frames": 241,
+        "p95_ms": 16.8,
+        "p99_ms": 16.92,
+        "max_ms": 17.94,
+        "focused": true
+      },
+      {
+        "window": "celebration-1",
+        "fps": 60.01,
+        "frames": 241,
+        "p95_ms": 16.89,
+        "p99_ms": 17.01,
+        "max_ms": 18.56,
+        "focused": true
+      },
+      {
+        "window": "control-2",
+        "fps": 59.49,
+        "frames": 238,
+        "p95_ms": 17.57,
+        "p99_ms": 19.35,
+        "max_ms": 32.57,
+        "focused": true
+      },
+      {
+        "window": "celebration-2",
+        "fps": 60.02,
+        "frames": 241,
+        "p95_ms": 16.79,
+        "p99_ms": 16.87,
+        "max_ms": 17.44,
+        "focused": true
+      },
+      {
+        "window": "valley-moving",
+        "fps": 60.01,
+        "frames": 481,
+        "p95_ms": 16.98,
+        "p99_ms": 17.2,
+        "max_ms": 18.16,
+        "focused": true
+      },
+      {
+        "window": "workshop-return",
+        "fps": 59.81,
+        "frames": 359,
+        "p95_ms": 16.91,
+        "p99_ms": 18.2,
+        "max_ms": 30.23,
+        "focused": true
+      }
+    ],
+    "performance-disabled-v5-r2": [
+      {
+        "window": "before-final-part",
+        "fps": 60.01,
+        "frames": 361,
+        "p95_ms": 16.95,
+        "p99_ms": 17.04,
+        "max_ms": 17.62,
+        "focused": true
+      },
+      {
+        "window": "first-completion-disabled",
+        "fps": 60.02,
+        "frames": 250,
+        "p95_ms": 17.04,
+        "p99_ms": 17.18,
+        "max_ms": 17.7,
+        "focused": true
+      },
+      {
+        "window": "after-completion",
+        "fps": 59.98,
+        "frames": 360,
+        "p95_ms": 17.09,
+        "p99_ms": 18.13,
+        "max_ms": 18.68,
+        "focused": true
+      },
+      {
+        "window": "control-0",
+        "fps": 60.06,
+        "frames": 241,
+        "p95_ms": 16.88,
+        "p99_ms": 16.98,
+        "max_ms": 17.8,
+        "focused": true
+      },
+      {
+        "window": "celebration-0",
+        "fps": 59.71,
+        "frames": 239,
+        "p95_ms": 17.34,
+        "p99_ms": 17.57,
+        "max_ms": 32.84,
+        "focused": true
+      },
+      {
+        "window": "control-1",
+        "fps": 60.04,
+        "frames": 241,
+        "p95_ms": 16.85,
+        "p99_ms": 17.01,
+        "max_ms": 17.55,
+        "focused": true
+      },
+      {
+        "window": "celebration-1",
+        "fps": 60.0,
+        "frames": 241,
+        "p95_ms": 16.93,
+        "p99_ms": 17.04,
+        "max_ms": 17.18,
+        "focused": true
+      },
+      {
+        "window": "control-2",
+        "fps": 60.0,
+        "frames": 240,
+        "p95_ms": 17.46,
+        "p99_ms": 18.7,
+        "max_ms": 19.67,
+        "focused": true
+      },
+      {
+        "window": "celebration-2",
+        "fps": 60.03,
+        "frames": 241,
+        "p95_ms": 16.91,
+        "p99_ms": 17.3,
+        "max_ms": 18.02,
+        "focused": true
+      },
+      {
+        "window": "valley-moving",
+        "fps": 60.0,
+        "frames": 480,
+        "p95_ms": 17.01,
+        "p99_ms": 17.18,
+        "max_ms": 18.04,
+        "focused": true
+      },
+      {
+        "window": "workshop-return",
+        "fps": 59.81,
+        "frames": 359,
+        "p95_ms": 17.08,
+        "p99_ms": 18.11,
+        "max_ms": 32.59,
+        "focused": true
+      }
+    ]
+  },
+  "long_frames": {
+    "performance-enabled-v5-r2": [
+      "before-final-part 5.256s:32.8ms",
+      "first-completion 0.031s:31.3ms",
+      "celebration-0 2.522s:32.0ms",
+      "control-2 3.040s:32.6ms",
+      "workshop-return 1.388s:30.2ms"
+    ],
+    "performance-disabled-v5-r2": [
+      "celebration-0 0.033s:32.8ms",
+      "workshop-return 4.560s:32.6ms"
+    ]
+  },
+  "method": "Unity realtime frame intervals in a fixed view. Three alternating complete-train control/celebration windows. Separate cold launch with first celebration suppressed. Identical emulator host capture at 1080x1080/30fps throughout both runs.",
+  "emulator_issue": "Earlier v3 and first v5 runs throttled to about 2 FPS after 10 seconds, including the no-effect baseline, with or without capture. These invalid runs are retained and excluded. The user confirmed the window was visible and the desktop was not locked. After a full emulator restart using the original ANGLE backend, explicit SDK root and no redirected process pipes, repeated runs stayed near 60 Hz. Exact cause is not proven; project rendering settings were unchanged.",
+  "limitations": [
+    "PICO OS6 emulator, 60 Hz. These results do not certify 90 FPS on a headset.",
+    "First completion includes final-part visibility, saved progress, text updates, sounds and new effect activation; it is not pure shader time.",
+    "Native hand gestures and actual headset stereo perception were not measured in this run.",
+    "App-cold launch is not a cleared GPU shader-cache test. An earlier v4 first-use run had a 113.84 ms frame; current measurements do not prove that first-ever compilation hitch has been eliminated."
+  ],
+  "evidence_root": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\assembly-celebration",
+  "video": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\assembly-celebration\\demo-v5\\demo.mp4",
+  "completion_audio": {
+    "clip": "universfield-level-up-08-402152.mp3",
+    "length_seconds": 4.833,
+    "pitch": 1,
+    "source_volume": 0.55,
+    "one_shot_gain": 1
+  },
+  "surface_repair_report": "Docs/XR-Surface-Repair-20261104.json",
+  "build_checks": "70 quick install checks; shader and C# compilation successful",
+  "installed_apk_sha256": "b72a048f099fef9bdc05e700412f4569119e04d598797777ef83fd9c354635f0",
+  "audio_waveform_verification": {
+    "source": "C:\\Users\\ww\\Downloads\\universfield-level-up-08-402152.mp3",
+    "capture": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\assembly-celebration\\demo-v5\\demo.mp4",
+    "sample_rate": 1000,
+    "comparison_seconds": 4.6,
+    "matches": [
+      {
+        "correlation": 0.9602,
+        "offset_seconds": 1.091
+      },
+      {
+        "correlation": 0.9451,
+        "offset_seconds": 7.619
+      }
+    ],
+    "method": "Normalized waveform correlation against the supplied MP3 at unchanged speed. Capture includes in-app audio and BGM; no audio was dubbed onto the video."
+  },
+  "delivered_video": "H:\\Codex\\2026-11-01\\you\\outputs\\闪面排查20261104\\组装完成反馈与音效-模拟器实录.mp4"
+}

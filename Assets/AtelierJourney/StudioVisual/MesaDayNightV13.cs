@@ -4,7 +4,16 @@ using UnityEngine;using UnityEngine.Rendering;using UnityEngine.Rendering.Univer
  static readonly int NightTint=Shader.PropertyToID("_SwanSkyNight");
  float nextLighting;
  bool entered;bool[] floorState;float originalShadow;float desired=-1,transition,transitionStart;Vector3 sunScale,moonScale;MaterialPropertyBlock props;
- void Awake(){sunScale=sun.localScale;moonScale=moon.localScale;props=new MaterialPropertyBlock();}
+ public bool useOpticalCards;
+ Renderer solarCard,lunarCard;
+ void Awake(){
+  sunScale=sun.localScale;moonScale=moon.localScale;props=new MaterialPropertyBlock();
+  solarCard=sunHalo.GetComponent<Renderer>();lunarCard=moonHalo.GetComponent<Renderer>();
+  if(useOpticalCards){
+   // Keep the original hit and focus meshes available to the XR interaction system.
+   sun.GetComponent<Renderer>().forceRenderingOff=true;moon.GetComponent<Renderer>().forceRenderingOff=true;
+  }
+ }
  public void SetTime(float t){timeOfDay=Mathf.Repeat(t,1);desired=-1;if(journey&&journey.inSandbox)ApplyLighting();}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.DayNight)) CpuMeasuredLateUpdate(); }
     void CpuMeasuredLateUpdate(){if(!journey)return;if(!journey.inSandbox){if(entered){var p=GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;if(p&&!journey.SwanInputActive)p.shadowDistance=originalShadow;for(int i=0;i<workshopFloor.Length;i++)if(workshopFloor[i])workshopFloor[i].enabled=floorState[i];mood.ApplyImmediate();if(mood.useEnvironmentBackground)Shader.SetGlobalFloat(NightTint,0);}entered=false;nextLighting=0;return;}
@@ -15,12 +24,30 @@ using UnityEngine;using UnityEngine.Rendering;using UnityEngine.Rendering.Univer
  public Vector3 Orbit(float t,bool lunar)=>journey?journey.ScenePointToWorld(OrbitLocal(t,lunar)):OrbitLocal(t,lunar);
  public Vector3 OrbitLocal(float t,bool lunar){float a=(t-.25f)*Mathf.PI*2;var o=new Vector3(Mathf.Cos(a)*18,Mathf.Sin(a)*20,Mathf.Sin(a)*8);return new Vector3(0,5.5f,4)+(lunar?-o:o);}
  public void ApplyLighting(){float a=(timeOfDay-.25f)*Mathf.PI*2,e=Mathf.Sin(a);Daylight=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.28f,.42f,e));float sunPower=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.16f,.32f,e));float moonPower=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.12f,-.4f,e));sun.position=Orbit(timeOfDay,false);moon.position=Orbit(timeOfDay,true);
-  Show(sun,sunHalo,sunScale,Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.20f,.02f,e)),new Color(1,.70f,.34f,.60f));Show(moon,moonHalo,moonScale,Mathf.SmoothStep(0,1,Mathf.InverseLerp(.12f,-.16f,e)),new Color(.46f,.66f,1,.40f));
+  var solarTint=useOpticalCards?Color.Lerp(new Color(1,.78f,.55f),Color.white,Mathf.Clamp01(e*2)):new Color(1,.70f,.34f,.60f);
+  Show(sun,solarCard,sunScale,Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.20f,.02f,e)),solarTint);
+  Show(moon,lunarCard,moonScale,Mathf.SmoothStep(0,1,Mathf.InverseLerp(.12f,-.16f,e)),useOpticalCards?Color.white:new Color(.46f,.66f,1,.40f));
   Vector3 sunDir=(sun.position-journey.ScenePointToWorld(new Vector3(0,1,-3))).normalized,moonDir=(moon.position-journey.ScenePointToWorld(new Vector3(0,1,-3))).normalized;
   // Two independent continuous lights: no direction swap at the day/night threshold.
   mood.key.transform.rotation=Quaternion.LookRotation(-sunDir);mood.key.color=Color.Lerp(new Color(1,.57f,.33f),new Color(1,.93f,.82f),Mathf.Clamp01(e*1.6f));mood.key.intensity=.001f+1.5f*sunPower;mood.key.shadows=mood.useEnvironmentBackground?LightShadows.None:LightShadows.Soft;RenderSettings.sun=sunPower>=moonPower?mood.key:mood.fill;
   mood.fill.transform.rotation=Quaternion.LookRotation(-moonDir);mood.fill.color=Color.Lerp(new Color(.42f,.64f,1),new Color(.69f,.81f,1),Daylight);mood.fill.intensity=.12f+1.30f*moonPower;mood.fill.shadows=mood.useEnvironmentBackground?LightShadows.None:LightShadows.Soft;mood.fill.shadowStrength=.92f;mood.rim.intensity=Mathf.Lerp(.10f,.18f,Daylight);mood.rim.color=new Color(.52f,.68f,1);mood.rim.transform.rotation=journey.SceneRotationToWorld(Quaternion.Euler(38,-130,0));
-  RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientSkyColor=Color.Lerp(new Color(.23f,.34f,.55f),new Color(.30f,.38f,.47f),Daylight);RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.14f,.22f,.36f),new Color(.19f,.20f,.22f),Daylight);RenderSettings.ambientGroundColor=Color.Lerp(new Color(.065f,.11f,.21f),new Color(.12f,.095f,.07f),Daylight);RenderSettings.reflectionIntensity=Mathf.Lerp(.42f,.68f,Daylight);RenderSettings.fog=false;journey.view.clearFlags=CameraClearFlags.SolidColor;if(mood.useEnvironmentBackground)Shader.SetGlobalFloat(NightTint,1-Daylight);journey.view.backgroundColor=mood.useEnvironmentBackground?Color.clear:Color.Lerp(new Color(.028f,.047f,.085f),new Color(.085f,.12f,.16f),Daylight);if(!journey.SwanInputActive){Shader.SetGlobalVector("_MesaSunDir",Vector3.Slerp(moonDir,sunDir,Daylight));Shader.SetGlobalFloat("_MesaDay",Daylight);Shader.SetGlobalFloat("GrassRenderDist",120);Shader.SetGlobalFloat("WindPower",.025f);Shader.SetGlobalFloat("WindSpeed",.4f);Shader.SetGlobalFloat("MicroPower",.006f);}
+  RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientSkyColor=Color.Lerp(new Color(.23f,.34f,.55f),new Color(.30f,.38f,.47f),Daylight);RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.14f,.22f,.36f),new Color(.19f,.20f,.22f),Daylight);RenderSettings.ambientGroundColor=Color.Lerp(new Color(.065f,.11f,.21f),new Color(.12f,.095f,.07f),Daylight);if(mood.useEnvironmentBackground){
+   // Keep moonlit iron and terracotta distinguishable from the cool sand.
+   mood.fill.color=Color.Lerp(new Color(.57f,.67f,.84f),new Color(.69f,.81f,1),Daylight);
+   mood.fill.intensity=.12f+1.03f*moonPower;
+   RenderSettings.ambientSkyColor=Color.Lerp(new Color(.27f,.33f,.43f),new Color(.30f,.38f,.47f),Daylight);
+   RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.19f,.21f,.25f),new Color(.19f,.20f,.22f),Daylight);
+   RenderSettings.ambientGroundColor=Color.Lerp(new Color(.14f,.12f,.115f),new Color(.12f,.095f,.07f),Daylight);
+  }
+  RenderSettings.reflectionIntensity=Mathf.Lerp(.42f,.68f,Daylight);RenderSettings.fog=false;journey.view.clearFlags=CameraClearFlags.SolidColor;if(mood.useEnvironmentBackground)Shader.SetGlobalFloat(NightTint,1-Daylight);journey.view.backgroundColor=mood.useEnvironmentBackground?Color.clear:Color.Lerp(new Color(.028f,.047f,.085f),new Color(.085f,.12f,.16f),Daylight);if(!journey.SwanInputActive){Shader.SetGlobalVector("_MesaSunDir",Vector3.Slerp(moonDir,sunDir,Daylight));Shader.SetGlobalFloat("_MesaDay",Daylight);Shader.SetGlobalFloat("GrassRenderDist",120);Shader.SetGlobalFloat("WindPower",.025f);Shader.SetGlobalFloat("WindSpeed",.4f);Shader.SetGlobalFloat("MicroPower",.006f);}
  }
- void Show(Transform body,Transform halo,Vector3 original,float fade,Color tint){bool visible=!mood.useEnvironmentBackground || fade>.001f;if(body.gameObject.activeSelf!=visible)body.gameObject.SetActive(visible);if(halo.gameObject.activeSelf!=visible)halo.gameObject.SetActive(visible);if(!visible)return;body.localScale=original*Mathf.Max(.001f,fade);halo.position=body.position;halo.rotation=journey.view.transform.rotation;props.Clear();tint.a*=fade;props.SetColor("_Tint",tint);halo.GetComponent<Renderer>().SetPropertyBlock(props);}
+ void Show(Transform body,Renderer card,Vector3 original,float fade,Color tint){
+  bool visible=!mood.useEnvironmentBackground || fade>.001f;
+  if(body.gameObject.activeSelf!=visible)body.gameObject.SetActive(visible);
+  if(card.gameObject.activeSelf!=visible)card.gameObject.SetActive(visible);
+  if(!visible)return;
+  body.localScale=original*Mathf.Max(.001f,fade);
+  card.transform.SetPositionAndRotation(body.position,journey.view.transform.rotation);
+  props.Clear();tint.a*=fade;props.SetColor("_Tint",tint);card.SetPropertyBlock(props);
+ }
 }

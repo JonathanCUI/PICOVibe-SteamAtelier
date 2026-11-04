@@ -14,7 +14,8 @@ namespace SwanJourney.Editor
             var root = PrefabUtility.LoadPrefabContents(path);
             try
             {
-                if (RemoveCards(root.transform))
+                bool foliageChanged=RemoveCards(root.transform);
+                if (SwanXrCanyonSurfaces.Apply(root.transform) || foliageChanged)
                 {
                     PrefabUtility.SaveAsPrefabAsset(root, path, out bool saved);
                     if (!saved) throw new InvalidOperationException("Could not save the canyon vegetation");

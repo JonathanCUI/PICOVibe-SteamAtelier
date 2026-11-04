@@ -119,7 +119,7 @@ public sealed partial class SteamJourney {
         if(!running)return Current.observation;
         if(FireLevel<.6f)return SwanInputActive?"点火中 · 炉火逐渐形成，开始加热锅炉。":"点火中 · 煤层先出现红热，火焰逐渐形成。";
         if(GasLevel<.7f)return "燃烧形成烟气 · 观察烟气离开煤层，沿火箱上部流向烟管入口。";
-        if(!modules[1].installed)return "煤层持续燃烧 · 尚未接上锅炉，烟气从敞开的火箱逸出。";
+        if(!modules[1].installed)return xrBoilerEffects?"煤层持续燃烧 · 接上锅炉后，可观察烟气沿烟管传热。":"煤层持续燃烧 · 尚未接上锅炉，烟气从敞开的火箱逸出。";
         if(WaterHeat<.68f)return "烟气已进入烟管 · 金属管壁正在把热量传给周围的水，动力机构仍静止。";
         if(SteamPressure<.45f)return SwanInputActive?"水受热产生蒸汽 · 蓝色箭头表示水的流向，蒸汽逐渐积聚。":"水逐渐沸腾 · 水面起伏、气泡上升，上部空间开始积聚蒸汽。";
         if(!modules[2].installed)return "烟箱通道已断开 · 炉火与锅炉继续换热，下游供汽逐渐减弱。";
@@ -186,22 +186,33 @@ public sealed partial class SteamJourney {
             if(directionalFlow && SwanInputActive) field.AdvanceArrow(effectDt,strength);
             else field.Advance(effectDt,strength,publishFields);}
         if(!bakedFirebox) SetEmission(fire,0); // Replaced by a depth-tested volumetric furnace, not billboard blobs.
+        if (xrBoilerEffects) xrBoilerEffects.Apply(active);
+        else
+        {
+            SetEmission(steam,active&&!inSandbox&&cutaway&&modules[1].installed?SteamPressure*12:0);
+            if(steam && paused && !inSandbox)steam.Pause();
+        }
+        bool chimney=ChimneyConnected;
+        // XR shows combustion flow with the tube arrows until the smokebox is installed.
+        // Once connected, the dedicated chimney owns the exhaust at the lip.
+        if(!smoke)return;
+        if((!chimney && xrBoilerEffects) || (chimney && bakedChimney))
+        {
+            if(!smoke.isStopped)smoke.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);
+            openExhaustAccumulator=0;
+            return;
+        }
         bool exhaustArrived=true;int lastGas=ChimneyConnected?2:BoilerGasConnected?1:0;if(fluidFields!=null)foreach(var f in fluidFields)if(f.stage==lastGas&&f.kind==JourneyFluidKind.Smoke&&!f.Arrived)exhaustArrived=false;
         float smokePower=active?(inSandbox?.8f:modules[0].installed&&exhaustArrived?GasLevel:0):0;
         float exhaustPulse=.8f+.2f*Mathf.Sin(engine.phase*Mathf.Deg2Rad*4);
-        bool chimney=ChimneyConnected;
-        bool bakedOutlet=chimney&&bakedChimney;
-        if(bakedOutlet){if(smoke.isPlaying||smoke.isPaused)smoke.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);}
-        else SetEmission(smoke,chimney?smokePower*(inSandbox?92:36)*exhaustPulse:0);
-        if (xrBoilerEffects) xrBoilerEffects.Apply(active);
-        else SetEmission(steam,active&&!inSandbox&&cutaway&&modules[1].installed?SteamPressure*12:0);
-        if(smoke&&!bakedOutlet){var main=smoke.main;main.startColor=Color.Lerp(new Color(.31f,.33f,.34f,.76f),new Color(.56f,.58f,.59f,.65f),inSandbox?.35f:WheelPower*.45f);main.startSize=new ParticleSystem.MinMaxCurve(inSandbox?.88f:.50f,inSandbox?1.30f:.80f);}
-        if(smoke&&!bakedOutlet){var v=smoke.velocityOverLifetime;v.enabled=true;v.space=ParticleSystemSimulationSpace.World;Vector3 drift=inSandbox?-trainAnchor.right*speed*.13f:Vector3.right*.04f;v.x=drift.x;v.y=inSandbox?.22f:(.12f+smokePower*.12f);v.z=drift.z;var sm=smoke.main;sm.startSpeed=new ParticleSystem.MinMaxCurve(inSandbox?.20f:.28f,inSandbox?.34f:.46f);var sn=smoke.noise;sn.strength=inSandbox?.055f:.11f;}
+        SetEmission(smoke,chimney?smokePower*(inSandbox?92:36)*exhaustPulse:0);
+        {var main=smoke.main;main.startColor=Color.Lerp(new Color(.31f,.33f,.34f,.76f),new Color(.56f,.58f,.59f,.65f),inSandbox?.35f:WheelPower*.45f);main.startSize=new ParticleSystem.MinMaxCurve(inSandbox?.88f:.50f,inSandbox?1.30f:.80f);}
+        {var v=smoke.velocityOverLifetime;v.enabled=true;v.space=ParticleSystemSimulationSpace.World;Vector3 drift=inSandbox?-trainAnchor.right*speed*.13f:Vector3.right*.04f;v.x=drift.x;v.y=inSandbox?.22f:(.12f+smokePower*.12f);v.z=drift.z;var sm=smoke.main;sm.startSpeed=new ParticleSystem.MinMaxCurve(inSandbox?.20f:.28f,inSandbox?.34f:.46f);var sn=smoke.noise;sn.strength=inSandbox?.055f:.11f;}
         // With no smokebox, each tube mouth vents separately. Never emit through the closed firebox crown.
-        if(smoke&&!chimney&&!inSandbox&&smokePower>.01f&&effectDt>0){openExhaustAccumulator+=effectDt*60*smokePower;
+        if(!chimney&&!inSandbox&&smokePower>.01f&&effectDt>0){openExhaustAccumulator+=effectDt*60*smokePower;
             if(!smoke.isPlaying)smoke.Play();while(openExhaustAccumulator>=1){openExhaustAccumulator--;int h=(openExhaustHole++*13)%33;float y=h<30?1.72f+(h/6)*.14f:2.45f,z=h<30?-.41f+(h%6)*.145f:-.22f+(h-30)*.22f;float variation=Mathf.PerlinNoise(openExhaustHole*.719f,1.3f);
                 var e=new ParticleSystem.EmitParams{position=engine.locomotive.TransformPoint(new Vector3(BoilerGasConnected?2.32f:-.64f,y,z)),velocity=engine.locomotive.TransformDirection(new Vector3(.17f+variation*.12f,.025f+variation*.04f,0)),startSize=(h<30?.09f:.15f)*(1+variation*.7f),startLifetime=1.7f+variation*.8f,startColor=new Color(.39f,.40f,.41f,.43f)};smoke.Emit(e,1);}}
-        if(paused&&!inSandbox){if(!bakedOutlet)smoke.Pause();if(!xrBoilerEffects)steam.Pause();}
+        if(paused&&!inSandbox)smoke.Pause();
     }
     void PositionExhaust(){if(!smoke)return;smoke.transform.localPosition=ChimneyConnected?new Vector3(2.7f,3.7f,0):new Vector3(BoilerGasConnected?2.32f:-.64f,2.1f,0);}
 }

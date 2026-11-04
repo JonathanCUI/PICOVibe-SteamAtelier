@@ -207,6 +207,8 @@ public sealed class SteamXrFocus : MonoBehaviour
             foreach (var filter in filters) surfaces.Add(filter.GetComponent<MeshRenderer>());
         }
         if (!root) return;
+        // A solid gaze overlay on the paper would cover its pencil drawing while reading.
+        if(c && c.TryGetComponent<SwanSketchSheet>(out _))return;
         for (int i=0; i<filters.Count; i++)
         {
             var renderer=surfaces[i];

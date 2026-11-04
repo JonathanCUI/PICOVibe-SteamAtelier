@@ -10,7 +10,7 @@ using System;using System.Linq;using System.Collections.Generic;using UnityEngin
  sealed class Entry {public Renderer r;public Material[] original,reveal;public bool enabled,lit;public ShadowCastingMode shadows;public float centre;}
  readonly List<Entry> entries=new List<Entry>();readonly Dictionary<Material,Material> materials=new Dictionary<Material,Material>();
  readonly List<UnityEngine.Object> temporary=new List<UnityEngine.Object>();GameObject visual;bool pending;float elapsed,minimum,span,gridSpan;
- public void Request(){if(owner&&owner.SwanInputActive)return;Cancel();pending=true;elapsed=Progress=0;}
+ public void Request(){if(owner&&owner.SwanInputActive&&nativeBegin==null)return;Cancel();pending=true;elapsed=Progress=0;}
  void LateUpdate() { using (SwanJourney.SwanJourneyCpuTimings.Measure(SwanJourney.SwanJourneyCpuTimings.Stage.Arrival)) CpuMeasuredLateUpdate(); }
     void CpuMeasuredLateUpdate(){bool beginning=pending;if(pending){pending=false;Begin();}if(entries.Count==0&&!nativeActive)return;if(!manual){if(!beginning)elapsed+=Time.unscaledDeltaTime;SetProgress(Mathf.Clamp01(elapsed/duration));if(Progress>=1)Cancel();}}
  public void SetProgress(float value){Progress=Mathf.Clamp01(value);if(nativeActive){nativeProgress?.Invoke(Progress);return;}Shader.SetGlobalMatrix("_ArrivalWorldToLocal",owner?owner.SpatialWorldToLocal:Matrix4x4.identity);float sweep=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.06f,.94f,Progress));Shader.SetGlobalVector("_ArrivalRange",new Vector4(minimum,span,sweep,gridSpan));

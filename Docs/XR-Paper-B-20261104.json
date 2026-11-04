@@ -1,0 +1,307 @@
+{
+  "date": "2026-11-04",
+  "project": "H:\\Codex\\SteamAtelierSwan-XRTrial",
+  "change": "B 左前手边初始位置；自然不对称卷角；双向换页动画；保留既有下中部支撑和惯性。",
+  "rendering": {
+    "paperTrianglesBefore": 192,
+    "paperTrianglesAfter": 432,
+    "paperRenderers": 1,
+    "transparentPasses": 0,
+    "newLights": 0,
+    "clothSimulation": false
+  },
+  "pageTurn": {
+    "seconds": 0.58,
+    "loadPolicy": "Keep current page visible until asynchronous destination artwork is ready; coalesce rapid requests.",
+    "poseRetained": true
+  },
+  "build": {
+    "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-WorkshopSketchbook.apk",
+    "bytes": 239288633,
+    "sha256": "f27a20d0d687e7aa0f6192019100da78e791c2c8dc45dabf63acfa9b1b72ce40",
+    "quickInstallChecks": 70,
+    "installedOn": "emulator-5554"
+  },
+  "validation": {
+    "before-valid": {
+      "windows": [
+        {
+          "stage": "xray",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.01,
+          "frames": 721,
+          "p95ms": 16.93,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "cutaway-hot",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=1 wheel=0.05223426",
+          "refreshHz": 60,
+          "meanFps": 60.01,
+          "frames": 721,
+          "p95ms": 17.0,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "two-hand-replay",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=1 wheel=1",
+          "refreshHz": 60,
+          "meanFps": 59.97,
+          "frames": 720,
+          "p95ms": 17.04,
+          "focused": true,
+          "nativeRange": [
+            59,
+            60
+          ],
+          "nativeMedian": 60
+        }
+      ],
+      "checks": []
+    },
+    "after-performance": {
+      "windows": [
+        {
+          "stage": "assembly-start",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=False mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 721,
+          "p95ms": 16.95,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "paper-reading",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=False mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 720,
+          "p95ms": 16.97,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "paper-drag-and-turn",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=False mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 59.77,
+          "frames": 718,
+          "p95ms": 17.29,
+          "focused": true,
+          "nativeRange": [
+            58,
+            62
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "assembly-seven",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=False mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 720,
+          "p95ms": 16.95,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "assembly-complete",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=0 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 721,
+          "p95ms": 16.89,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "xray",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=1 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.01,
+          "frames": 721,
+          "p95ms": 17.07,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "cutaway-hot",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=1 wheel=0.05270172",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 720,
+          "p95ms": 16.92,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "valley-day-parked",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.01,
+          "frames": 721,
+          "p95ms": 16.85,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "valley-day-moving",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.0,
+          "frames": 721,
+          "p95ms": 16.89,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "valley-night-moving",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 60.02,
+          "frames": 721,
+          "p95ms": 16.92,
+          "focused": true,
+          "nativeRange": [
+            60,
+            60
+          ],
+          "nativeMedian": 60.0
+        },
+        {
+          "stage": "assembly-return",
+          "settings": "loader=PXR_Loader display=True eyes=2 resolution=1920x1920 installed=True mode=2 fire=0 wheel=0",
+          "refreshHz": 60,
+          "meanFps": 59.93,
+          "frames": 720,
+          "p95ms": 17.05,
+          "focused": true,
+          "nativeRange": [
+            59,
+            61
+          ],
+          "nativeMedian": 60.0
+        }
+      ],
+      "checks": [
+        "11-04 11:05:19.693 I/Unity   (17129): XR_BLOCK_RESULT workshop-entry fps=59.72 frames=109 seconds=1.83 p95ms=17.07",
+        "11-04 11:06:02.792 I/Unity   (17129): XR_AUDIT_PAPER turns=4 triangles=432 renderers=1",
+        "11-04 11:07:23.151 I/Unity   (17129): XR_BLOCK_RESULT valley-transition fps=54.43 frames=119 seconds=2.19 p95ms=29.59",
+        "11-04 11:07:59.193 I/Unity   (17129): XR_AUDIT_DRIVE speed=1.950 travelled=23.244",
+        "11-04 11:08:19.058 I/Unity   (17129): XR_BLOCK_RESULT workshop-return fps=58.43 frames=106 seconds=1.81 p95ms=17.70",
+        "11-04 11:08:34.076 I/Unity   (17129): XR_AUDIT_DONE"
+      ]
+    },
+    "page-check": {
+      "windows": [],
+      "checks": [
+        "11-04 11:03:57.994 I/Unity   (16731): XR_PAPER_CHECK flat=True bendPos=0.129 bendNeg=-0.198 depth=0.060 placedError=0.0000 settled=True pages=True auto=True restored=True toggle=True"
+      ]
+    },
+    "demo": {
+      "windows": [],
+      "checks": [
+        "11-04 10:57:44.110 I/Unity   ( 5863): XR_DRAG_DONE travelError=0.0000 relocateError=0.0000 peak=(0.390, 0.124, 0.138) rest=0.0000 edgeRest=0.0000 retained=True turns=4"
+      ]
+    },
+    "scope": "PICO emulator only, 60 Hz. Screen recording off for performance windows. Not a headset measurement."
+  },
+  "transitions": [
+    {
+      "stage": "workshop-entry",
+      "meanFps": 59.72,
+      "frames": 109,
+      "seconds": 1.83,
+      "p95ms": 17.07
+    },
+    {
+      "stage": "valley-transition",
+      "meanFps": 54.43,
+      "frames": 119,
+      "seconds": 2.19,
+      "p95ms": 29.59
+    },
+    {
+      "stage": "workshop-return",
+      "meanFps": 58.43,
+      "frames": 106,
+      "seconds": 1.81,
+      "p95ms": 17.7
+    }
+  ],
+  "measurement": {
+    "device": "PICO OS6 emulator-5554",
+    "refreshHz": 60,
+    "eyeResolution": [
+      1920,
+      1920
+    ],
+    "eyes": 2,
+    "steadyWindowSeconds": 12,
+    "screenRecordingDuringPerformance": false,
+    "headsetVerified": false
+  },
+  "caveats": [
+    "60 Hz emulator measurements are capped and do not certify physical-headset 90 FPS or GPU headroom.",
+    "Gestures are deterministic simulated input, not a physical-headset hand-tracking acceptance test.",
+    "The valley transition window includes loading and reveal; it does not isolate the reveal shader cost.",
+    "An earlier stale emulator session terminated the old build with LOW_MEMORY. Those aborted windows are excluded; before-valid is the baseline after restarting the emulator guest."
+  ],
+  "sourcesChanged": [
+    "Assets/SwanJourney/Scripts/SwanSketchSheet.cs",
+    "Assets/SwanJourney/Branding/SketchSheet/SketchSheet.shader",
+    "Assets/SwanJourney/Editor/SwanXrSketchSheetBuild.cs",
+    "Assets/SwanJourney/Scripts/SteamXrTrial.cs"
+  ],
+  "generatedAssets": [
+    "Assets/SwanJourney/Branding/SketchSheet/Study sheet grid.asset",
+    "Assets/SwanJourney/Scenes/SteamJourneyXRTrial.unity"
+  ],
+  "evidenceDirectory": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\paper-b",
+  "demo": "H:/Codex/2026-11-01/you/outputs/可拖动零件手稿/B方案-折角换页与空间拖动-PICO实录.mp4",
+  "gitPushed": false
+}

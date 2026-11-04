@@ -39,6 +39,7 @@ namespace SwanJourney
             public SwanJourneyTargetKind? kind;
             public JourneyModule module;
             public JourneyControl control;
+            public SwanSketchSheet sheet;
             public JourneyAction action;
             public Vector3 startHit, hit, startHand, hand, objectStart, previousMove;
             public Vector3 controlAxis;
@@ -243,6 +244,7 @@ namespace SwanJourney
             if (tag)
             {
                 c.kind = tag.kind;
+                if(tag.kind==SwanJourneyTargetKind.SketchSheet)c.sheet=tag.GetComponent<SwanSketchSheet>();
                 if (tag.kind == SwanJourneyTargetKind.Module) c.module = journey.SwanModule(tag.moduleIndex);
                 if (tag.kind == SwanJourneyTargetKind.Control)
                 {
@@ -279,7 +281,7 @@ namespace SwanJourney
             if (!TwoHandActive && !WorkbenchInputBlocked)
             {
                 a = b = null;
-                foreach (var c in contacts.Values) if (c.down && c.pinch)
+                foreach (var c in contacts.Values) if (c.down && c.pinch && c.kind!=SwanJourneyTargetKind.SketchSheet)
                 { if (a == null || !a.down) a = c; else if (c != a) { b = c; break; } }
                 if (a != null && b != null && a.down && b.down && (directXrInput || a.ownsRoot || b.ownsRoot))
                 {
@@ -317,13 +319,19 @@ namespace SwanJourney
         bool OtherOwner(Contact c)
         {
             foreach (var other in contacts.Values)
-                if (other != c && !other.blocked && other.down && (other.grabbing || other.celestialActive || other.kind == SwanJourneyTargetKind.Control && !other.pending)) return true;
+                if (other != c && !other.blocked && other.down && (other.grabbing || other.celestialActive ||
+                    (other.sheet || other.kind == SwanJourneyTargetKind.Control) && !other.pending)) return true;
             return false;
         }
         void Begin(Contact c)
         {
             c.pending = false;
             if (!c.kind.HasValue || OtherOwner(c)) { c.blocked = true; return; }
+            if(c.kind==SwanJourneyTargetKind.SketchSheet)
+            {
+                if(journey.SwanInputBlocked || !c.useHand || !c.sheet || !c.sheet.Grab(c.id)){c.blocked=true;return;}
+                c.objectStart=c.sheet.transform.position;return;
+            }
             if (c.kind == SwanJourneyTargetKind.MoveWorkbench)
             {
                 if (WorkbenchInputBlocked) { c.blocked = true; return; }
@@ -378,6 +386,11 @@ namespace SwanJourney
             if (c.blocked) return;
             Vector3 delta = Delta(c);
             if (!SwanTwoHandManipulation.Finite(delta) || delta.magnitude > 2) { Cancel(c); return; }
+            if(c.kind==SwanJourneyTargetKind.SketchSheet)
+            {
+                if(journey.SwanInputBlocked || !c.sheet || !c.sheet.Drag(c.id,c.objectStart+delta))Cancel(c);
+                return;
+            }
             if (c.kind == SwanJourneyTargetKind.MoveWorkbench)
             {
                 if (WorkbenchInputBlocked) { Cancel(c); return; }
@@ -444,6 +457,7 @@ namespace SwanJourney
         }
         void End(Contact c, bool cancel)
         {
+            if(c.sheet){c.sheet.Release(c.id);return;}
             if (c.celestialActive)
             { if (sky) sky.automatic = c.skyAutomatic; c.celestialActive = false; }
             if (c.kind == SwanJourneyTargetKind.MoveWorkbench) {
@@ -478,6 +492,7 @@ namespace SwanJourney
         bool XrLoosePinch(Contact c) => directXrInput && c.pinch && c.wasLoose;
         bool ShouldBegin(Contact c, double now)
         {
+            if(c.sheet)return c.pinch && !c.ended;
             if (c.ended) return !c.canceled;
             if (!c.down) return false;
             // While the fingers stay still, a deliberate pinch is still a tap.

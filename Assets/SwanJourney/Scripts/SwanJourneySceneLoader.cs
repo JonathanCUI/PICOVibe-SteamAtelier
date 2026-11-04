@@ -16,6 +16,7 @@ namespace SwanJourney
         public SwanJourneyVisualBridge visuals;
         public string environmentScenePath;
         public const string EnvironmentResource = "SwanJourneyCanyon";
+        public bool holdForArrival;
         public LoadingState State { get; private set; }
         public SwanJourneyEnvironment Environment { get; private set; }
         public string LastError { get; private set; }
@@ -173,7 +174,7 @@ namespace SwanJourney
             if (payload.gameObject.scene != presentation.gameObject.scene)
                 loadedScene = payload.gameObject.scene;
             FollowEnvironment();
-            payload.gameObject.SetActive(true);
+            payload.gameObject.SetActive(!holdForArrival);
             presentation.sandboxSupports = coreSupports.Concat(payload.supports).Where(t => t).Distinct().ToArray();
             visuals.SetDeferredEnvironment(payload.transform);
         }
@@ -181,7 +182,7 @@ namespace SwanJourney
         public void AdoptEnvironment()
         {
             if(!Environment || !presentation)return;
-            Environment.gameObject.SetActive(true);
+            Environment.gameObject.SetActive(!holdForArrival);
             if(Environment.transform.parent!=presentation.transform)
                 Environment.transform.SetParent(presentation.transform,true);
             FollowEnvironment();

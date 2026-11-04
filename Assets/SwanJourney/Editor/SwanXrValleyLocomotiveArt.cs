@@ -20,6 +20,11 @@ namespace SwanJourney.Editor
             unit.litParts.transform.SetParent(unit.transform,false);
             unit.spots=new Light[2];unit.lenses=new MeshRenderer[2];unit.beams=new MeshRenderer[2];
             var lensMat=MaterialAsset("Warm headlamp lens","Universal Render Pipeline/Unlit");
+            lensMat.SetFloat("_Surface",1f);lensMat.SetFloat("_ZWrite",0f);
+            lensMat.SetFloat("_SrcBlend",(int)BlendMode.SrcAlpha);lensMat.SetFloat("_DstBlend",(int)BlendMode.OneMinusSrcAlpha);
+            lensMat.SetFloat("_SrcBlendAlpha",(int)BlendMode.One);lensMat.SetFloat("_DstBlendAlpha",(int)BlendMode.OneMinusSrcAlpha);
+            lensMat.SetOverrideTag("RenderType","Transparent");lensMat.renderQueue=(int)RenderQueue.Transparent;
+            lensMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");EditorUtility.SetDirty(lensMat);
             var beamMat=MaterialAsset("Soft headlamp scatter","SwanJourney/XR Headlamp Scatter");
             var beamMesh=BeamMesh();
             for(int i=0;i<2;i++)
@@ -45,11 +50,6 @@ namespace SwanJourney.Editor
                 unit.beams[i]=beam.GetComponent<MeshRenderer>();SetSurface(unit.beams[i],beamMat);
             }
             unit.litParts.SetActive(false);
-            var presentation=j.spatialRoot.GetComponentInParent<SwanJourneyPresentation>();
-            if(!presentation) presentation=Object.FindObjectOfType<SwanJourneyPresentation>(true);
-            var target=SwanJourneyBuild.AddUtility(j,"车灯 开 / 关",Vector3.zero,SwanJourneyTargetKind.Control,JourneyAction.Lights,presentation.sandboxMoveHandleAnchor);
-            foreach(var c in target.GetComponentsInChildren<MonoBehaviour>(true))
-                if(c.GetType().Name=="SpatialAdapterHoverEffect")Object.DestroyImmediate(c);
 
             var atmosphere=j.GetComponent<MesaAtmosV16>();
             var driving=j.valleyTrain.drivingChimney;

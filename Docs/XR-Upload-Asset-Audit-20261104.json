@@ -1,0 +1,61 @@
+{
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "present_files": 28621,
+  "assets_missing_meta_or_asset": [],
+  "duplicate_guids": [],
+  "scene_and_resources_dependency_files": 2605,
+  "unresolved_guids": {},
+  "local_packages": [
+    {
+      "name": "com.bytedance.pico.xr",
+      "path": "file:../../vendor/PICO-Unity-SDK-main/XR",
+      "version": "6.1.1"
+    },
+    {
+      "name": "com.bytedance.pico.spatialadapter",
+      "path": "file:../../vendor/PICO-Unity-SDK-main/SpatialAdapter",
+      "version": "6.1.0"
+    },
+    {
+      "name": "com.plattar.unitygltf",
+      "path": "file:../LocalPackages/com.plattar.unitygltf",
+      "version": "1.142.0"
+    },
+    {
+      "name": "com.unity.formats.usd",
+      "path": "file:../../vendor/com.unity.formats.usd",
+      "version": "3.0.0-exp.5"
+    }
+  ],
+  "required_assets_sha256": {
+    "Assets/SwanJourney/Branding/SketchSheet/Firebox pencil study.png": "ba3a0c69ce1781a30b8aeaaeb53c4f7bbd6c80560c3249b2265eb2ce9b0381ac",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step02.png": "8187571bc702294ce0b461b0f1095f505b69a00a76c9dd916e5934b81c16f742",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step03.png": "3762cb9a50728abd9616f5c097da73283c18d511096a7bac6e9e8b496a2c5232",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step04.png": "d2cda5e49f3427e0711958cac03a9a654d2768785b51c8fa3af720c889f5eba3",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step05.png": "9189c0e9ebf85ae42b970ec24eea9b3b3d47b81b09674729e49840f4a20eba3d",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step06.png": "c79c9b93687e45223e469dc61b3f1721de2910a0a686d6ab8f9107d3d14d1a0d",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step07.png": "aa1525139791531176bb4d119ebcb1b87a2ed4afc89b88bdfa0a33c692de92af",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step08.png": "58f7b48d41eea3322184244125271993731cc3ea5aaf4bffbf031cc5f441a7d0",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step09.png": "76256d5d5a6da5fdc8ff4ec05456e186543bcf555a4c0c29225f8e1d0f60e73a",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step10.png": "d1a04e4a381a78d074be15eac16e94e29ef1a0ff7909b19b09c8c7b956fe8071",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step11.png": "abfe6449cbdfc318ebaaa08db15c86d533d9d6afbf562487e203fcb5055ace46",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step12.png": "bd5bd23d64b251ee01825ddc2c67d952b3ed8d377c7d00630770f7554c9715c7",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step13.png": "6a3bb4df724f9710c6bc75cc50f786205b6dcba744eccb6b81000f976b9324d1",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step14.png": "1c9d91e76bc13608f56d8ff7b0da9a1d39539d01ac9c652ef2f07136af8f6663",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step15.png": "bf99a02c49b0d5b0a780b5bcd96646efe184dbe2351aee342285b341962bdef9",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step16.png": "f7d3b2e36c2e68cab13107a719802b891b77e96db00b54018d1bd54c1dc09968",
+    "Assets/SwanJourney/Branding/SketchSheet/Resources/SwanSketchSheets/Step17.png": "04fa2a325cad36c30716b7ec5e63ffbc53b05b94baa385af06fd94988c9718b6",
+    "Assets/SwanJourney/Branding/SketchSheet/打开纸.mp3": "8143de08a2e72d6a7ffb627be120d9f12e8b1237c975b99740709eb34633a68e",
+    "Assets/SwanJourney/Branding/SketchSheet/翻过去.mp3": "0e0357e620059de4e03ff8344ba50ef65a636d079623795fc009726e85bb31a9",
+    "Assets/SwanJourney/Branding/SketchSheet/翻回来.mp3": "c80bb7cd47b80a06446c55c9b4b4c58563b0121ea13a5bc2bf6462c811846c2e",
+    "Assets/SwanJourney/Branding/SketchSheet/关闭纸.mp3": "cc1821f52e657c51723fa8186ac7de3d195c78d22eba5f63f96443f50c6ff7f2",
+    "Assets/AtelierJourney/FlatTrayV22/Audio/huocheBGM.mp3": "c43e84a8c15a59e655eadcf74b2e7f121365e52f6c95d0bd1f5bd942cd8b011c",
+    "Assets/AtelierJourney/FlatTrayV22/Audio/zhuanchang.mp3": "cd03cacd4282d016d57a47f5d28b436390a106fee564628373da8d1fecd24e42",
+    "Assets/SwanJourney/Branding/Completion/universfield-level-up-08-402152.mp3": "90fd7b507192ad478965f97dd0883b2895946a01957f7949ac988f1ce61c8134",
+    "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0003_Separated.asset": "80329e0d034d8e7d02c6f24237ccc41e0792f1d8bea76091d7f6ff43e88ff71e",
+    "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0081_Separated.asset": "71adb2118605e15a0f55c4b0cd784d6bfb8aa3c5fdf0b59388a513a407184367",
+    "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0123_Separated.asset": "b568f80a2484d0794800a1f6dab60c9d21863f41fa1de34e575b51fb4f81668e",
+    "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0133_Separated.asset": "70cd381000d2fd871398c26797bf0610d0515801e6a9207264c51eb5b0c8a4d8",
+    "Assets/SwanJourney/Generated/SurfaceRepairs/Surface_0883_Separated.asset": "9151fbc489461a806fde5d631400ca62c7baaa039b718a82cef95e823a6be6d8"
+  }
+}

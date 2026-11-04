@@ -27,7 +27,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
     public bool fixedValleyDaylight;
     public bool omitValleyLamps;
     public SwanJourney.SwanValleyHeadlamps valleyHeadlamps;
-    public bool HeadlampsSelected => lamps;
+    public bool HeadlampsSelected => valleyHeadlamps ? valleyHeadlamps.Lit : lamps;
     public bool ValleyLampsOff => fixedValleyDaylight || omitValleyLamps;
     public SwanJourney.SwanJourneyValleyTrain valleyTrain;
     public GameObject[] lessonModels;
@@ -123,7 +123,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
             case JourneyAction.Brake:brake=brake>.5f?0:1;break;
             case JourneyAction.Reverse:if(speed<.03f)direction=direction>0?-1:1;else Notify("停稳后再换向。");break;
             case JourneyAction.Whistle:Play(whistleSound);break;
-            case JourneyAction.Lights:if(valleyHeadlamps || !ValleyLampsOff)lamps=!lamps;break;
+            case JourneyAction.Lights:if(!valleyHeadlamps && !ValleyLampsOff)lamps=!lamps;break;
             case JourneyAction.View:break;
             case JourneyAction.PreviousPart:SelectFinishing(-1);break;
             case JourneyAction.NextPart:SelectFinishing(1);break;
