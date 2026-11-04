@@ -1,0 +1,245 @@
+{
+  "date": "2026-11-04",
+  "baseCommit": "1620bef1bac904c25e6f19ce448604276262c560",
+  "scope": [
+    "Precomputed 256-face workshop reflection; original canyon IBL retained",
+    "World-position tunnel attenuation on 105 opaque vehicle renderers, sharing 51 material variants",
+    "Four soft contact footprints: one renderer, 16 vertices, 8 triangles, depth tested, passthrough alpha preserved",
+    "0.52 second per-part warm rim feedback with original materials restored; final assembly celebration preserved"
+  ],
+  "build": "surfaces=105 slots=250 sharedMaterials=51 contactTriangles=8 tunnelRange=0.055/1.000 reflection=256",
+  "validation": {
+    "build": "passed",
+    "existingEditorChecks": 70,
+    "newAssetMissingMetas": [],
+    "lifecycle": "manual installation, repeated pulses, consecutive installation, final celebration, valley/return, reset passed",
+    "visual": "Inspected workshop reflection comparison, contact comparison, tunnel approach/exit frames, night lamps and windows"
+  },
+  "environment": {
+    "device": "PICO emulator-5554",
+    "refreshHz": 60,
+    "capture": "Host 1080x1080, 30fps, 6Mbps, identical for control and effect",
+    "limit": "Emulator FPS is not a headset 90Hz guarantee. One night frame reached 34.64 ms in run 2; no sustained regression observed."
+  },
+  "runs": [
+    {
+      "folder": "review-01",
+      "metrics": [
+        {
+          "label": "part-idle",
+          "fps": 60.02,
+          "p95ms": 16.95,
+          "p99ms": 17.12,
+          "maxms": 17.31
+        },
+        {
+          "label": "part-feedback",
+          "fps": 59.99,
+          "p95ms": 17.0,
+          "p99ms": 17.12,
+          "maxms": 17.39
+        },
+        {
+          "label": "workshop-original",
+          "fps": 59.98,
+          "p95ms": 16.97,
+          "p99ms": 17.56,
+          "maxms": 17.95
+        },
+        {
+          "label": "workshop-soft-reflection",
+          "fps": 59.97,
+          "p95ms": 16.93,
+          "p99ms": 17.32,
+          "maxms": 17.7
+        },
+        {
+          "label": "valley-control-0",
+          "fps": 60.04,
+          "p95ms": 16.84,
+          "p99ms": 16.9,
+          "maxms": 17.45
+        },
+        {
+          "label": "valley-integrated-0",
+          "fps": 59.97,
+          "p95ms": 17.08,
+          "p99ms": 19.0,
+          "maxms": 19.69
+        },
+        {
+          "label": "valley-control-1",
+          "fps": 59.84,
+          "p95ms": 17.06,
+          "p99ms": 18.1,
+          "maxms": 30.88
+        },
+        {
+          "label": "valley-integrated-1",
+          "fps": 60.03,
+          "p95ms": 16.85,
+          "p99ms": 16.92,
+          "maxms": 17.52
+        },
+        {
+          "label": "valley-night",
+          "fps": 60.0,
+          "p95ms": 16.9,
+          "p99ms": 17.67,
+          "maxms": 18.37
+        }
+      ],
+      "checks": "trigger=True restored=True finalClean=True contact=True leave=True reset=True contactTris=8 seatMaterials=45",
+      "exposureSamples": []
+    },
+    {
+      "folder": "review-02",
+      "metrics": [
+        {
+          "label": "part-idle",
+          "fps": 59.94,
+          "p95ms": 16.96,
+          "p99ms": 17.11,
+          "maxms": 17.53
+        },
+        {
+          "label": "part-feedback",
+          "fps": 60.05,
+          "p95ms": 16.95,
+          "p99ms": 17.02,
+          "maxms": 17.13
+        },
+        {
+          "label": "workshop-original",
+          "fps": 59.98,
+          "p95ms": 16.95,
+          "p99ms": 17.47,
+          "maxms": 17.59
+        },
+        {
+          "label": "workshop-soft-reflection",
+          "fps": 59.98,
+          "p95ms": 17.15,
+          "p99ms": 17.74,
+          "maxms": 19.02
+        },
+        {
+          "label": "valley-control-0",
+          "fps": 59.96,
+          "p95ms": 16.98,
+          "p99ms": 17.41,
+          "maxms": 17.76
+        },
+        {
+          "label": "valley-integrated-0",
+          "fps": 60.01,
+          "p95ms": 16.92,
+          "p99ms": 17.51,
+          "maxms": 18.22
+        },
+        {
+          "label": "valley-control-1",
+          "fps": 60.01,
+          "p95ms": 17.01,
+          "p99ms": 17.54,
+          "maxms": 18.55
+        },
+        {
+          "label": "valley-integrated-1",
+          "fps": 60.0,
+          "p95ms": 16.9,
+          "p99ms": 17.99,
+          "maxms": 18.39
+        },
+        {
+          "label": "tunnel-moving-0",
+          "fps": 60.0,
+          "p95ms": 16.85,
+          "p99ms": 17.02,
+          "maxms": 19.01
+        },
+        {
+          "label": "tunnel-moving-1",
+          "fps": 59.98,
+          "p95ms": 16.94,
+          "p99ms": 17.26,
+          "maxms": 18.18
+        },
+        {
+          "label": "valley-night",
+          "fps": 59.83,
+          "p95ms": 17.05,
+          "p99ms": 19.21,
+          "maxms": 34.64
+        }
+      ],
+      "checks": "trigger=True restored=True finalClean=True contact=True leave=True reset=True spatial=True contactTris=8 seatMaterials=45",
+      "exposureSamples": [
+        {
+          "route": 16.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 17.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 18.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 19.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 20.0,
+          "visibility": 0.804
+        },
+        {
+          "route": 21.0,
+          "visibility": 0.307
+        },
+        {
+          "route": 22.0,
+          "visibility": 0.055
+        },
+        {
+          "route": 23.0,
+          "visibility": 0.248
+        },
+        {
+          "route": 24.0,
+          "visibility": 0.73
+        },
+        {
+          "route": 25.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 26.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 27.0,
+          "visibility": 1.0
+        },
+        {
+          "route": 28.0,
+          "visibility": 1.0
+        }
+      ]
+    }
+  ],
+  "apk": {
+    "path": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-VisualIntegration.apk",
+    "bytes": 241450928,
+    "sha256": "a5ce97023e01aec269d2e76ad039de148716ad645e04cf37493ef25a49ad019c"
+  },
+  "outputs": "H:/Codex/2026-11-01/you/outputs/视觉融合优化20261104",
+  "handoff": {
+    "repository": "JonathanCUI/PICOVibe-SteamAtelier",
+    "branch": "codex/steam-atelier-xr-track-lights",
+    "releaseTag": "xr-room-visual-integration-20261104",
+    "source": "The release tag identifies the exact source commit for this tested APK."
+  }
+}

@@ -12,6 +12,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
     public Camera view;
     public TMP_FontAsset font;
     public JourneyModule[] modules, finishing;
+    public event Action<JourneyModule> PartSeated;
     public GameObject workshopRoot,sandboxRoot,previewRoot,cutRoot,consoleRoot;
     public Renderer[] shellRenderers;
     public Transform trainAnchor, previewStand, aimRing,verifyLever;
@@ -140,6 +141,7 @@ public sealed partial class SteamJourney : MonoBehaviour {
         installed.parked=false;PlayAssemblyLatch();ImpactWater(installed);
         if(Teaching){stage=modules.TakeWhile(m=>m.installed).Count();finishIndex=0;}else if(!Complete){for(int n=1;n<=finishing.Length;n++){int k=(finishIndex+n)%finishing.Length;if(!finishing[k].installed){finishIndex=k;break;}}}
         RefreshPreview();ApplyVisibility();SaveProgress();
+        PartSeated?.Invoke(installed);
         Notify(Complete?"机车装配完成 · 按展示台上的「出发」按钮，去山谷铁路跑一圈。":installed.title+" 已装好 · 下一个组件已放上展示台。");
         if(Complete)BeginManualCompletion();
         return true;

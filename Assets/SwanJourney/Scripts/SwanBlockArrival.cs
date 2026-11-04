@@ -101,7 +101,8 @@ namespace SwanJourney
                     Mathf.Abs(matrix.m11+slope*matrix.m21)*b.extents.y+Mathf.Abs(matrix.m12+slope*matrix.m22)*b.extents.z;
                 var originals=r.sharedMaterials;
                 bool lit=!decoration && r is MeshRenderer && originals.Length>0;
-                foreach(var m in originals)if(!m || m.renderQueue>=2450 || m.shader.name!="Universal Render Pipeline/Lit")lit=false;
+                foreach(var m in originals)if(!m || m.renderQueue>=2450 ||
+                    (m.shader.name!="Universal Render Pipeline/Lit" && m.shader.name!="SwanJourney/XR Valley Surface"))lit=false;
                 if(lit)
                 {
                     low=Mathf.Min(low,y-extent);high=Mathf.Max(high,y+extent);

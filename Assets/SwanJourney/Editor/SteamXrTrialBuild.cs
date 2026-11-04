@@ -15,6 +15,7 @@ public static class SteamXrTrialBuild
     public static void Build()=>BuildRoom("SteamAtelierXRRoom-SketchPage01.apk");
     public static void BuildSketchDragDemo()=>BuildRoom("SteamAtelierXRRoom-WorkshopSketchbook.apk");
     public static void BuildCompletionFeedback()=>BuildRoom("SteamAtelierXRRoom-CompletionCelebration.apk");
+    public static void BuildVisualIntegration()=>BuildRoom("SteamAtelierXRRoom-VisualIntegration.apk");
     static void BuildRoom(string apkName)
     {
         const BuildTargetGroup group = BuildTargetGroup.Android;
@@ -115,6 +116,7 @@ public static class SteamXrTrialBuild
         celebration.paperShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrCelebrationPaper.shader");
         if(!celebration.scanShader || !celebration.paperShader)throw new InvalidOperationException("Missing completion shaders");
         ApplyCompletionAudio(journey);
+        SwanJourney.Editor.SwanXrVisualIntegration.Apply(journey);
         ValidateHandInteraction(scene);
         if (!EditorSceneManager.SaveScene(scene, scenePath, true)) throw new IOException(scenePath);
         SwanJourney.Editor.SwanJourneyQuickInstallChecks.RunXr(scenePath);
