@@ -49,7 +49,7 @@ namespace SwanJourney
             }
             foreach(var spot in spots)
             {
-                spot.range=14f*scale;spot.intensity=155f*Brightness*scale*scale;
+                spot.range=14f*scale;spot.intensity=105f*Brightness*scale*scale;
             }
             if(block==null)block=new MaterialPropertyBlock();
             block.Clear();block.SetColor("_BaseColor",new Color(1f,.87f,.56f,Brightness));

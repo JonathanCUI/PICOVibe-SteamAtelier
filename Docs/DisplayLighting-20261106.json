@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-06",
+  "scope": "Stage 2: canyon portal UV/arch repair and gated single-directional-light train shadows. Static neutral ambient visibility from stage 1 retained.",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "baselineCommit": "58c0ce5c546f1a9ffcb90a655ee3ebdae56398c3",
+  "portal": {
+    "approachMeshes": 4,
+    "collapsedUvTrianglesRepaired": 256,
+    "approachTriangles": 1040,
+    "approachPositionsNormalsBoundsPreserved": true,
+    "oldArchRenderers": 34,
+    "newArchRenderers": 2,
+    "oldArchTriangles": 408,
+    "newArchTriangles": 552,
+    "visibleCanyonTriangleDelta": 144,
+    "collidersChanged": false,
+    "boreMaterial": "Existing cliff rock texture, replacing dune texture; UV0 unchanged",
+    "visualChecks": [
+      "entry",
+      "exit"
+    ]
+  },
+  "shadows": {
+    "newLightComponents": 0,
+    "shadowProducingDirectionalLights": 1,
+    "mapResolution": 1024,
+    "cascades": 1,
+    "softShadows": false,
+    "additionalLightShadows": false,
+    "assemblyEnabled": false,
+    "cutawayEnabled": false,
+    "completedSolidDisplayEnabled": true,
+    "valleyDrivingEnabled": true,
+    "proxyOnly": true,
+    "visibleTrainGeometryChanged": false,
+    "workshop": {
+      "fullMeshCasterTriangles": 652241,
+      "proxyTriangles": 56279,
+      "proxyRenderers": 1
+    },
+    "valley": {
+      "fullMeshCasterTriangles": 336348,
+      "proxyTriangles": 68420,
+      "proxyRenderers": 4
+    }
+  },
+  "build": {
+    "apk": "H:/Codex/SteamAtelierSwan-XRTrial/Builds/XRTrial/SteamAtelierXRRoom-DisplayLighting.apk",
+    "bytes": 253696384,
+    "sha256": "22cf0b88cd5e34c79c7e6a25a90f02328fe2fb014d4e2a309294ae1cc90e1bd2",
+    "success": true,
+    "quickInstallChecks": 70
+  },
+  "emulator": {
+    "evidence": "H:/Codex/2026-11-01/you/work/xr-trial/canyon-lighting-20261106/display-review-04",
+    "refreshRateHz": 60,
+    "performance": [
+      {
+        "label": "assembly-shadow-free",
+        "fps": 59.67,
+        "p95ms": 17.2,
+        "p99ms": 18.83,
+        "maxms": 24.45
+      },
+      {
+        "label": "complete-no-shadow",
+        "fps": 59.99,
+        "p95ms": 16.9,
+        "p99ms": 17.12,
+        "maxms": 17.71
+      },
+      {
+        "label": "complete-one-shadow",
+        "fps": 60.0,
+        "p95ms": 17.04,
+        "p99ms": 17.5,
+        "maxms": 18.97
+      },
+      {
+        "label": "inspection-shadow-free",
+        "fps": 59.99,
+        "p95ms": 16.89,
+        "p99ms": 17.23,
+        "maxms": 18.91
+      },
+      {
+        "label": "valley-no-shadow-0",
+        "fps": 60.0,
+        "p95ms": 16.98,
+        "p99ms": 17.36,
+        "maxms": 17.69
+      },
+      {
+        "label": "valley-one-shadow-0",
+        "fps": 59.86,
+        "p95ms": 17.06,
+        "p99ms": 17.95,
+        "maxms": 26.21
+      },
+      {
+        "label": "valley-no-shadow-1",
+        "fps": 60.0,
+        "p95ms": 17.05,
+        "p99ms": 17.53,
+        "maxms": 17.83
+      },
+      {
+        "label": "valley-one-shadow-1",
+        "fps": 59.96,
+        "p95ms": 16.94,
+        "p99ms": 17.8,
+        "maxms": 19.16
+      },
+      {
+        "label": "night-no-shadow",
+        "fps": 59.97,
+        "p95ms": 16.87,
+        "p99ms": 17.43,
+        "maxms": 17.98
+      },
+      {
+        "label": "night-one-shadow",
+        "fps": 60.02,
+        "p95ms": 16.96,
+        "p99ms": 17.45,
+        "maxms": 19.02
+      }
+    ],
+    "assemblyInspectionResetGatesPassed": true,
+    "shadowMapProof": [
+      "11-06 18:45:17.486 I/Unity   ( 5122): XR_LIGHTING_MAP workshop keyword=True strength=0.720 size=(1.00, 1.00, 1.00, 1.00) sun=Directional shadows=Hard",
+      "11-06 18:46:04.486 I/Unity   ( 5122): XR_LIGHTING_MAP valley keyword=True strength=0.720 size=(1.00, 1.00, 1.00, 1.00) sun=Directional shadows=Hard",
+      "11-06 18:46:28.603 I/Unity   ( 5122): XR_LIGHTING_MAP night keyword=True strength=0.720 size=(1.00, 1.00, 1.00, 1.00) sun=Directional shadows=Hard"
+    ],
+    "movedRotatedScaledScreenshot": "moved-resized.png",
+    "video": "review.mp4",
+    "hardShadowMapSizeNote": "URP 14 only updates _MainLightShadowmapSize for soft-shadow filtering. Its stale 1x1 value in this hard-shadow test is not the actual shadow-atlas size."
+  },
+  "discardedOrSeparateRuns": {
+    "display-review-01": "Discarded: emulator was unresponsive/stuck near 2 FPS in both A/B cases; resolved by cold restart.",
+    "display-review-02": "Full-mesh caster baseline, not the final proxy build.",
+    "display-review-03": "Proxy candidate passed; final build 04 additionally proves active directional shadow constants."
+  },
+  "limits": [
+    "60 Hz desktop emulator results are not proof of 90 FPS on a PICO headset.",
+    "Each timed A/B window is 6-7 seconds, not a long thermal or full playthrough benchmark.",
+    "Low-detail shadow proxies follow vehicles, not individual animated wheel spokes.",
+    "Original cliff surfaces remain coarse at extreme close viewing distances.",
+    "Multi-state day/dusk/night direct-light bakes, console hierarchy and contextual instructional captions are subsequent stages."
+  ],
+  "gitPushed": false
+}

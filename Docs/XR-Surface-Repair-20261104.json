@@ -1,175 +1,45 @@
 {
-  "scope": "Firebox foundation ring and running-board outer trim; preview and installed copies",
-  "uvPreserved": true,
-  "indicesPreserved": true,
-  "materialSlotsPreserved": true,
-  "foundationOuterSeparation": 0.004399999976158142,
-  "footplateOuterSeparation": 0.006000000052154064,
-  "meshes": [
-    {
-      "source": "Assets/AtelierJourney/StudioVisual/SurfaceV2/Meshes/Surface_0883.asset",
-      "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Surface_0883_Separated.asset",
-      "changedVertices": 96,
-      "triangles": 108,
-      "bindings": 1
-    },
-    {
-      "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0123.asset",
-      "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0123_Separated.asset",
-      "changedVertices": 192,
-      "triangles": 32278,
-      "bindings": 1
-    },
-    {
-      "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0081.asset",
-      "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0081_Separated.asset",
-      "changedVertices": 96,
-      "triangles": 30910,
-      "bindings": 1
-    },
-    {
-      "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0133.asset",
-      "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0133_Separated.asset",
-      "changedVertices": 374,
-      "triangles": 47010,
-      "bindings": 1
-    },
-    {
-      "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0003.asset",
-      "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0003_Separated.asset",
-      "changedVertices": 374,
-      "triangles": 44854,
-      "bindings": 1
-    }
-  ],
-  "audit": {
-    "scope": "17 complete preview meshes and all installed mesh branches, including inactive alternate section states. Candidate intersections are not all visible rendering defects.",
-    "previews": [
-      {
-        "step": 1,
-        "triangles": 41662,
-        "candidate_material_pairs": 5,
-        "coplanar_overlap_area_model_units": 0.1212150542332165
-      },
-      {
-        "step": 2,
-        "triangles": 26212,
-        "candidate_material_pairs": 3,
-        "coplanar_overlap_area_model_units": 0.02079832319307063
-      },
-      {
-        "step": 3,
-        "triangles": 28932,
-        "candidate_material_pairs": 5,
-        "coplanar_overlap_area_model_units": 0.007470056663800587
-      },
-      {
-        "step": 4,
-        "triangles": 54536,
-        "candidate_material_pairs": 3,
-        "coplanar_overlap_area_model_units": 0.5705691401591657
-      },
-      {
-        "step": 5,
-        "triangles": 95271,
-        "candidate_material_pairs": 21,
-        "coplanar_overlap_area_model_units": 2.228352450708916
-      },
-      {
-        "step": 6,
-        "triangles": 89734,
-        "candidate_material_pairs": 3,
-        "coplanar_overlap_area_model_units": 0.3580961233196397
-      },
-      {
-        "step": 7,
-        "triangles": 72912,
-        "candidate_material_pairs": 3,
-        "coplanar_overlap_area_model_units": 0.13150951493888946
-      },
-      {
-        "step": 8,
-        "triangles": 47006,
-        "candidate_material_pairs": 10,
-        "coplanar_overlap_area_model_units": 5.128818007645638
-      },
-      {
-        "step": 9,
-        "triangles": 6564,
-        "candidate_material_pairs": 0,
-        "coplanar_overlap_area_model_units": 0
-      },
-      {
-        "step": 10,
-        "triangles": 26488,
-        "candidate_material_pairs": 5,
-        "coplanar_overlap_area_model_units": 0.19761099485493247
-      },
-      {
-        "step": 11,
-        "triangles": 20217,
-        "candidate_material_pairs": 0,
-        "coplanar_overlap_area_model_units": 0
-      },
-      {
-        "step": 12,
-        "triangles": 23964,
-        "candidate_material_pairs": 2,
-        "coplanar_overlap_area_model_units": 0.0060695414969037
-      },
-      {
-        "step": 13,
-        "triangles": 4683,
-        "candidate_material_pairs": 1,
-        "coplanar_overlap_area_model_units": 0.07045398898360947
-      },
-      {
-        "step": 14,
-        "triangles": 11074,
-        "candidate_material_pairs": 1,
-        "coplanar_overlap_area_model_units": 0.00013596347277045756
-      },
-      {
-        "step": 15,
-        "triangles": 9462,
-        "candidate_material_pairs": 0,
-        "coplanar_overlap_area_model_units": 0
-      },
-      {
-        "step": 16,
-        "triangles": 22668,
-        "candidate_material_pairs": 2,
-        "coplanar_overlap_area_model_units": 0.021255574239827414
-      },
-      {
-        "step": 17,
-        "triangles": 3824,
-        "candidate_material_pairs": 0,
-        "coplanar_overlap_area_model_units": 0
-      }
-    ],
-    "confirmed_repairs": [
-      "Step 1: firebox outer pressure wrapper and foundation ring have coincident outside faces on both sides. Correct both preview rings, installed inspection-quarter ring and remaining installed batch.",
-      "Step 8: cast support under the chequer footplate shares both lateral faces and one end face. Inset support cross-section and ends, both preview and installed."
-    ],
-    "preserved": "Source assets, mesh indices, all eight UV channels, material slots and collider assignments. Corrected display meshes are generated separately.",
-    "remaining_review": "Same-material internal seams, inset fasteners, coincident alternate inspection shells and water/steam visualization volumes are not bulk-deleted. Installed visibility and moving camera footage require separate verification."
-  },
-  "target_overlap_checks": {
-    "preview-01": {
-      "target_coplanar_overlaps_after": 0
-    },
-    "preview-08": {
-      "target_coplanar_overlaps_after": 0
-    }
-  },
-  "simulator_review": {
-    "completed": true,
-    "preview_steps": 17,
-    "installed_display_modes": 3,
-    "video": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\surface-audit\\simulator-after\\geometry-review.mp4",
-    "visual_findings": "Sampled close orbit frames show a continuous foundation strip with no broken surface or original coincident strip. Preview walkthrough and solid/transparent/section full-train views have no new obvious surface break in inspected frames.",
-    "limitations": "Monoscopic emulator capture; not headset stereo certification. Other candidate same-material intersections and internal contacts were not bulk-deleted."
-  },
-  "performance_report": "Docs/XR-Assembly-Celebration-20261104.json"
+    "scope": "Firebox foundation ring and running-board outer trim; preview and installed copies",
+    "uvPreserved": true,
+    "indicesPreserved": true,
+    "materialSlotsPreserved": true,
+    "foundationOuterSeparation": 0.004399999976158142,
+    "footplateOuterSeparation": 0.006000000052154064,
+    "meshes": [
+        {
+            "source": "Assets/AtelierJourney/StudioVisual/SurfaceV2/Meshes/Surface_0883.asset",
+            "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Surface_0883_Separated.asset",
+            "changedVertices": 96,
+            "triangles": 108,
+            "bindings": 1
+        },
+        {
+            "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0123.asset",
+            "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0123_Separated.asset",
+            "changedVertices": 192,
+            "triangles": 32278,
+            "bindings": 1
+        },
+        {
+            "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0081.asset",
+            "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0081_Separated.asset",
+            "changedVertices": 96,
+            "triangles": 30910,
+            "bindings": 1
+        },
+        {
+            "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0133.asset",
+            "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0133_Separated.asset",
+            "changedVertices": 374,
+            "triangles": 47010,
+            "bindings": 1
+        },
+        {
+            "source": "Assets/SwanJourney/Generated/RigidBatches/Rigid_0003.asset",
+            "output": "Assets/SwanJourney/Generated/SurfaceRepairs/Rigid_0003_Separated.asset",
+            "changedVertices": 374,
+            "triangles": 44854,
+            "bindings": 1
+        }
+    ]
 }

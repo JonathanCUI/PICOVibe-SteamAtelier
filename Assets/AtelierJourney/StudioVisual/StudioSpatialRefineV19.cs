@@ -4,6 +4,7 @@ public sealed class StudioSpatialRefineV19:MonoBehaviour {
  public SteamJourney journey;public MesaDayNightV13 sky;
  public Transform face,throttleSlide,directionPivot,brakePivot,returnCover,brakeNeedle;
  public TMP_Text throttleReadout,driveMessage,returnLabel;
+ public SwanJourney.SwanConsoleTeaching teaching;
  public Renderer[] passengerWindows;public Light cabLight;public GameObject[] scenery;
  public bool ReturnOpen{get;private set;}public float WindowGlow{get;private set;}
  public readonly int[] CoachSparkCounts=new int[3];
@@ -63,7 +64,7 @@ public sealed class StudioSpatialRefineV19:MonoBehaviour {
   bool braking=journey.brake>.5f;force|=!displayTextReady;
   if(force||textThrottle!=throttle)throttleReadout.text="汽门  "+throttle+" %";
   if(force||textReturn!=ReturnOpen)returnLabel.text=ReturnOpen?"按下返回工坊":"掀盖 · 返回工坊";
-  if(force||textDirection!=direction||textBrake!=braking||textLap!=lap)
+  if(!teaching&&(force||textDirection!=direction||textBrake!=braking||textLap!=lap))
    driveMessage.text=(direction>0?"前进":"后退")+"   ·   "+(braking?"制动":"松开")+"   ·   第 "+(lap+1)+" 圈";
   textThrottle=throttle;textDirection=direction;textBrake=braking;textLap=lap;textReturn=ReturnOpen;displayTextReady=true;
  }

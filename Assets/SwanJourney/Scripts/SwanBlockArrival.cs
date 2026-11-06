@@ -102,7 +102,8 @@ namespace SwanJourney
                 var originals=r.sharedMaterials;
                 bool lit=!decoration && r is MeshRenderer && originals.Length>0;
                 foreach(var m in originals)if(!m || m.renderQueue>=2450 ||
-                    (m.shader.name!="Universal Render Pipeline/Lit" && m.shader.name!="SwanJourney/XR Valley Surface"))lit=false;
+                    (m.shader.name!="Universal Render Pipeline/Lit" && m.shader.name!="SwanJourney/XR Valley Surface" &&
+                    m.shader.name!="SwanJourney/XR Canyon Baked" && m.shader.name!="SwanJourney/XR Structure Surface"))lit=false;
                 if(lit)
                 {
                     low=Mathf.Min(low,y-extent);high=Mathf.Max(high,y+extent);
@@ -118,6 +119,12 @@ namespace SwanJourney
                             mat.renderQueue=-1;
                             if(src.IsKeywordEnabled("_NORMALMAP"))mat.EnableKeyword("_NORMALMAP");
                             if(src.IsKeywordEnabled("_METALLICSPECGLOSSMAP"))mat.EnableKeyword("_METALLICSPECGLOSSMAP");
+                            if(src.shader.name=="SwanJourney/XR Canyon Baked")mat.EnableKeyword("_CANYON_BAKED");
+                            if(src.IsKeywordEnabled("_CANYON_TUNNEL"))mat.EnableKeyword("_CANYON_TUNNEL");
+                            if(src.IsKeywordEnabled("_CANYON_NIGHT_SAND"))mat.EnableKeyword("_CANYON_NIGHT_SAND");
+                            if(src.IsKeywordEnabled("_STRUCTURE_AO"))mat.EnableKeyword("_STRUCTURE_AO");
+                            if(src.IsKeywordEnabled("_TRACK_CONTACT"))mat.EnableKeyword("_TRACK_CONTACT");
+                            if(src.IsKeywordEnabled("_DETAIL_CONTACT"))mat.EnableKeyword("_DETAIL_CONTACT");
                             variants.Add(src,mat);
                         }
                         temporary[i]=mat;

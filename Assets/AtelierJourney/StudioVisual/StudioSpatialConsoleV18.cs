@@ -9,6 +9,7 @@ public sealed class StudioSpatialConsoleV18 : MonoBehaviour {
  public Transform console,guideAnchor,rotary,introLever,guard;
  public TMP_Text assembled,selected,modeLabel,introLabel,resetLabel,message;
  public GameObject guideFurniture;
+ public SwanJourney.SwanConsoleTeaching teaching;
  public bool GuardOpen {get;private set;}
  public int InstalledCount=>journey.modules.Count(m=>m.installed)+journey.finishing.Count(m=>m.installed);
  StudioPartCards cards;
@@ -31,7 +32,7 @@ public sealed class StudioSpatialConsoleV18 : MonoBehaviour {
   if(introLever)introLever.localRotation=Quaternion.Slerp(introLever.localRotation,Quaternion.Euler(cards&&cards.visible?-22:22,0,0),1-Mathf.Exp(-Time.unscaledDeltaTime*15));
   if(guard)guard.localRotation=Quaternion.Slerp(guard.localRotation,Quaternion.Euler(GuardOpen?-112:0,0,0),1-Mathf.Exp(-Time.unscaledDeltaTime*12));
   resetLabel.text=GuardOpen?"按下重置":"掀盖重置";
-  if(message)message.text=journey.SpatialMessage;
+  if(message&&!teaching)message.text=journey.SpatialMessage;
   // The paper owns its closing animation. Keep its parent alive until the roll
   // has finished; the legacy framed tutorial still follows the switch directly.
   if(guideFurniture)guideFurniture.SetActive(cards&&!journey.inSandbox&&
@@ -40,6 +41,7 @@ public sealed class StudioSpatialConsoleV18 : MonoBehaviour {
 }
 
 public sealed partial class SteamJourney {
+ public string SpatialNotice=>Time.unscaledTime<noticeUntil&&noticeText?noticeText.text:null;
  public string SpatialMessage=>Time.unscaledTime<noticeUntil&&noticeText&&!string.IsNullOrEmpty(noticeText.text)?noticeText.text:running?ProcessCaption():AutoAssembling?"机械合体 · 零件依次装入":Complete?"装配完成 · 按「出发」进入山谷铁路":"拿起展示台组件，靠近高亮接口松手装入";
  public void ApplySpatialHud(){
   var root=progress?progress.transform.parent:null;if(root)root.gameObject.SetActive(false);

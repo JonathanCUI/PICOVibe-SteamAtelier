@@ -43,12 +43,13 @@ namespace SwanJourney.Editor
                     for(int i=0;i<materials.Length;i++)
                     {
                         var src=materials[i];
-                        if(!src || src.shader.name!="Universal Render Pipeline/Lit" || src.renderQueue>=2450)continue;
+                        if(!src || (src.shader.name!="Universal Render Pipeline/Lit" && src.shader.name!="SwanJourney/XR Structure Surface") || src.renderQueue>=2450)continue;
                         if(!variants.TryGetValue(src,out var mat))
                         {
                             string guid=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(src));
                             if(string.IsNullOrEmpty(guid))throw new InvalidOperationException("Transient vehicle material "+src.name);
                             mat=MaterialAsset("Tunnel "+guid,shader);mat.CopyPropertiesFromMaterial(src);mat.shader=shader;
+                            if(src.IsKeywordEnabled("_STRUCTURE_AO"))mat.EnableKeyword("_STRUCTURE_AO");
                             mat.renderQueue=-1;EditorUtility.SetDirty(mat);variants.Add(src,mat);
                         }
                         materials[i]=mat;slots++;changed=true;

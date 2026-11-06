@@ -1,0 +1,249 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "scope": [
+    "Fixed workshop railway contact",
+    "Rigid locomotive assembly group contact",
+    "Fixed workshop and driving console fittings",
+    "More readable structural cavity shading"
+  ],
+  "implementation": {
+    "bakedGroups": 16,
+    "receivers": 376,
+    "materials": 133,
+    "raySamplesOffline": 32,
+    "realtimeBakeRays": 0,
+    "addedLights": 0,
+    "addedRenderers": 0,
+    "addedTriangles": 0,
+    "receiverTriangles": 543348,
+    "receiverVerticesBefore": 644528,
+    "receiverVerticesAfter": 770363,
+    "extraUvSeamVertices": 125835,
+    "maps": [
+      {
+        "file": "Assembly-00.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-01.png",
+        "width": 1024,
+        "height": 1024,
+        "astc6x6BytesWithMips": 626288
+      },
+      {
+        "file": "Assembly-02.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-03.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-04.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-05.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-06.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-07.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-08.png",
+        "width": 1024,
+        "height": 1024,
+        "astc6x6BytesWithMips": 626288
+      },
+      {
+        "file": "Assembly-09.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-10.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-11.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-12.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Assembly-13.png",
+        "width": 512,
+        "height": 512,
+        "astc6x6BytesWithMips": 158432
+      },
+      {
+        "file": "Driving-console.png",
+        "width": 1024,
+        "height": 1024,
+        "astc6x6BytesWithMips": 626288
+      },
+      {
+        "file": "Workshop-console.png",
+        "width": 1024,
+        "height": 1024,
+        "astc6x6BytesWithMips": 626288
+      }
+    ],
+    "additionalContactTexturesBytesASTC6x6WithMips": 4406336,
+    "trackAtlas": "2048 instead of 1024, 29 receivers, 32 offline samples",
+    "policy": "Bake only within rigid installation groups; moving mechanisms keep self AO. No full-scene AO snapshots painted onto removable parts."
+  },
+  "validation": {
+    "buildSucceeded": true,
+    "quickInstallChecks": 70,
+    "geometryUv0NormalSignaturesPreserved": true,
+    "savedMaterialMapReimportValidation": true,
+    "savedMaterialsChecked": 133,
+    "runtimeWorkshopContactReceivers": 337,
+    "runtimeTrackReceivers": 29,
+    "reviewComplete": true,
+    "metrics": [
+      {
+        "label": "assembly-shadow-free",
+        "fps": 60.01,
+        "p95ms": 16.9,
+        "p99ms": 17.03,
+        "maxms": 17.49
+      },
+      {
+        "label": "complete-no-shadow",
+        "fps": 60.03,
+        "p95ms": 17.0,
+        "p99ms": 17.18,
+        "maxms": 18.6
+      },
+      {
+        "label": "complete-one-shadow",
+        "fps": 59.92,
+        "p95ms": 17.06,
+        "p99ms": 17.42,
+        "maxms": 24.36
+      },
+      {
+        "label": "inspection-shadow-1",
+        "fps": 60.0,
+        "p95ms": 16.99,
+        "p99ms": 17.27,
+        "maxms": 18.8
+      },
+      {
+        "label": "inspection-shadow-2",
+        "fps": 60.0,
+        "p95ms": 17.01,
+        "p99ms": 17.11,
+        "maxms": 19.71
+      },
+      {
+        "label": "valley-no-shadow-0",
+        "fps": 60.03,
+        "p95ms": 16.93,
+        "p99ms": 17.1,
+        "maxms": 17.34
+      },
+      {
+        "label": "valley-one-shadow-0",
+        "fps": 60.0,
+        "p95ms": 16.94,
+        "p99ms": 17.15,
+        "maxms": 19.69
+      },
+      {
+        "label": "valley-no-shadow-1",
+        "fps": 60.01,
+        "p95ms": 17.02,
+        "p99ms": 17.24,
+        "maxms": 19.31
+      },
+      {
+        "label": "valley-one-shadow-1",
+        "fps": 60.01,
+        "p95ms": 16.99,
+        "p99ms": 17.22,
+        "maxms": 19.54
+      },
+      {
+        "label": "valley-dusk-baked",
+        "fps": 59.99,
+        "p95ms": 17.03,
+        "p99ms": 17.24,
+        "maxms": 19.66
+      },
+      {
+        "label": "night-no-shadow",
+        "fps": 60.0,
+        "p95ms": 17.03,
+        "p99ms": 17.24,
+        "maxms": 19.98
+      },
+      {
+        "label": "night-one-shadow",
+        "fps": 59.99,
+        "p95ms": 16.93,
+        "p99ms": 17.09,
+        "maxms": 17.79
+      },
+      {
+        "label": "night-tunnel-lighting",
+        "fps": 60.05,
+        "p95ms": 16.97,
+        "p99ms": 17.14,
+        "maxms": 19.89
+      }
+    ],
+    "fpsRange": [
+      59.92,
+      60.05
+    ],
+    "screenshotsReviewed": [
+      "workshop-after",
+      "console-contact-after",
+      "track-contact-close",
+      "workshop-xray",
+      "night-after",
+      "contact-after-return"
+    ],
+    "limitations": "60 Hz Windows PICO emulator. Physical headset performance and native hand gestures not validated by this run. Earlier failed map-binding candidate and stalled emulator measurements retained in work evidence; not used as passing results."
+  },
+  "artifacts": {
+    "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-ContactFinish.apk",
+    "bytes": 282374722,
+    "sha256": "58647893421b4ff14d52271f92e057e91333bdd0d55ce688983e2b452eab965a",
+    "evidence": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\canyon-lighting-20261106\\contact-finish-verified",
+    "sourceBackup": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\contact-finish-20261107\\before-contact-changes.zip"
+  },
+  "gitPolicy": "Publish complete source/assets/metas to existing requested branch with normal fast-forward push. No force push, no overwrite of collaborator commits. APK and local caches remain outside source control."
+}

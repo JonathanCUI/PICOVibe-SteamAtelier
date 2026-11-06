@@ -84,11 +84,11 @@ namespace SwanJourney
             foreach (var r in train.GetComponentsInChildren<MeshRenderer>(true))
             {
                 var filter = r.GetComponent<MeshFilter>();
-                if (!filter || !filter.sharedMesh) continue;
+                if (!filter || !filter.sharedMesh || r.shadowCastingMode==ShadowCastingMode.ShadowsOnly) continue;
                 var source = r.sharedMaterials;
                 bool solid = source.Length > 0;
                 foreach (var m in source)
-                    if (!m || m.shader.name != "Universal Render Pipeline/Lit" || m.renderQueue >= 2450) solid = false;
+                    if (!m || (m.shader.name != "Universal Render Pipeline/Lit" && m.shader.name != "SwanJourney/XR Structure Surface") || m.renderQueue >= 2450) solid = false;
                 if (!solid) continue;
                 var replacement = new Material[source.Length];
                 for (int i = 0; i < source.Length; i++)

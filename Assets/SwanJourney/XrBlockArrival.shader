@@ -18,6 +18,8 @@ Shader "SwanJourney/XR Block Arrival"
         _Slice("Local start, end, tile width, progress",Vector)=(0,1,.03,0)
         _CellWidth("Tile width",Float)=.03
         _SliceSlope("Fascia slope",Float)=0
+        _CanyonBakedMap("Baked ambient visibility",2D)="white" {}
+        _TrackContactMap("Fixed track contact",2D)="white" {}
     }
     SubShader
     {
@@ -27,12 +29,17 @@ Shader "SwanJourney/XR Block Arrival"
             Tags { "LightMode"="UniversalForward" }
             Cull [_Cull] ZWrite On
             HLSLPROGRAM
-            #pragma target 3.0
+            #pragma target 3.5
             #pragma vertex LitPassVertex
             #pragma fragment SliceFragment
             #pragma multi_compile_instancing
             #pragma multi_compile_local _ _NORMALMAP
             #pragma multi_compile_local _ _METALLICSPECGLOSSMAP
+            #pragma multi_compile_local _ _CANYON_BAKED
+            #pragma multi_compile_local _ _CANYON_TUNNEL
+            #pragma multi_compile_local _ _CANYON_NIGHT_SAND
+            #pragma multi_compile_local _ _STRUCTURE_AO
+            #pragma multi_compile_local _ _TRACK_CONTACT _DETAIL_CONTACT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fog
             #define _OCCLUSIONMAP 1
@@ -41,7 +48,14 @@ Shader "SwanJourney/XR Block Arrival"
             #ifndef REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #define REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #endif
+            #if defined(_CANYON_BAKED) || defined(_STRUCTURE_AO) || defined(_TRACK_CONTACT) || defined(_DETAIL_CONTACT)
+            #ifndef _CANYON_BAKED
+            #define SWAN_STRUCTURE_ONLY 1
+            #endif
+            #include "XrCanyonLighting.hlsl"
+            #else
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
+            #endif
             float4x4 _SwanScanToLocal;
             float4 _Slice;
             float _CellWidth,_SliceSlope;

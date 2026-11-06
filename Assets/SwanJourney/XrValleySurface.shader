@@ -30,6 +30,9 @@ Shader "SwanJourney/XR Valley Surface"
             #pragma vertex LitPassVertex
             #pragma fragment SurfaceFragment
             #pragma multi_compile_instancing
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_local _ _STRUCTURE_AO
             #pragma multi_compile_local _ _NORMALMAP
             #pragma multi_compile_local _ _METALLICSPECGLOSSMAP
             #pragma multi_compile_local _ _SPECULARHIGHLIGHTS_OFF
@@ -42,7 +45,8 @@ Shader "SwanJourney/XR Valley Surface"
             #ifndef REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #define REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #endif
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
+            #define SWAN_STRUCTURE_ONLY 1
+            #include "XrCanyonLighting.hlsl"
             TEXTURE3D(_SwanTunnelField); SAMPLER(sampler_SwanTunnelField);
             float4x4 _SwanTunnelSpace;
             float3 _SwanTunnelMin,_SwanTunnelInv;
@@ -62,6 +66,21 @@ Shader "SwanJourney/XR Valley Surface"
                 solid.rgb=max(0,solid.rgb-emission)*shade+emission;
                 return solid;
             }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On ZTest LEqual ColorMask 0 Cull [_Cull]
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex ShadowPassVertex
+            #pragma fragment ShadowPassFragment
+            #pragma multi_compile_instancing
+            // Match the forward pass material layout; do not import an unrelated Lit pass.
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
             ENDHLSL
         }
     }

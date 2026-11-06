@@ -35,7 +35,7 @@ namespace SwanJourney
                     for(int i=0;i<original.Length;i++)
                     {
                         var src=original[i];
-                        if(!src || src.shader.name!="Universal Render Pipeline/Lit" || src.renderQueue>=2450)continue;
+                        if(!src || (src.shader.name!="Universal Render Pipeline/Lit" && src.shader.name!="SwanJourney/XR Structure Surface") || src.renderQueue>=2450)continue;
                         if(!variants.TryGetValue(src,out var mat))
                         {
                             mat=new Material(seatShader);mat.CopyPropertiesFromMaterial(src);mat.renderQueue=-1;

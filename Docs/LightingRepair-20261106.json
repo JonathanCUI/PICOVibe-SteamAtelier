@@ -1,0 +1,180 @@
+{
+  "date": "2026-11-06",
+  "scope": "Canyon colour and dark patches, fixed workshop track contact AO, close-up structural shadows, driving caption removal",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "pushed": false,
+  "canyon": {
+    "removed": "Broad blurred rock footprints in sand albedo when the baked lighting atlas is present; these previously doubled the lighting shadow.",
+    "ambientAdjustment": "Neutral-weighted bounce floor and reduced extra visibility-mask darkening in the baked irradiance branch.",
+    "retained": "Four existing 1024px time-of-day maps, authored surface maps, static cast shadows, normal detail and dynamic train shadows.",
+    "newRealtimeLights": 0,
+    "dayDawnDuskNightVisuallyReviewed": true
+  },
+  "trackContact": {
+    "receivers": 29,
+    "visibleTriangles": 18780,
+    "addedVisibleTriangles": 0,
+    "additionalRenderers": 0,
+    "additionalDraws": 0,
+    "map": "1024x1024 linear, ASTC 6x6 with mipmaps",
+    "offlineHemisphereSamples": 24,
+    "runtimeRaycasts": 0,
+    "extraTextureSamplesPerFragment": 1,
+    "positionNormalUv0OrientedSurfaceSignatureValidated": true,
+    "scanMaterialCompatibility": true
+  },
+  "workshopShadows": {
+    "change": "Build invisible proxies from actual workshop visible components for each inspection mode instead of reusing the distant valley locomotive.",
+    "thinComponents": "Thickness-aware clustering retains long handrails, pipes and plates; small rivets use coarse clustering.",
+    "solidProxyTriangles": 89734,
+    "previousSolidProxyTriangles": 56279,
+    "xrayProxyTriangles": 69383,
+    "sectionProxyTriangles": 70667,
+    "valleyProxyTrianglesUnchanged": 68420,
+    "shadowCastingLights": 1,
+    "mapResolution": 2048,
+    "assemblyShadowsDisabled": true,
+    "visibleMeshUnchanged": true,
+    "costNote": "The completed workshop shadow pass contains more geometry; this is not a zero-cost change."
+  },
+  "drivingConsoleCaption": {
+    "inactiveAndEmptyVerified": true,
+    "gaugesAndControlLabelsRetained": true
+  },
+  "build": {
+    "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-LightingRepair.apk",
+    "bytes": 261840111,
+    "sha256": "8559f54c3af69353ca82fcf30e902c82bd4b183b2415f0287f099ab6c31c48ff",
+    "success": true,
+    "quickInstallChecks": 70
+  },
+  "validation": {
+    "emulator": "PICO Android emulator-5554",
+    "fullSequenceCompleted": true,
+    "assemblyCompleteInspectionDayNightMovementScaleReturnGatesPassed": true,
+    "measurementWindows": [
+      {
+        "label": "assembly-shadow-free",
+        "fps": 60.01,
+        "p95ms": 16.89,
+        "p99ms": 17.11,
+        "maxms": 17.63
+      },
+      {
+        "label": "complete-no-shadow",
+        "fps": 60.0,
+        "p95ms": 16.96,
+        "p99ms": 17.34,
+        "maxms": 17.61
+      },
+      {
+        "label": "complete-one-shadow",
+        "fps": 60.0,
+        "p95ms": 16.9,
+        "p99ms": 17.21,
+        "maxms": 17.69
+      },
+      {
+        "label": "inspection-shadow-1",
+        "fps": 60.0,
+        "p95ms": 17.0,
+        "p99ms": 17.44,
+        "maxms": 19.38
+      },
+      {
+        "label": "inspection-shadow-2",
+        "fps": 60.01,
+        "p95ms": 16.85,
+        "p99ms": 16.97,
+        "maxms": 17.43
+      },
+      {
+        "label": "valley-no-shadow-0",
+        "fps": 59.98,
+        "p95ms": 16.92,
+        "p99ms": 17.11,
+        "maxms": 17.82
+      },
+      {
+        "label": "valley-one-shadow-0",
+        "fps": 59.99,
+        "p95ms": 16.91,
+        "p99ms": 17.42,
+        "maxms": 17.87
+      },
+      {
+        "label": "valley-no-shadow-1",
+        "fps": 59.98,
+        "p95ms": 16.88,
+        "p99ms": 17.46,
+        "maxms": 17.73
+      },
+      {
+        "label": "valley-one-shadow-1",
+        "fps": 59.99,
+        "p95ms": 16.94,
+        "p99ms": 17.41,
+        "maxms": 19.29
+      },
+      {
+        "label": "valley-dusk-baked",
+        "fps": 59.99,
+        "p95ms": 16.91,
+        "p99ms": 17.09,
+        "maxms": 17.17
+      },
+      {
+        "label": "night-no-shadow",
+        "fps": 60.0,
+        "p95ms": 16.85,
+        "p99ms": 17.32,
+        "maxms": 18.06
+      },
+      {
+        "label": "night-one-shadow",
+        "fps": 60.0,
+        "p95ms": 16.86,
+        "p99ms": 18.0,
+        "maxms": 18.93
+      }
+    ],
+    "fpsMin": 59.98,
+    "fpsMax": 60.01,
+    "maxMeasuredFrameMs": 19.38,
+    "captureNote": "Single-frame diagnostic camera renders and PNG capture are outside the measurement windows. Native screenshot HUD can show a temporary capture-related drop; offscreen detail images have a grey background only for review.",
+    "previousTwoFpsEmulatorStallReproduced": false,
+    "headsetPerformanceValidated": false,
+    "nativeHandGesturesValidated": false,
+    "evidence": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\canyon-lighting-20261106\\lighting-repair-review"
+  },
+  "dependencyAudit": {
+    "branch": "codex/steam-atelier-xr-track-lights",
+    "present_files": 30805,
+    "assets_missing_meta_or_asset": [],
+    "duplicate_guids": [],
+    "scene_and_resources_dependency_files": 2829,
+    "unresolved_guids": {},
+    "local_packages": [
+      {
+        "name": "com.bytedance.pico.xr",
+        "path": "file:../../vendor/PICO-Unity-SDK-main/XR",
+        "version": "6.1.1"
+      },
+      {
+        "name": "com.bytedance.pico.spatialadapter",
+        "path": "file:../../vendor/PICO-Unity-SDK-main/SpatialAdapter",
+        "version": "6.1.0"
+      },
+      {
+        "name": "com.plattar.unitygltf",
+        "path": "file:../LocalPackages/com.plattar.unitygltf",
+        "version": "1.142.0"
+      },
+      {
+        "name": "com.unity.formats.usd",
+        "path": "file:../../vendor/com.unity.formats.usd",
+        "version": "3.0.0-exp.5"
+      }
+    ]
+  }
+}

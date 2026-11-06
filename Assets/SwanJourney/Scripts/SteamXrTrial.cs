@@ -315,6 +315,10 @@ public sealed partial class SteamXrTrial : MonoBehaviour
             while(blockArrival.arrival.Active)yield return null;
         }
         bool artReview=Requested("steam_art_views");
+        if(Requested("xr_night_lap_demo")){yield return RecordNightLap();yield break;}
+        if(Requested("xr_console_teaching_review")){yield return ReviewConsoleTeaching();yield break;}
+        if(Requested("xr_display_lighting_review")){yield return ReviewDisplayLighting();yield break;}
+        if(Requested("xr_canyon_lighting_review")){yield return ReviewCanyonLighting();yield break;}
         if(Requested("xr_integration_review")){yield return ReviewVisualIntegration();yield break;}
         if(Requested("xr_geometry_review")){yield return ReviewGeometry();yield break;}
         if(Requested("xr_completion_review") || Requested("xr_completion_demo"))

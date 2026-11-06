@@ -14,7 +14,9 @@ namespace SwanJourney.Editor
 
         internal static void Apply(SteamJourney journey,SteamXrTrial trial)
         {
-            var clouds=journey.GetComponent<MesaAtmosV16>().cloudTransforms;
+            var atmosphere=journey.GetComponent<MesaAtmosV16>();
+            var clouds=atmosphere.cloudTransforms;
+            atmosphere.layeredCloudMotion=true;
             if(clouds.Length!=3) throw new InvalidOperationException("Expected the three V16 sky clouds");
             var bake=Shader.Find("Hidden/SwanJourney/BakeValleyCloud");
             var shader=Shader.Find("SwanJourney/XR Valley Cloud");
@@ -28,6 +30,11 @@ namespace SwanJourney.Editor
                 for(int i=0;i<clouds.Length;i++)
                 {
                     var cloud=clouds[i];
+                    // Fixed authored poses make regeneration idempotent. Main cloud,
+                    // distant small cloud, and nearer medium cloud leave open gaps.
+                    var positions=new[]{new Vector3(-8.2f,17.8f,-10),new Vector3(2.4f,20.4f,-14.0f),new Vector3(10.8f,16.4f,-8.4f)};
+                    var sizes=new[]{new Vector3(11.5f,4.6f,6.0f),new Vector3(4.5f,2.35f,3.4f),new Vector3(7.3f,3.5f,5.0f)};
+                    cloud.localPosition=positions[i];cloud.localScale=sizes[i];
                     var original=AssetDatabase.LoadAssetAtPath<Material>(Original+"Cloud "+i+".mat");
                     if(!original || !original.GetTexture("_Noise")) throw new InvalidOperationException("Missing V16 sky density");
                     float seed=original.GetFloat("_Seed");
@@ -40,6 +47,7 @@ namespace SwanJourney.Editor
                     var mat=AssetDatabase.LoadAssetAtPath<Material>(path);
                     if(!mat){mat=new Material(shader);AssetDatabase.CreateAsset(mat,path);}
                     mat.SetTexture("_Cloud",volume);mat.SetFloat("_Seed",seed);EditorUtility.SetDirty(mat);
+                    Debug.Log($"XR_CLOUD_FINISH index={i} position={cloud.localPosition} size={cloud.localScale} volume={Size} steps=16");
                     var filter=cloud.GetComponent<MeshFilter>();var renderer=cloud.GetComponent<MeshRenderer>();
                     trial.cloudControlMeshes[i]=filter.sharedMesh;trial.cloudControlMaterials[i]=renderer.sharedMaterial;
                     filter.sharedMesh=cube;renderer.sharedMaterial=mat;

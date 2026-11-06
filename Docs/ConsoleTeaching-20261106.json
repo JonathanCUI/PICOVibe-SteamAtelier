@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-06",
+  "scope": "Assembly console priority, contextual teaching text, and valley driving guidance; preserves walnut/brass physical control style.",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "baselineCommit": "58c0ce5c546f1a9ffcb90a655ee3ebdae56398c3",
+  "controls": {
+    "verifyScale": {"before": 0.83, "after": 1.10},
+    "departScale": {"before": 0.90, "after": 1.12},
+    "autoAssembleScale": {"before": 0.90, "after": 0.70},
+    "autoAssembleRootHitBoxWorldSizePreserved": true,
+    "primaryLabelsEnlarged": true,
+    "resetSafetyCoverPreserved": true,
+    "rootControlOverlapCheck": {"controls": 9, "passed": true},
+    "additionalModelRenderers": 0,
+    "additionalModelTriangles": 0,
+    "note": "Text glyph geometry varies with displayed content; zero deltas refer to model geometry."
+  },
+  "teaching": {
+    "reusesExistingTextAreas": true,
+    "assembly": "Two lines: step/title and contextual action. Covers pickup, holding, alignment, seating, verification, completion and scene transition.",
+    "valley": "Retains direction, brake and lap status; adds contextual driving instruction.",
+    "all17StepTitlesFit": true,
+    "chineseGlyphCoveragePassed": true,
+    "fontAtlasCount": 1,
+    "fontCharactersAddedThisChange": 2,
+    "textChecksPerSecond": 10,
+    "onlyWritesChangedText": true
+  },
+  "build": {
+    "apk": "H:/Codex/SteamAtelierSwan-XRTrial/Builds/XRTrial/SteamAtelierXRRoom-ConsoleTeaching.apk",
+    "bytes": 253719648,
+    "sha256": "7d50cd321081b02afbf795710cc3da7d0f00cc27d1d86ba7a98667337c8f2d71",
+    "success": true,
+    "quickInstallChecks": 70,
+    "log": "H:/Codex/2026-11-01/you/work/xr-trial/console-build4-20261106.log"
+  },
+  "emulator": {
+    "evidence": "H:/Codex/2026-11-01/you/work/xr-trial/console-review-03",
+    "refreshRateHz": 60,
+    "sampleSecondsPerState": 7,
+    "performance": [
+      {"label": "console-idle", "fps": 59.95, "p95ms": 17.06, "p99ms": 18.29, "maxms": 20.21},
+      {"label": "console-verification", "fps": 60.02, "p95ms": 16.90, "p99ms": 17.02, "maxms": 17.96},
+      {"label": "console-completed", "fps": 60.01, "p95ms": 16.92, "p99ms": 17.32, "maxms": 17.98},
+      {"label": "console-valley", "fps": 59.83, "p95ms": 17.22, "p99ms": 18.61, "maxms": 32.15}
+    ],
+    "interactionChecks": [
+      "Gaze and touch target resolution for tutorial, inspection, previous/next, verify, auto-assemble and depart controls",
+      "Injected actual control input: tutorial close/open and page changes",
+      "Grab, move, align, release and manual seating",
+      "Verification on/off and automatic assembly",
+      "Depart to valley and braking guidance",
+      "Return to workshop; reset blocked with closed cover and succeeds with open cover"
+    ],
+    "allInteractionChecksPassed": true,
+    "visualScreenshotsReviewed": ["console-start.png", "completed.png", "driving-ready.png"],
+    "runtimeFailureScanClean": true,
+    "earlierInvalidRun": "console-review-01 had a black simulator loading screen and approximately 2 FPS after startup. It was excluded. A full emulator restart restored rendering; review-02 and final review-03 completed near 60 FPS."
+  },
+  "validation": {
+    "newAssetsMissingMeta": 0,
+    "changedConsoleSourcesDiffCheckPassed": true,
+    "unrelatedFullDiffCheckWarnings": "Existing Unity-serialized empty m_Name and m_EditorClassIdentifier fields in SwanJourneyCanyon.prefab have trailing spaces."
+  },
+  "limitations": [
+    "Simulator samples are short, 60 Hz, and not headset 90 FPS certification or a sustained thermal test.",
+    "Interaction was simulated through runtime input paths; real hand-tracking usability still needs headset review.",
+    "No Git commit or push was requested or performed in this stage."
+  ]
+}

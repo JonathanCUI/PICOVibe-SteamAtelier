@@ -39,8 +39,8 @@ namespace SwanJourney.Editor
                 var aim=new GameObject("Track illumination").transform;
                 aim.SetParent(socket,false);aim.localRotation=Quaternion.Euler(BeamDip,0,0);
                 var light=aim.gameObject.AddComponent<Light>();unit.spots[i]=light;
-                light.type=LightType.Spot;light.shadows=LightShadows.None;light.innerSpotAngle=23;light.spotAngle=46;
-                light.color=new Color(1,.80f,.52f);light.intensity=0;light.range=.2f;
+                light.type=LightType.Spot;light.shadows=LightShadows.None;light.innerSpotAngle=18;light.spotAngle=50;
+                light.color=new Color(1,.85f,.64f);light.intensity=0;light.range=.2f;
                 var face=GameObject.CreatePrimitive(PrimitiveType.Sphere);face.name="Warm lens";
                 Object.DestroyImmediate(face.GetComponent<Collider>());face.transform.SetParent(socket,false);
                 face.transform.localScale=new Vector3(.23f,.23f,.035f);

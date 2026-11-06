@@ -1,0 +1,83 @@
+{
+  "date": "2026-11-06",
+  "scope": "Stage 1: static canyon ambient visibility / AO baked sample, not multi-state direct lighting",
+  "baselineCommit": "58c0ce5c546f1a9ffcb90a655ee3ebdae56398c3",
+  "receivers": 19,
+  "affectedTriangles": 207228,
+  "visibleCanyonTriangles": 331633,
+  "trianglesChanged": 0,
+  "geometryNormalsUV0Validated": true,
+  "additionalRealtimeLights": 0,
+  "additionalRenderers": 0,
+  "lightmap": {
+    "width": 1024,
+    "height": 1024,
+    "androidFormat": "ASTC 6x6",
+    "type": "Baked neutral ambient visibility, live day/night shading retained",
+    "count": 1
+  },
+  "build": {
+    "bytes": 251968858,
+    "quickInstallChecks": 70,
+    "sha256": "d908ccd99363f32ba1bb41a00867aa03807f6bf6d20f9b1faf2fb8a43a93d863",
+    "apk": "H:/Codex/SteamAtelierSwan-XRTrial/Builds/XRTrial/SteamAtelierXRRoom-CanyonLighting.apk",
+    "success": true
+  },
+  "emulator": {
+    "evidence": "H:/Codex/2026-11-01/you/work/xr-trial/canyon-lighting-20261106/review-01",
+    "refreshRateHz": 60,
+    "unloadReloadPassed": true,
+    "performance": [
+      {
+        "label": "canyon-original-0",
+        "fps": 59.99,
+        "p95ms": 16.89,
+        "p99ms": 17.22,
+        "maxms": 17.5
+      },
+      {
+        "label": "canyon-baked-0",
+        "fps": 60.02,
+        "p95ms": 16.92,
+        "p99ms": 17.3,
+        "maxms": 17.65
+      },
+      {
+        "label": "canyon-original-1",
+        "fps": 60.06,
+        "p95ms": 16.89,
+        "p99ms": 17.11,
+        "maxms": 18.96
+      },
+      {
+        "label": "canyon-baked-1",
+        "fps": 59.97,
+        "p95ms": 16.91,
+        "p99ms": 17.12,
+        "maxms": 17.4
+      },
+      {
+        "label": "canyon-night-original",
+        "fps": 59.86,
+        "p95ms": 17.02,
+        "p99ms": 18.26,
+        "maxms": 28.03
+      },
+      {
+        "label": "canyon-night-baked",
+        "fps": 60.0,
+        "p95ms": 16.99,
+        "p99ms": 17.97,
+        "maxms": 19.73
+      }
+    ],
+    "translatedRotatedScaledViewChecked": true,
+    "hardware90HzValidated": false
+  },
+  "limitations": [
+    "This is the first baked ambient/occlusion sample. Day/dusk/night direct-lightmap sets and final train realtime shadows are not implemented in this stage.",
+    "Existing close-range tunnel mesh seams and texture stretching remain visible in both original and baked versions.",
+    "No PICO headset hardware measurement this session."
+  ],
+  "gitPushed": false
+}

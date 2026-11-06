@@ -1,0 +1,339 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "scope": [
+    "Night sand illumination",
+    "Three sky clouds",
+    "Fixed railway metal finish"
+  ],
+  "changes": {
+    "nightSand": "Only baked sand sky/bounce irradiance transitions to RGB multipliers 0.52/0.55/0.58 at full night. Day albedo and local warm headlights unchanged. Keyword retained during arrival scan.",
+    "clouds": "Same three 64-cubed RG16 density volumes and 16-step shader. Large/small/medium layout at different heights/depths, softer offline density, half-rate flex and slower independent drift. Sky-only bake macro does not change chimney smoke.",
+    "rails": "Derived fixed-track and canyon railway materials only. Lower smoothness and normal strength, controlled top highlights, darker web/fasteners. Source train/console steel, textures, UVs and AO preserved."
+  },
+  "renderingBudget": {
+    "additionalGeometry": 0,
+    "additionalRenderers": 0,
+    "additionalLights": 0,
+    "additionalFullscreenPasses": 0,
+    "skyCloudCount": 3,
+    "cloudMarchSteps": 16
+  },
+  "validation": {
+    "buildSucceeded": true,
+    "quickInstallChecks": 70,
+    "dependencyFiles": 2931,
+    "missingMetas": [],
+    "unresolvedGuids": {},
+    "runs": {
+      "visual-polish-234": {
+        "metrics": [
+          {
+            "label": "assembly-shadow-free",
+            "fps": 50.99,
+            "p95ms": 17.51,
+            "p99ms": 18.49,
+            "maxms": 917.27
+          },
+          {
+            "label": "complete-no-shadow",
+            "fps": 59.57,
+            "p95ms": 17.82,
+            "p99ms": 20.2,
+            "maxms": 31.67
+          },
+          {
+            "label": "complete-one-shadow",
+            "fps": 52.11,
+            "p95ms": 18.2,
+            "p99ms": 23.88,
+            "maxms": 935.85
+          },
+          {
+            "label": "inspection-shadow-1",
+            "fps": 41.98,
+            "p95ms": 22.21,
+            "p99ms": 71.51,
+            "maxms": 927.12
+          },
+          {
+            "label": "inspection-shadow-2",
+            "fps": 59.78,
+            "p95ms": 18.61,
+            "p99ms": 23.17,
+            "maxms": 29.5
+          },
+          {
+            "label": "valley-no-shadow-0",
+            "fps": 59.49,
+            "p95ms": 18.14,
+            "p99ms": 24.49,
+            "maxms": 31.35
+          },
+          {
+            "label": "valley-one-shadow-0",
+            "fps": 59.37,
+            "p95ms": 18.94,
+            "p99ms": 24.54,
+            "maxms": 30.45
+          },
+          {
+            "label": "valley-no-shadow-1",
+            "fps": 51.56,
+            "p95ms": 18.98,
+            "p99ms": 28.55,
+            "maxms": 905.76
+          },
+          {
+            "label": "valley-one-shadow-1",
+            "fps": 51.48,
+            "p95ms": 18.4,
+            "p99ms": 26.74,
+            "maxms": 920.96
+          },
+          {
+            "label": "valley-dusk-baked",
+            "fps": 51.65,
+            "p95ms": 21.91,
+            "p99ms": 27.01,
+            "maxms": 919.36
+          },
+          {
+            "label": "night-no-shadow",
+            "fps": 50.95,
+            "p95ms": 21.71,
+            "p99ms": 31.92,
+            "maxms": 917.7
+          },
+          {
+            "label": "night-one-shadow",
+            "fps": 59.42,
+            "p95ms": 18.65,
+            "p99ms": 23.21,
+            "maxms": 31.59
+          },
+          {
+            "label": "night-tunnel-lighting",
+            "fps": 53.61,
+            "p95ms": 18.09,
+            "p99ms": 23.81,
+            "maxms": 931.34
+          }
+        ],
+        "fpsRange": [
+          41.98,
+          59.78
+        ],
+        "reviewComplete": true
+      },
+      "visual-polish-baseline": {
+        "metrics": [
+          {
+            "label": "assembly-shadow-free",
+            "fps": 58.55,
+            "p95ms": 18.37,
+            "p99ms": 31.17,
+            "maxms": 56.38
+          },
+          {
+            "label": "complete-no-shadow",
+            "fps": 59.37,
+            "p95ms": 18.08,
+            "p99ms": 23.89,
+            "maxms": 31.87
+          },
+          {
+            "label": "complete-one-shadow",
+            "fps": 59.56,
+            "p95ms": 18.46,
+            "p99ms": 21.1,
+            "maxms": 32.74
+          },
+          {
+            "label": "inspection-shadow-1",
+            "fps": 58.58,
+            "p95ms": 20.25,
+            "p99ms": 26.8,
+            "maxms": 50.71
+          },
+          {
+            "label": "inspection-shadow-2",
+            "fps": 60.02,
+            "p95ms": 17.94,
+            "p99ms": 20.45,
+            "maxms": 24.16
+          },
+          {
+            "label": "valley-no-shadow-0",
+            "fps": 58.46,
+            "p95ms": 19.63,
+            "p99ms": 24.79,
+            "maxms": 58.55
+          },
+          {
+            "label": "valley-one-shadow-0",
+            "fps": 58.98,
+            "p95ms": 18.74,
+            "p99ms": 25.37,
+            "maxms": 31.55
+          },
+          {
+            "label": "valley-no-shadow-1",
+            "fps": 59.42,
+            "p95ms": 18.59,
+            "p99ms": 23.5,
+            "maxms": 29.2
+          },
+          {
+            "label": "valley-one-shadow-1",
+            "fps": 59.18,
+            "p95ms": 19.51,
+            "p99ms": 25.78,
+            "maxms": 36.88
+          },
+          {
+            "label": "valley-dusk-baked",
+            "fps": 59.18,
+            "p95ms": 19.52,
+            "p99ms": 25.24,
+            "maxms": 33.05
+          },
+          {
+            "label": "night-no-shadow",
+            "fps": 57.96,
+            "p95ms": 22.89,
+            "p99ms": 26.6,
+            "maxms": 41.01
+          },
+          {
+            "label": "night-one-shadow",
+            "fps": 59.19,
+            "p95ms": 18.26,
+            "p99ms": 24.42,
+            "maxms": 33.2
+          },
+          {
+            "label": "night-tunnel-lighting",
+            "fps": 59.61,
+            "p95ms": 18.23,
+            "p99ms": 22.42,
+            "maxms": 33.35
+          }
+        ],
+        "fpsRange": [
+          57.96,
+          60.02
+        ],
+        "reviewComplete": true
+      },
+      "visual-polish-234-repeat": {
+        "metrics": [
+          {
+            "label": "assembly-shadow-free",
+            "fps": 60.0,
+            "p95ms": 17.24,
+            "p99ms": 17.51,
+            "maxms": 18.46
+          },
+          {
+            "label": "complete-no-shadow",
+            "fps": 59.98,
+            "p95ms": 17.49,
+            "p99ms": 18.21,
+            "maxms": 24.18
+          },
+          {
+            "label": "complete-one-shadow",
+            "fps": 59.9,
+            "p95ms": 17.63,
+            "p99ms": 18.42,
+            "maxms": 24.7
+          },
+          {
+            "label": "inspection-shadow-1",
+            "fps": 58.82,
+            "p95ms": 18.42,
+            "p99ms": 26.69,
+            "maxms": 28.98
+          },
+          {
+            "label": "inspection-shadow-2",
+            "fps": 59.99,
+            "p95ms": 17.44,
+            "p99ms": 17.88,
+            "maxms": 22.62
+          },
+          {
+            "label": "valley-no-shadow-0",
+            "fps": 59.84,
+            "p95ms": 17.53,
+            "p99ms": 18.02,
+            "maxms": 27.21
+          },
+          {
+            "label": "valley-one-shadow-0",
+            "fps": 59.82,
+            "p95ms": 17.47,
+            "p99ms": 17.92,
+            "maxms": 33.69
+          },
+          {
+            "label": "valley-no-shadow-1",
+            "fps": 60.02,
+            "p95ms": 17.4,
+            "p99ms": 18.83,
+            "maxms": 24.25
+          },
+          {
+            "label": "valley-one-shadow-1",
+            "fps": 59.61,
+            "p95ms": 17.88,
+            "p99ms": 21.19,
+            "maxms": 27.04
+          },
+          {
+            "label": "valley-dusk-baked",
+            "fps": 59.78,
+            "p95ms": 17.57,
+            "p99ms": 18.83,
+            "maxms": 24.67
+          },
+          {
+            "label": "night-no-shadow",
+            "fps": 59.99,
+            "p95ms": 17.61,
+            "p99ms": 18.59,
+            "maxms": 23.84
+          },
+          {
+            "label": "night-one-shadow",
+            "fps": 59.81,
+            "p95ms": 17.6,
+            "p99ms": 18.78,
+            "maxms": 30.39
+          },
+          {
+            "label": "night-tunnel-lighting",
+            "fps": 59.92,
+            "p95ms": 17.46,
+            "p99ms": 18.58,
+            "maxms": 26.58
+          }
+        ],
+        "fpsRange": [
+          58.82,
+          60.02
+        ],
+        "reviewComplete": true
+      }
+    },
+    "limitation": "60 Hz PICO Windows emulator only. Initial new-build run contained 0.9-second stalls and 41.98-59.78 FPS windows; not reproduced in second full new-build run. Cause not established. No physical-headset or 90 FPS claim."
+  },
+  "artifacts": {
+    "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-VisualPolish234.apk",
+    "apkSha256": "651fea5ec9b4398d73847c9b9431c16d75d3070e732cf37675cb816ae72c648a",
+    "sourceBackup": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\visual-polish-234-20261107\\before-source.zip",
+    "reviewDirectory": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\canyon-lighting-20261106\\visual-polish-234-repeat"
+  },
+  "gitPushed": false
+}

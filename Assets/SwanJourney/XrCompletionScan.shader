@@ -26,10 +26,11 @@ Shader "SwanJourney/XR Completion Scan"
             Tags { "LightMode"="UniversalForward" }
             Cull [_Cull] ZWrite On
             HLSLPROGRAM
-            #pragma target 3.0
+            #pragma target 3.5
             #pragma vertex LitPassVertex
             #pragma fragment CompletionFragment
             #pragma multi_compile_instancing
+            #pragma multi_compile_local _ _STRUCTURE_AO
             #pragma multi_compile_local _ _NORMALMAP
             #pragma multi_compile_local _ _METALLICSPECGLOSSMAP
             #pragma multi_compile_local _ _SPECULARHIGHLIGHTS_OFF
@@ -42,7 +43,8 @@ Shader "SwanJourney/XR Completion Scan"
             #ifndef REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #define REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #endif
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
+            #define SWAN_STRUCTURE_ONLY 1
+            #include "XrCanyonLighting.hlsl"
             float4x4 _SwanFinishToLocal;
             float4 _SwanFinishRange,_SwanFinishClock;
             half4 CompletionFragment(Varyings input):SV_Target

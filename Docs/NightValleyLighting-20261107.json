@@ -1,0 +1,138 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "changes": {
+    "tunnel": "Existing 96x32x96 skylight field masks outdoor ambient fill on 22 bore/approach/terrain/rail material slots; direct headlight illumination is applied after ambient occlusion.",
+    "headlamps": "Restore punctual additional-light PBR contribution in baked canyon shader, skipping already baked directional lights. Reuse two existing shadow-free spots. Intensity 155 -> 105 before scale correction; inner/outer cone 23/46 -> 18/50 degrees; warmer-neutral tint.",
+    "scatter": "Existing four-triangle beam/halo mesh retained. Exponential transverse and length attenuation with softer edges; maximum shaft coefficient 2.25 -> 0.55. Lens halo retained.",
+    "cacti": "Derived matte material retains existing albedo and normal maps; base tint 0.62/0.64/0.60, rough surface, no emission, no specular/environment-reflection highlights."
+  },
+  "budget": {
+    "additionalVisibleTriangles": 0,
+    "additionalLights": 0,
+    "newFullscreenPasses": 0,
+    "tunnelMaterialSlots": 22,
+    "existingHeadlampSpots": 2
+  },
+  "validation": {
+    "buildSucceeded": true,
+    "quickInstallChecksPassed": true,
+    "quickInstallCheckCount": 70,
+    "missingMetas": [],
+    "unresolvedGuids": {},
+    "metrics": [
+      {
+        "label": "assembly-shadow-free",
+        "fps": 60.02,
+        "p95ms": 17.0,
+        "p99ms": 17.34,
+        "maxms": 18.07
+      },
+      {
+        "label": "complete-no-shadow",
+        "fps": 59.98,
+        "p95ms": 17.18,
+        "p99ms": 17.95,
+        "maxms": 22.57
+      },
+      {
+        "label": "complete-one-shadow",
+        "fps": 60.0,
+        "p95ms": 17.12,
+        "p99ms": 17.79,
+        "maxms": 19.21
+      },
+      {
+        "label": "inspection-shadow-1",
+        "fps": 60.0,
+        "p95ms": 16.99,
+        "p99ms": 17.26,
+        "maxms": 17.97
+      },
+      {
+        "label": "inspection-shadow-2",
+        "fps": 59.99,
+        "p95ms": 16.92,
+        "p99ms": 17.11,
+        "maxms": 17.51
+      },
+      {
+        "label": "valley-no-shadow-0",
+        "fps": 59.99,
+        "p95ms": 16.96,
+        "p99ms": 17.92,
+        "maxms": 18.78
+      },
+      {
+        "label": "valley-one-shadow-0",
+        "fps": 60.02,
+        "p95ms": 16.84,
+        "p99ms": 17.01,
+        "maxms": 17.46
+      },
+      {
+        "label": "valley-no-shadow-1",
+        "fps": 59.77,
+        "p95ms": 17.11,
+        "p99ms": 18.1,
+        "maxms": 27.72
+      },
+      {
+        "label": "valley-one-shadow-1",
+        "fps": 59.86,
+        "p95ms": 16.98,
+        "p99ms": 18.06,
+        "maxms": 30.76
+      },
+      {
+        "label": "valley-dusk-baked",
+        "fps": 59.68,
+        "p95ms": 17.09,
+        "p99ms": 18.43,
+        "maxms": 31.04
+      },
+      {
+        "label": "night-no-shadow",
+        "fps": 59.99,
+        "p95ms": 16.95,
+        "p99ms": 17.71,
+        "maxms": 18.44
+      },
+      {
+        "label": "night-one-shadow",
+        "fps": 59.99,
+        "p95ms": 17.0,
+        "p99ms": 17.4,
+        "maxms": 17.92
+      },
+      {
+        "label": "night-tunnel-lighting",
+        "fps": 59.98,
+        "p95ms": 17.06,
+        "p99ms": 17.41,
+        "maxms": 17.96
+      }
+    ],
+    "minimumFps": 59.68,
+    "maximumFps": 60.02,
+    "tunnelDarkLitSamePose": true,
+    "dayNightStatesChecked": 4,
+    "moveResizeAndReturnChecked": true,
+    "physicalHeadsetTested": false,
+    "scope": "PICO Android emulator 60 Hz, APP frame timing. Host recording active for most final windows. Does not establish physical-headset 90 FPS or GPU headroom.",
+    "firstRunCaveat": "Initial review had recurring approximately 1-second simulator stalls, also in untouched workshop and shadow-off controls. Preserved in night-valley-review. Final repeat with active host capture completed at 59.68-60.02 FPS; do not present earlier stalled run as project rendering cost."
+  },
+  "evidenceFolder": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\canyon-lighting-20261106\\night-valley-final",
+  "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-NightValleyLighting.apk",
+  "sha256": "02145e5d910b00a3c3aeb8f58bdbd839e3126f4a339e2a0c9fea91840f26759e",
+  "video": "H:/Codex/2026-11-01/you/outputs/夜晚火车环行一圈-光影修正版-20261107.mp4",
+  "lap": {
+    "distance": 53.008,
+    "routeLength": 52.99,
+    "lapSeconds": 33.3,
+    "recordedSeconds": 38.825453299999936,
+    "source": "PICO Android emulator",
+    "fixedNight": true
+  },
+  "gitPushed": false
+}

@@ -1,0 +1,181 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/steam-atelier-xr-track-lights",
+  "pushed": false,
+  "scope": "Unify cave and cliff lighting; ground small rocks and restore tight surface contact",
+  "rootCause": "Only 19 surfaces used baked lighting; adjoining cave rocks and the main cliff followed different lighting paths. Some loose stones also had physical gaps above their support.",
+  "changes": {
+    "bakedReceiversBefore": 19,
+    "bakedReceiversAfter": 107,
+    "bakedReceiverTriangles": 304434,
+    "irradianceStates": 4,
+    "irradianceMapSize": 1024,
+    "unwrapperValidatedPositionsNormalsUv0AndOrientedTriangles": true,
+    "groundedPieces": 14,
+    "groundingDetails": [
+      "Fixed rock batch 28 centre=(0.25819, 0.06351, -0.37707) lowered=0.005265",
+      "Fixed rock batch 31 centre=(-0.23289, 0.08902, 0.15042) lowered=0.013195",
+      "Fixed rock batch 31 centre=(-0.23409, 0.08841, 0.14125) lowered=0.007829",
+      "Fixed rock batch 45 centre=(-0.23067, 0.08875, 0.13501) lowered=0.001867",
+      "Fixed rock batch 65 centre=(-0.24654, 0.07768, 0.11752) lowered=0.006997",
+      "Fixed rock batch 65 centre=(-0.23950, 0.07836, 0.11426) lowered=0.003850",
+      "Fixed rock batch 65 centre=(-0.22827, 0.08780, 0.12614) lowered=0.002244",
+      "Swan static scenery 0035 centre=(-0.24881, 0.07848, 0.12443) lowered=0.003902",
+      "Swan static scenery 0037 centre=(-0.22603, 0.08893, 0.14756) lowered=0.002376",
+      "Swan static scenery 0042 centre=(0.25322, 0.06190, -0.38907) lowered=0.003315",
+      "Swan static scenery 0044 centre=(0.09707, 0.05163, 0.33606) lowered=0.004328",
+      "Swan static scenery 0047 centre=(0.53704, 0.06665, 0.00255) lowered=0.005309",
+      "Swan static scenery 0052 centre=(0.30745, 0.09140, 0.14978) lowered=0.004101",
+      "Swan static scenery 0055 centre=(0.53987, 0.06790, 0.01558) lowered=0.003644"
+    ],
+    "groundingScope": "Only independent small rocks. Arch lintels and cliff geometry excluded; source meshes preserved with derived copies.",
+    "contactMap": "2048px linear ASTC 6x6 with mipmaps; replaces previous 1024px broad ambient visibility map",
+    "offlineContactSamples": 24,
+    "contactRayRangePrefabMetres": 0.015,
+    "extraRealtimeLights": 0,
+    "extraVisibleTriangles": 0,
+    "runtimeContactRaycasts": 0,
+    "costNote": "More existing rock surfaces now sample baked lighting; contact map has higher resolution. No claim of zero GPU or memory cost."
+  },
+  "validation": {
+    "buildSuccess": true,
+    "installedOn": "PICO emulator-5554",
+    "visualReview": [
+      "cave day/night close-ups",
+      "perimeter stones day/night",
+      "four lighting states",
+      "native simulator overview"
+    ],
+    "reviewSequenceComplete": true,
+    "metrics": [
+      {
+        "label": "assembly-shadow-free",
+        "fps": 60.0,
+        "p95ms": 16.92,
+        "p99ms": 17.18,
+        "maxms": 18.04
+      },
+      {
+        "label": "complete-no-shadow",
+        "fps": 60.0,
+        "p95ms": 16.96,
+        "p99ms": 17.14,
+        "maxms": 18.16
+      },
+      {
+        "label": "complete-one-shadow",
+        "fps": 60.0,
+        "p95ms": 16.86,
+        "p99ms": 16.92,
+        "maxms": 17.99
+      },
+      {
+        "label": "inspection-shadow-1",
+        "fps": 60.0,
+        "p95ms": 17.01,
+        "p99ms": 17.29,
+        "maxms": 18.52
+      },
+      {
+        "label": "inspection-shadow-2",
+        "fps": 60.0,
+        "p95ms": 17.01,
+        "p99ms": 17.47,
+        "maxms": 20.05
+      },
+      {
+        "label": "valley-no-shadow-0",
+        "fps": 60.0,
+        "p95ms": 16.93,
+        "p99ms": 17.39,
+        "maxms": 17.69
+      },
+      {
+        "label": "valley-one-shadow-0",
+        "fps": 60.0,
+        "p95ms": 16.94,
+        "p99ms": 17.36,
+        "maxms": 19.01
+      },
+      {
+        "label": "valley-no-shadow-1",
+        "fps": 60.0,
+        "p95ms": 16.93,
+        "p99ms": 17.4,
+        "maxms": 17.97
+      },
+      {
+        "label": "valley-one-shadow-1",
+        "fps": 60.01,
+        "p95ms": 16.94,
+        "p99ms": 17.17,
+        "maxms": 18.21
+      },
+      {
+        "label": "valley-dusk-baked",
+        "fps": 60.0,
+        "p95ms": 16.91,
+        "p99ms": 17.3,
+        "maxms": 17.46
+      },
+      {
+        "label": "night-no-shadow",
+        "fps": 59.98,
+        "p95ms": 17.06,
+        "p99ms": 17.4,
+        "maxms": 20.1
+      },
+      {
+        "label": "night-one-shadow",
+        "fps": 60.0,
+        "p95ms": 16.99,
+        "p99ms": 17.33,
+        "maxms": 20.09
+      }
+    ],
+    "fpsRange": [
+      59.98,
+      60.01
+    ],
+    "maxMeasuredFrameMs": 20.1,
+    "captureExcludedFromMeasurement": true,
+    "headsetTested": false,
+    "evidence": "H:\\Codex\\2026-11-01\\you\\work\\xr-trial\\canyon-lighting-20261106\\canyon-contact-review",
+    "geometryAuditNote": "Terrain-only gap inspection includes intentionally raised arch/stacked stones; not all positive gaps are floating defects."
+  },
+  "build": {
+    "apk": "H:\\Codex\\SteamAtelierSwan-XRTrial\\Builds\\XRTrial\\SteamAtelierXRRoom-CanyonContactRepair.apk",
+    "bytes": 271785485,
+    "sha256": "98e7fa197dceb4fa447589e4db186539b8e5a22aa483425a766c569fe388c862"
+  },
+  "dependencyAudit": {
+    "branch": "codex/steam-atelier-xr-track-lights",
+    "present_files": 31259,
+    "assets_missing_meta_or_asset": [],
+    "duplicate_guids": [],
+    "scene_and_resources_dependency_files": 2930,
+    "unresolved_guids": {},
+    "local_packages": [
+      {
+        "name": "com.bytedance.pico.xr",
+        "path": "file:../../vendor/PICO-Unity-SDK-main/XR",
+        "version": "6.1.1"
+      },
+      {
+        "name": "com.bytedance.pico.spatialadapter",
+        "path": "file:../../vendor/PICO-Unity-SDK-main/SpatialAdapter",
+        "version": "6.1.0"
+      },
+      {
+        "name": "com.plattar.unitygltf",
+        "path": "file:../LocalPackages/com.plattar.unitygltf",
+        "version": "1.142.0"
+      },
+      {
+        "name": "com.unity.formats.usd",
+        "path": "file:../../vendor/com.unity.formats.usd",
+        "version": "3.0.0-exp.5"
+      }
+    ]
+  }
+}

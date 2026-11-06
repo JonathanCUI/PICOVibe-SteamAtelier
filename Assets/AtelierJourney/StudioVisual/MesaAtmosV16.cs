@@ -9,6 +9,7 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
  public Material steamMaterial; public Mesh volumeMesh; public MesaSteamTunnelV17 tunnel;
  public int ConfinedPuffs {get;private set;} public int BlockedPuffs {get;private set;} public int InvalidCenters {get;private set;}
  public bool FreezeCloudTransforms; public float CloudTimeOverride=-1;
+ public bool layeredCloudMotion;
  public int ActivePuffs {get;private set;} public float Evolution {get;private set;}
  public bool CloudUpdatesReady=>block!=null&&isActiveAndEnabled;
  public int SwanHiddenSkipCount{get;private set;}public int SwanHiddenCleanupCount{get;private set;}public int CloudWriteCount{get;private set;}
@@ -64,10 +65,12 @@ public sealed class MesaAtmosV16 : MonoBehaviour {
   for(int i=0;i<clouds.Length;i++){
    var t=cloudTransforms[i];float seed=i*2.37f;
    if(journey.SwanInputActive&&!FreezeCloudTransforms){
-    float wind=windTime*.165f+i*.34f;
-    float roll=Mathf.Sin(windTime*.312f+seed),rise=Mathf.Sin(windTime*.268f+seed);
-    t.localPosition=starts[i]+new Vector3(1.85f*Mathf.Sin(wind),.18f*rise,.52f*Mathf.Cos(wind));
-    t.localScale=Vector3.Scale(scales[i],new Vector3(1+.062f*roll,1+.078f*rise,1-.038f*roll));
+    float wind=windTime*(layeredCloudMotion?.072f+i*.012f:.165f)+i*.34f;
+    float roll=Mathf.Sin(windTime*(layeredCloudMotion?.13f:.312f)+seed),rise=Mathf.Sin(windTime*(layeredCloudMotion?.10f:.268f)+seed);
+    float drift=layeredCloudMotion?(i==1?.65f:1.12f):1.85f;
+    t.localPosition=starts[i]+new Vector3(drift*Mathf.Sin(wind),(layeredCloudMotion?.11f:.18f)*rise,(layeredCloudMotion?.30f:.52f)*Mathf.Cos(wind));
+    float flex=layeredCloudMotion?.5f:1;
+    t.localScale=Vector3.Scale(scales[i],new Vector3(1+.062f*roll*flex,1+.078f*rise*flex,1-.038f*roll*flex));
    }else{
     t.localPosition=starts[i]+(FreezeCloudTransforms?Vector3.zero:new Vector3(Mathf.Sin(clock*.025f+seed)*.55f,Mathf.Sin(clock*.14f+seed)*.07f,Mathf.Cos(clock*.023f+seed)*.25f));
     t.localScale=scales[i];

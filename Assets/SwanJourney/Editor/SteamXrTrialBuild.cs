@@ -16,6 +16,34 @@ public static class SteamXrTrialBuild
     public static void BuildSketchDragDemo()=>BuildRoom("SteamAtelierXRRoom-WorkshopSketchbook.apk");
     public static void BuildCompletionFeedback()=>BuildRoom("SteamAtelierXRRoom-CompletionCelebration.apk");
     public static void BuildVisualIntegration()=>BuildRoom("SteamAtelierXRRoom-VisualIntegration.apk");
+    public static void BuildConsoleTeaching()=>BuildRoom("SteamAtelierXRRoom-ConsoleTeaching.apk");
+    public static void BuildLightingFinish()
+    {
+        SwanJourney.Editor.SwanLightingFinishBake.Bind();
+        BuildRoom("SteamAtelierXRRoom-LightingFinish.apk");
+    }
+    public static void RebakeLightingFinish()
+    {
+        SwanJourney.Editor.SwanLightingFinishBake.Bake();BuildLightingFinish();
+    }
+    public static void BuildCanyonLighting()
+    {
+        SwanJourney.Editor.SwanCanyonLightingStudy.ApplyBindings();
+        BuildRoom("SteamAtelierXRRoom-CanyonLighting.apk");
+    }
+    public static void BuildDisplayLighting()
+    {
+        SwanJourney.Editor.SwanCanyonPortalStudy.Prepare();
+        SwanJourney.Editor.SwanCanyonLightingStudy.ApplyBindings();
+        BuildRoom("SteamAtelierXRRoom-DisplayLighting.apk");
+    }
+    public static void BuildLightingRepair()=>BuildRoom("SteamAtelierXRRoom-LightingRepair.apk");
+    public static void BuildCanyonContactRepair()=>BuildRoom("SteamAtelierXRRoom-CanyonContactRepair.apk");
+    public static void BuildNightLapDemo()=>BuildRoom("SteamAtelierXRRoom-NightLapDemo.apk");
+    public static void BuildNightValleyLighting()=>BuildRoom("SteamAtelierXRRoom-NightValleyLighting.apk");
+    public static void PrepareContactFinish(){SwanJourney.Editor.SwanTrackContactBake.Prepare();SwanJourney.Editor.SwanContactFinishBake.Prepare();}
+    public static void BuildContactFinish()=>BuildRoom("SteamAtelierXRRoom-ContactFinish.apk");
+    public static void BuildVisualPolish234()=>BuildRoom("SteamAtelierXRRoom-VisualPolish234.apk");
     static void BuildRoom(string apkName)
     {
         const BuildTargetGroup group = BuildTargetGroup.Android;
@@ -36,6 +64,8 @@ public static class SteamXrTrialBuild
         if(!AssetDatabase.IsValidFolder("Assets/SwanJourney/Branding/XrSurfaceArt"))
             AssetDatabase.CreateFolder("Assets/SwanJourney/Branding","XrSurfaceArt");
         SwanJourney.Editor.SwanCanyonFoliage.PreparePrefab();
+        if(File.Exists(SwanJourney.Editor.SwanLightingFinishBake.Folder+"/Lighting states.json"))
+            SwanJourney.Editor.SwanLightingFinishBake.Bind();
         var scene = EditorSceneManager.OpenScene(source);
         var journey = UnityEngine.Object.FindObjectOfType<SteamJourney>(true);
         var scan=journey.gameObject.AddComponent<SwanBlockArrival>();
@@ -53,6 +83,7 @@ public static class SteamXrTrialBuild
         SwanJourney.Editor.SwanXrBoilerArt.Apply(journey);
         SwanJourney.Editor.SwanXrWorkshopSurfaces.Apply(journey);
         SwanJourney.Editor.SwanXrConsoleFinish.Apply(journey);
+        SwanJourney.Editor.SwanConsoleTeachingBuild.Apply(journey);
         SwanJourney.Editor.SwanXrSketchSheetBuild.Apply(journey.GetComponent<StudioPartCards>());
         var input = UnityEngine.Object.FindObjectOfType<SwanJourneyInteraction>(true);
         var layout = UnityEngine.Object.FindObjectOfType<SwanJourneyPresentation>(true);
@@ -116,7 +147,12 @@ public static class SteamXrTrialBuild
         celebration.paperShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/SwanJourney/XrCelebrationPaper.shader");
         if(!celebration.scanShader || !celebration.paperShader)throw new InvalidOperationException("Missing completion shaders");
         ApplyCompletionAudio(journey);
+        if(File.Exists("Assets/SwanJourney/Branding/StructureOcclusion/Bindings.json"))
+            SwanJourney.Editor.SwanStructureOcclusionBuild.Apply(journey);
         SwanJourney.Editor.SwanXrVisualIntegration.Apply(journey);
+        SwanJourney.Editor.SwanTrackContactBake.Apply(journey);
+        SwanJourney.Editor.SwanContactFinishBake.Apply(journey);
+        SwanJourney.Editor.SwanDisplayShadowBuild.Apply(journey);
         ValidateHandInteraction(scene);
         if (!EditorSceneManager.SaveScene(scene, scenePath, true)) throw new IOException(scenePath);
         SwanJourney.Editor.SwanJourneyQuickInstallChecks.RunXr(scenePath);

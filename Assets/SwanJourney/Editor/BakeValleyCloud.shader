@@ -10,6 +10,8 @@ Shader "Hidden/SwanJourney/BakeValleyCloud"
         TEXTURE3D(_Noise); SAMPLER(sampler_Noise);
         float _Seed, _Phase, _Steam;
         float3 _LightOS;
+        // Offline only: softer sky lobes do not alter the shared chimney density.
+        #define SWAN_SOFT_SKY 1
         #include "Assets/AtelierJourney/Shaders/CloudDensityV16.hlsl"
 
         struct Varyings { float4 pos:SV_POSITION; float2 uv:TEXCOORD0; };

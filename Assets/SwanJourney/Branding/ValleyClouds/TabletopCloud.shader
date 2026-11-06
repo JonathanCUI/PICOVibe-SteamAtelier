@@ -30,7 +30,7 @@ Shader "SwanJourney/XR Valley Cloud"
             {
                 V o;UNITY_SETUP_INSTANCE_ID(i);UNITY_TRANSFER_INSTANCE_ID(i,o);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.pos=TransformObjectToHClip(i.p.xyz);o.objectPos=i.p.xyz;
-                o.drift=sin(_Time.y*half2(.32,.24)+_Seed+half2(0,1.4))*half2(.11,.065);
+                o.drift=sin(_Time.y*half2(.16,.12)+_Seed+half2(0,1.4))*half2(.075,.045);
                 return o;
             }
             half4 frag(V i):SV_Target
@@ -47,8 +47,8 @@ Shader "SwanJourney/XR Valley Cloud"
                 float dt=rayLength/steps;
                 float3 delta=ray*dt,uv=eye+ray*(nearT+.5*dt)+.5;
                 half4 sum=0;
-                half3 shade=lerp(half3(.24,.30,.39),half3(.029,.042,.065),_SwanSkyNight);
-                half3 bright=lerp(half3(1.03,1.01,.96),half3(.24,.29,.37),_SwanSkyNight);
+                half3 shade=lerp(half3(.34,.39,.46),half3(.036,.049,.072),_SwanSkyNight);
+                half3 bright=lerp(half3(.98,.97,.94),half3(.23,.28,.36),_SwanSkyNight);
                 [loop] for(int j=0;j<steps;j++,uv+=delta)
                 {
                     float3 q=uv;

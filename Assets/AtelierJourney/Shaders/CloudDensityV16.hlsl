@@ -39,14 +39,23 @@
   float3 adv=q*.83+float3(-t*.048, t*.021,seed*.17+t*.014);
   float low=noise3(adv),fine=noise3(adv*2.71+float3(t*.018,-t*.023,0));
   float detail=noise3(adv*6.1-float3(t*.04,0,t*.027));
+  #ifdef SWAN_SOFT_SKY
+  s+=(low-.5)*.13+(fine-.5)*.030+(detail-.5)*.006;
+  float body=1-smoothstep(-.040,.055,s);
+  #else
   s+=(low-.5)*.21+(fine-.5)*.065+(detail-.5)*.018;
   float body=1-smoothstep(-.032,.044,s);
+  #endif
   if(_Steam<.5){
    float tail=smoothstep(.08,.25,q.x)*(1-smoothstep(.40,.49,q.x));
    float strandY=q.y+.075-sin(q.x*18-t*.9+seed)*.035;
    float strandZ=q.z-sin(q.x*12-t*.55)*.07;
    float threads=exp(-strandY*strandY*100-strandZ*strandZ*65)*smoothstep(.43,.7,fine+detail*.18)*tail*.65;
+   #ifdef SWAN_SOFT_SKY
+   body=max(body*(1-tail*.65),threads*.42);
+   #else
    body=max(body*(1-tail*.65),threads);
+   #endif
   }
   float pad=1-smoothstep(.42,.498,max(abs(p.x),max(abs(p.y),abs(p.z))));
   return body*pad;

@@ -24,6 +24,7 @@ namespace SwanJourney.Editor
             var renderers=root.GetComponentsInChildren<MeshRenderer>(true);
             var contactMaterials=new HashSet<Material>();
             bool rockChanged=ApplyTunnelFinish(renderers,contactMaterials);
+            bool foliageChanged=ApplyCactusFinish(renderers);
             var patches=renderers.Where(r=>r.sharedMaterial==original || r.sharedMaterial==sand).ToArray();
             if(patches.Length==0)throw new InvalidOperationException("Missing canyon sand");
             var source=original.GetTexture("_BaseMap") as Texture2D;
@@ -37,7 +38,29 @@ namespace SwanJourney.Editor
                 if(r.sharedMaterial==original){r.sharedMaterial=sand;changed=true;}
                 else if(r.sharedMaterial==gravel){r.sharedMaterial=bed;changed=true;}
             }
-            return changed || rockChanged;
+            return changed || rockChanged || foliageChanged;
+        }
+
+        static bool ApplyCactusFinish(MeshRenderer[] renderers)
+        {
+            var source=AssetDatabase.LoadAssetAtPath<Material>(Native+"Material_0187.mat");
+            var matte=SwanXrWorkshopSurfaces.MaterialAsset("Muted cactus green",source.shader);
+            matte.CopyPropertiesFromMaterial(source);
+            var tint=new Color(.62f,.64f,.60f,1);
+            matte.SetColor("_BaseColor",tint);matte.SetColor("_Color",tint);
+            matte.SetFloat("_Smoothness",.08f);matte.SetFloat("_Metallic",0);
+            matte.SetFloat("_SpecularHighlights",0);matte.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+            matte.SetFloat("_EnvironmentReflections",0);matte.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+            matte.SetColor("_EmissionColor",Color.black);matte.DisableKeyword("_EMISSION");
+            EditorUtility.SetDirty(matte);
+            bool changed=false;
+            foreach(var r in renderers)
+            {
+                var slots=r.sharedMaterials;bool swap=false;
+                for(int i=0;i<slots.Length;i++)if(slots[i]==source){slots[i]=matte;swap=true;}
+                if(swap){r.sharedMaterials=slots;changed=true;}
+            }
+            return changed;
         }
 
         static bool ApplyTunnelFinish(MeshRenderer[] renderers,HashSet<Material> contactMaterials)
@@ -140,11 +163,14 @@ namespace SwanJourney.Editor
             {
                 if(!image.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(source))))throw new IOException("Invalid sand albedo");
                 var pixels=image.GetPixels32();int w=image.width,h=image.height;
+                bool bakedContact=File.Exists(SwanLightingFinishBake.Folder+"/Lighting states.json");
                 for(int y=0;y<h;y++)for(int x=0;x<w;x++)
                 {
                     int i=y*w+x;var c=pixels[i];
                     float u=(x+.5f)/w,v=(y+.5f)/h;
-                    float contact=1-.34f*Sample(uvContact,u,v);
+                    // UV2 lighting now provides the actual rock/terrain contact. Keeping the
+                    // old broad albedo footprints would darken every lighting state twice.
+                    float contact=bakedContact?1:1-.34f*Sample(uvContact,u,v);
                     float sandWeight=Mathf.SmoothStep(0,1,Mathf.InverseLerp(125,202,c.r));
                     float grain=1+.038f*(Mathf.PerlinNoise(u*8,v*8)-.5f);
                     pixels[i]=new Color32(Byte(c.r*Mathf.Lerp(.98f,.82f,sandWeight)*contact*grain),

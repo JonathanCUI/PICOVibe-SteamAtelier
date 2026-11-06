@@ -57,10 +57,13 @@ Shader "SwanJourney/XR Headlamp Scatter"
                     half3 tint=lerp(half3(1,.34h,.075h),half3(1,.96h,.8h),saturate(core+.65h*star));
                     return half4(tint*a,a);
                 }
-                half edge=1-smoothstep(0.h,1.h,abs(i.uv.x*2-1));
-                half falloff=1-smoothstep(.06h,1.h,i.uv.y);
-                half a=2.25h*_Density*edge*falloff*smoothstep(0.h,.018h,i.uv.y);
-                return half4(half3(1,.74,.39)*a,a);
+                half x=abs(i.uv.x*2-1);
+                half edge=exp2(-5.h*x*x)*(1-smoothstep(.5h,1.h,x));
+                half falloff=exp2(-4.h*i.uv.y)*(1-smoothstep(.32h,.92h,i.uv.y));
+                // A faint scattering shaft, not an opaque triangular light card.
+                // Actual illumination is provided by the existing spot lights.
+                half a=.55h*_Density*edge*falloff*smoothstep(0.h,.045h,i.uv.y);
+                return half4(half3(1,.83,.60)*a,a);
             }
             ENDHLSL
         }
